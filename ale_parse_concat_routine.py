@@ -17,15 +17,17 @@ def main():
     # Pass in the path to either a single ALE file or directory containing multiple ALE files.
     path = sys.argv[1]
 
+    # Define allowable file extensions for ale files.
+    ale_ext = ['.ale', '.txt']
+
     # If a single ALE file, parse that file and export a .xlsx doc.
-    if os.path.isfile(path):
+    if os.path.isfile(path) and os.path.splitext(path)[1] in ale_ext:
         parser = ALEHandler(path)
         parser.parse_ale()
         parser.column_data.to_excel(output_path, index=False)
 
     # If a directory, scan for any ALE files (.ale or .txt file extension).
     elif os.path.isdir(path):
-        ale_ext = ['.ale', '.txt']
         file_paths = [f.path for f in os.scandir(path) if f.is_file() and os.path.splitext(f.path)[1] in ale_ext]
 
         # Parse data from each found ALE file.
