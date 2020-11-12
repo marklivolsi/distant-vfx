@@ -1,6 +1,10 @@
+import logging
 from pathlib import Path
 import pandas as pd
 from yaml import safe_load, YAMLError
+
+
+logger = logging.getLogger(__name__)
 
 
 class ALEHandler:
@@ -117,5 +121,5 @@ class Config:
                 self.data = safe_load(file)
                 return True
             except YAMLError as e:
-                print(e)  # TODO: log using logger
+                logger.error(e)
                 return False
