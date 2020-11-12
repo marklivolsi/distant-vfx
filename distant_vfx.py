@@ -100,18 +100,17 @@ class EDLHandler:
 
 class Config:
 
-    # Uses a 'config.yml' file stored in the root package directory by default.
-    CONFIG_PATH = './config.yml'
+    def __init__(self):
+        self.config_path = None
+        self.data = None
 
-    def __init__(self, config_file=CONFIG_PATH):
-        self.config_file = config_file
-        self.data = self.__load_from_yaml()
-
-    def __load_from_yaml(self):
-        # Load in sensitive data via a .yml file.
-        with open(self.config_file, 'r') as file:
+    def load_config(self, config_path):
+        # Load in sensitive data via a .yml config file.
+        with open(config_path, 'r') as file:
             try:
-                data = safe_load(file)
-                return data
+                self.config_path = config_path
+                self.data = safe_load(file)
+                return True
             except YAMLError as e:
-                print(e)
+                print(e)  # TODO: log using logger
+                return False
