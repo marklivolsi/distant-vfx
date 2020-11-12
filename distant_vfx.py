@@ -1,5 +1,6 @@
 from pathlib import Path
 import pandas as pd
+from yaml import safe_load, YAMLError
 
 
 class ALEHandler:
@@ -95,3 +96,22 @@ class EDLHandler:
         # Overwrite the original file with lowercase *LOC lines.
         with open(self.edl_path, 'w') as file:
             file.writelines(lines)
+
+
+class Config:
+
+    # Uses a 'config.yml' file stored in the root package directory by default.
+    CONFIG_PATH = './config.yml'
+
+    def __init__(self, config_file=CONFIG_PATH):
+        self.config_file = config_file
+        self.data = self.__load_from_yaml()
+
+    def __load_from_yaml(self):
+        # Load in sensitive data via a .yml file.
+        with open(self.config_file, 'r') as file:
+            try:
+                data = safe_load(file)
+                return data
+            except YAMLError as e:
+                print(e)
