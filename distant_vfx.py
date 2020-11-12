@@ -16,23 +16,28 @@ class ALEHandler:
 
     @property
     def ale_name(self):
-        return Path(self.ale_path).name
+        if self.ale_path is not None:
+            return Path(self.ale_path).name
 
     @property
     def field_delim(self):
-        return self.header_data.iloc[0][0]
+        if self.header_data is not None:
+            return self.header_data.iloc[0][0]
 
     @property
     def video_format(self):
-        return self.header_data.iloc[1][0]
+        if self.header_data is not None:
+            return self.header_data.iloc[1][0]
 
     @property
     def audio_format(self):
-        return self.header_data.iloc[2][0]
+        if self.header_data is not None:
+            return self.header_data.iloc[2][0]
 
     @property
     def fps(self):
-        return self.header_data.iloc[3][0]
+        if self.header_data is not None:
+            return self.header_data.iloc[3][0]
 
     def parse_ale(self, ale_path):
         # Parse the header and column data from the ALE file.
