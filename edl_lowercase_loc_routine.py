@@ -13,8 +13,8 @@ def main():
     # If path is a file and is an edl, rewrite all *LOC lines to lowercase.
     if os.path.isfile(path):
         if os.path.splitext(path)[1] == '.edl':
-            handler = EDLHandler(path)
-            handler.loc_to_lower()
+            handler = EDLHandler()
+            handler.loc_to_lower(path)
 
     # If path is a directory, scan for edls and rewrite *LOC lines to lowercase for each.
     elif os.path.isdir(path):
@@ -34,8 +34,8 @@ def main():
 
         # Rewrite each edl with lowercase *LOC lines.
         for edl in edls:
-            handler = EDLHandler(edl)
-            handler.loc_to_lower()
+            handler = EDLHandler()
+            handler.loc_to_lower(edl)
 
 
 if __name__ == '__main__':

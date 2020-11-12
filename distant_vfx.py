@@ -5,11 +5,14 @@ from yaml import safe_load, YAMLError
 
 class ALEHandler:
 
-    def __init__(self, ale_path):
-        self.ale_path = ale_path
-        self.ale_name = Path(ale_path).name
+    def __init__(self):
+        self.ale_path = None
         self.header_data = None
         self.column_data = None
+
+    @property
+    def ale_name(self):
+        return Path(self.ale_path).name
 
     @property
     def field_delim(self):
@@ -27,8 +30,9 @@ class ALEHandler:
     def fps(self):
         return self.header_data.iloc[3][0]
 
-    def parse_ale(self):
+    def parse_ale(self, ale_path):
         # Parse the header and column data from the ALE file.
+        self.ale_path = ale_path
         self._read_header_data()
         self._read_column_data()
         self._drop_data_header_row()
@@ -77,12 +81,13 @@ class ALEHandler:
 
 class EDLHandler:
 
-    def __init__(self, edl_path):
-        self.edl_path = edl_path
+    def __init__(self):
+        pass
 
-    def loc_to_lower(self):
+    @staticmethod
+    def loc_to_lower(edl_path):
         # Read lines in edl.
-        with open(self.edl_path, 'r') as file:
+        with open(edl_path, 'r') as file:
             lines = file.readlines()
 
         # If a *LOC line, replace everything after *LOC with lowercase.
@@ -94,7 +99,7 @@ class EDLHandler:
                 lines[index] = identifier + str_lower
 
         # Overwrite the original file with lowercase *LOC lines.
-        with open(self.edl_path, 'w') as file:
+        with open(edl_path, 'w') as file:
             file.writelines(lines)
 
 
