@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 import os
+import sys
 import pandas as pd
 from yaml import safe_load, YAMLError
 import shotgun_api3
@@ -134,21 +135,31 @@ class Config:
 
 class ShotgunWrapper:
 
-    MODULE_PARENT_PATH = os.path.abspath(os.path.dirname(shotgun_api3.__file__))
-    CERT_PATH = os.path.join(MODULE_PARENT_PATH, 'lib/httplib2/python3/cacerts.txt')
-
-    def __init__(self, base_url, username, password):
-        self.base_url = base_url
-        self.username = username
-        self.password = password
+    def __init__(self):
+        self.base_url = None
+        self.username = None
+        self.password = None
         self.client = None
 
     def connect(self, base_url, username, password):
-        # Initialize Shotgun connection. Must pass cert path to avoid FileNotFoundError.
+        # Initialize Shotgun connection. Must pass cert path manually to avoid FileNotFoundError.
+        self.base_url, self.username, self.password = base_url, username, password
         try:
-            client = shotgun_api3.Shotgun(base_url, login=username, password=password, ca_certs=ShotgunWrapper.CERT_PATH)
+            client = shotgun_api3.Shotgun(base_url,
+                                          login=username,
+                                          password=password,
+                                          ca_certs=ShotgunWrapper.__get_cert_path())
             self.client = client
             return True
         except shotgun_api3.ShotgunError as e:
             logger.error(e)
             return False
+
+    @staticmethod
+    def __get_cert_path():
+        module_parent_path = os.path.abspath(os.path.dirname(shotgun_api3.__file__))
+        if sys.version_info[0] == 3:
+            cert_path = os.path.join(module_parent_path, 'lib/httplib2/python3/cacerts.txt')
+        else:
+            cert_path = os.path.join(module_parent_path, 'lib/httplib2/python2/cacerts.txt')
+        return cert_path
