@@ -141,9 +141,14 @@ class ShotgunWrapper:
         self.base_url = base_url
         self.username = username
         self.password = password
-        self.client = self.get_client(base_url, username, password)
+        self.client = None
 
-    @staticmethod
-    def get_client(base_url, username, password):
+    def connect(self, base_url, username, password):
         # Initialize Shotgun connection. Must pass cert path to avoid FileNotFoundError.
-        return shotgun_api3.Shotgun(base_url, login=username, password=password, ca_certs=ShotgunWrapper.CERT_PATH)
+        try:
+            client = shotgun_api3.Shotgun(base_url, login=username, password=password, ca_certs=ShotgunWrapper.CERT_PATH)
+            self.client = client
+            return True
+        except shotgun_api3.ShotgunError as e:
+            logger.error(e)
+            return False
