@@ -1,5 +1,11 @@
+# Filesystem path constants
 CONFIG_PATH = './config.yml'
 
+# Template constants
+TC_PATTERN = r'\d{2}:\d{2}:\d{2}:\d{2}'
+
+# Media-related constants
+FPS = 24
 
 # Logging configuration.
 LOG_SETTINGS = {

@@ -1,7 +1,9 @@
 import logging
 from pathlib import Path
+import os
 import pandas as pd
 from yaml import safe_load, YAMLError
+import shotgun_api3
 
 
 logger = logging.getLogger(__name__)
@@ -118,7 +120,7 @@ class Config:
         self.config_path = None
         self.data = None
 
-    def load_config(self, config_path):
+    def load_config(self, config_path='./config.yml'):
         # Load in sensitive data via a .yml config file.
         with open(config_path, 'r') as file:
             try:
@@ -128,3 +130,20 @@ class Config:
             except YAMLError as e:
                 logger.error(e)
                 return False
+
+
+class ShotgunWrapper:
+
+    MODULE_PARENT_PATH = os.path.abspath(os.path.dirname(shotgun_api3.__file__))
+    CERT_PATH = os.path.join(MODULE_PARENT_PATH, 'lib/httplib2/python3/cacerts.txt')
+
+    def __init__(self, base_url, username, password):
+        self.base_url = base_url
+        self.username = username
+        self.password = password
+        self.client = self.get_client(base_url, username, password)
+
+    @staticmethod
+    def get_client(base_url, username, password):
+        # Initialize Shotgun connection. Must pass cert path to avoid FileNotFoundError.
+        return shotgun_api3.Shotgun(base_url, login=username, password=password, ca_certs=ShotgunWrapper.CERT_PATH)
