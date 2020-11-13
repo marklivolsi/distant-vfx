@@ -7,7 +7,12 @@ from yaml import safe_load, YAMLError
 import shotgun_api3
 
 
-logger = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
+
+
+class DistantError(Exception):
+    # A custom exception for distant_vfx classes.
+    pass
 
 
 class ALEHandler:
@@ -129,37 +134,45 @@ class Config:
                 self.data = safe_load(file)
                 return True
             except YAMLError as e:
-                logger.error(e)
+                LOG.error(e)
                 return False
 
 
-class ShotgunWrapper:
+class ShotgunInstance:
 
-    def __init__(self):
-        self.base_url = None
-        self.username = None
-        self.password = None
+    def __init__(self, base_url, username, password):
+        self.base_url = base_url
+        self.username = username
+        self.password = password
         self.client = None
 
-    def connect(self, base_url, username, password):
-        # Initialize Shotgun connection. Must pass cert path manually to avoid FileNotFoundError.
-        self.base_url, self.username, self.password = base_url, username, password
+    def connect(self):
+        # Initialize Shotgun connection. Must pass cert path to avoid FileNotFoundError.
         try:
-            client = shotgun_api3.Shotgun(base_url,
-                                          login=username,
-                                          password=password,
-                                          ca_certs=ShotgunWrapper.__get_cert_path())
+            client = shotgun_api3.Shotgun(self.base_url,
+                                          login=self.username,
+                                          password=self.password,
+                                          ca_certs=ShotgunInstance.__get_cert_path())
             self.client = client
             return True
         except shotgun_api3.ShotgunError as e:
-            logger.error(e)
+            LOG.error(e)
             return False
 
     @staticmethod
     def __get_cert_path():
+        # Get the ca_certs file path (depending on Python installation, this is different for 2 vs. 3)
         module_parent_path = os.path.abspath(os.path.dirname(shotgun_api3.__file__))
         if sys.version_info[0] == 3:
             cert_path = os.path.join(module_parent_path, 'lib/httplib2/python3/cacerts.txt')
         else:
             cert_path = os.path.join(module_parent_path, 'lib/httplib2/python2/cacerts.txt')
         return cert_path
+
+
+class FileMakerInstance:
+
+    def __init__(self):
+        pass
+
+
