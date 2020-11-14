@@ -7,6 +7,7 @@ from yaml import safe_load, YAMLError
 import shotgun_api3
 import pycognito
 import requests
+import json
 
 
 LOG = logging.getLogger(__name__)
@@ -172,7 +173,7 @@ class ShotgunInstance:
         return cert_path
 
 
-class FileMakerCloudInstance:
+class FMCloudInstance:
 
     def __init__(self, host_url, username, password, database, user_pool_id, client_id, api_version='vLatest'):
         self.host_url = host_url
@@ -188,26 +189,40 @@ class FileMakerCloudInstance:
         self._bearer_token = None
 
     def __enter__(self):
-        # TODO: Add custom context manager support.
-        self.establish_session()
+        # Automatically log in with context manager, i.e. with FMCloudInstance(...) as fm:
+        self.login()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        # TODO: Add custom context manager support.
-        pass
+        # Automatically log out when we leave the context
+        self.logout()
+        if exc_type:
+            LOG.error(f'{exc_type}: {exc_val}')
 
-    def establish_session(self):
-        self.__get_fmid_token()
+    def login(self):
+        # Establish connection to FMP Cloud DB via the sessions api endpoint.
+        self._get_fmid_token()
         headers = {
             'Content-Type': 'application/json',
             'Authorization': f'FMID {self._fmid_token}'
         }
-        response = self.__call_sessions_endpoint(method='POST', headers=headers, params=None)
+        url = self.host_url + f'/fmi/data/{self.api_version}/databases/{self.database}/sessions'
+        response = requests.post(url, header=headers, data='{}')
         if response.status_code == '200':
-            # set the bearer token
+            # TODO: set the bearer token
             print(response.text)
 
-    def __get_fmid_token(self):
+    def logout(self):
+        # Log out of the current DB session.
+        headers = {'Content-Type': 'application/json'}
+        url = self.host_url + f'/fmi/data/{self.api_version}/databases/{self.database}/sessions/{self._bearer_token}'
+        response = requests.delete(url, headers=headers)
+        if response.status_code == '200':
+            print(response.text)
+            self.session = None
+            # TODO: log this
+
+    def _get_fmid_token(self):
         # Get the FMID token for FMP Cloud login via Amazon Cognito.
         user = pycognito.Cognito(user_pool_id=self.user_pool_id,
                                  client_id=self.client_id,
@@ -215,9 +230,3 @@ class FileMakerCloudInstance:
         user.authenticate(self.password)
         self._fmid_token = user.id_token
         self._refresh_token = user.refresh_token
-
-    def __call_sessions_endpoint(self, method, headers, params):
-        # TODO: Use this for logout with http method DELETE
-        url = self.host_url + f'/fmi/data/{self.api_version}/databases/{self.database}/sessions'
-        response = requests.request(method, url, headers=headers, params=params)
-        return response
