@@ -145,16 +145,16 @@ class ShotgunInstance:
         self.base_url = base_url
         self.username = username
         self.password = password
-        self.client = None
+        self.session = None
 
     def connect(self):
         # Initialize Shotgun connection. Must pass cert path to avoid FileNotFoundError.
         try:
-            client = shotgun_api3.Shotgun(self.base_url,
-                                          login=self.username,
-                                          password=self.password,
-                                          ca_certs=ShotgunInstance.__get_cert_path())
-            self.client = client
+            session = shotgun_api3.Shotgun(self.base_url,
+                                           login=self.username,
+                                           password=self.password,
+                                           ca_certs=ShotgunInstance.__get_cert_path())
+            self.session = session
             return True
         except shotgun_api3.ShotgunError as e:
             LOG.error(e)
@@ -173,13 +173,16 @@ class ShotgunInstance:
 
 class FileMakerCloudInstance:
 
-    def __init__(self, username, password, user_pool_id, client_id):
+    def __init__(self, username, password, database, user_pool_id, client_id):
         self.username = username
         self.password = password
+        self.database = database
         self.user_pool_id = user_pool_id
         self.client_id = client_id
+        self.session = None
         self._fmid_token = None
         self._refresh_token = None
+        self._bearer_token = None
 
     def connect(self):
         self.__get_fmid_token()
