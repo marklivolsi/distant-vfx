@@ -187,6 +187,15 @@ class FileMakerCloudInstance:
         self._refresh_token = None
         self._bearer_token = None
 
+    def __enter__(self):
+        # TODO: Add custom context manager support.
+        self.connect()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # TODO: Add custom context manager support.
+        pass
+
     def connect(self):
         self.__get_fmid_token()
         post_url = self.host_url + f'/fmi/data/{self.api_version}/databases/{self.database}/sessions'
@@ -195,10 +204,12 @@ class FileMakerCloudInstance:
             'Authorization': f'FMID {self._fmid_token}'
         }
         response = requests.post(post_url, headers=headers)
-        print(response.text)
+        if response.status_code == '200':
+            # set the bearer token
+            print(response.text)
 
     def __get_fmid_token(self):
-        # Grab the FMID token for FMP Cloud login via Amazon Cognito.
+        # Get the FMID token for FMP Cloud login via Amazon Cognito.
         user = pycognito.Cognito(user_pool_id=self.user_pool_id,
                                  client_id=self.client_id,
                                  username=self.username)
