@@ -182,9 +182,10 @@ class FileMakerInstance:
         self.refresh_token = None
 
     def connect(self):
-        pass
+        self.__get_fmid_token()
 
     def __get_fmid_token(self):
+        # Grab the FMID token for FMP Cloud login via Amazon Cognito.
         user = pycognito.Cognito(user_pool_id=self.user_pool_id,
                                  client_id=self.client_id,
                                  username=self.username)
