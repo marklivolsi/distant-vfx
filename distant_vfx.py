@@ -5,6 +5,7 @@ import sys
 import pandas as pd
 from yaml import safe_load, YAMLError
 import shotgun_api3
+import pycognito
 
 
 LOG = logging.getLogger(__name__)
@@ -172,7 +173,21 @@ class ShotgunInstance:
 
 class FileMakerInstance:
 
-    def __init__(self):
+    def __init__(self, username, password, user_pool_id, client_id):
+        self.username = username
+        self.password = password
+        self.user_pool_id = user_pool_id
+        self.client_id = client_id
+        self.fmid_token = None
+        self.refresh_token = None
+
+    def connect(self):
         pass
 
-
+    def __get_fmid_token(self):
+        user = pycognito.Cognito(user_pool_id=self.user_pool_id,
+                                 client_id=self.client_id,
+                                 username=self.username)
+        user.authenticate(self.password)
+        self.fmid_token = user.id_token
+        self.refresh_token = user.refresh_token
