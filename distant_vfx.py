@@ -208,7 +208,7 @@ class FMCloudInstance:
         }
         url = self.host_url + f'/fmi/data/{self.api_version}/databases/{self.database}/sessions'
         response = requests.post(url, header=headers, data='{}')
-        if response.status_code == '200':
+        if response.ok:
             # TODO: set the bearer token
             print(response.text)
 
@@ -217,10 +217,21 @@ class FMCloudInstance:
         headers = {'Content-Type': 'application/json'}
         url = self.host_url + f'/fmi/data/{self.api_version}/databases/{self.database}/sessions/{self._bearer_token}'
         response = requests.delete(url, headers=headers)
-        if response.status_code == '200':
+        if response.ok:
             print(response.text)
             self.session = None
             # TODO: log this
+
+    def new_record(self, layout, data):
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self._bearer_token}'
+        }
+        url = f'/fmi/data/{self.api_version}/databases/{self.database}/layouts/{layout}/records'
+        record_data = json.dumps({'fieldData': data})
+        response = requests.post(url, headers=headers, data=record_data)
+        if response.ok:
+            print(response)
 
     def _get_fmid_token(self):
         # Get the FMID token for FMP Cloud login via Amazon Cognito.
