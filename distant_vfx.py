@@ -6,6 +6,7 @@ import pandas as pd
 from yaml import safe_load, YAMLError
 import shotgun_api3
 import pycognito
+import requests
 
 
 LOG = logging.getLogger(__name__)
@@ -173,12 +174,14 @@ class ShotgunInstance:
 
 class FileMakerCloudInstance:
 
-    def __init__(self, username, password, database, user_pool_id, client_id):
+    def __init__(self, host_url, username, password, database, user_pool_id, client_id, api_version='vLatest'):
+        self.host_url = host_url
         self.username = username
         self.password = password
         self.database = database
         self.user_pool_id = user_pool_id
         self.client_id = client_id
+        self.api_version = api_version
         self.session = None
         self._fmid_token = None
         self._refresh_token = None
@@ -186,6 +189,13 @@ class FileMakerCloudInstance:
 
     def connect(self):
         self.__get_fmid_token()
+        post_url = self.host_url + f'/fmi/data/{self.api_version}/databases/{self.database}/sessions'
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'FMID {self._fmid_token}'
+        }
+        response = requests.post(post_url, headers=headers)
+        print(response.text)
 
     def __get_fmid_token(self):
         # Grab the FMID token for FMP Cloud login via Amazon Cognito.
