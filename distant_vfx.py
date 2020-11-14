@@ -171,15 +171,15 @@ class ShotgunInstance:
         return cert_path
 
 
-class FileMakerInstance:
+class FileMakerCloudInstance:
 
     def __init__(self, username, password, user_pool_id, client_id):
         self.username = username
         self.password = password
         self.user_pool_id = user_pool_id
         self.client_id = client_id
-        self.fmid_token = None
-        self.refresh_token = None
+        self._fmid_token = None
+        self._refresh_token = None
 
     def connect(self):
         self.__get_fmid_token()
@@ -190,5 +190,5 @@ class FileMakerInstance:
                                  client_id=self.client_id,
                                  username=self.username)
         user.authenticate(self.password)
-        self.fmid_token = user.id_token
-        self.refresh_token = user.refresh_token
+        self._fmid_token = user.id_token
+        self._refresh_token = user.refresh_token
