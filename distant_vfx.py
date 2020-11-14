@@ -183,7 +183,6 @@ class FMCloudInstance:
         self.user_pool_id = user_pool_id
         self.client_id = client_id
         self.api_version = api_version
-        self.session = None
         self._fmid_token = None
         self._refresh_token = None
         self._bearer_token = None
@@ -202,24 +201,32 @@ class FMCloudInstance:
     def login(self):
         # Establish connection to FMP Cloud DB via the sessions api endpoint.
         self._get_fmid_token()
+        print(self._fmid_token)
         headers = {
             'Content-Type': 'application/json',
             'Authorization': f'FMID {self._fmid_token}'
         }
         url = self.host_url + f'/fmi/data/{self.api_version}/databases/{self.database}/sessions'
-        response = requests.post(url, header=headers, data='{}')
+        response = requests.post(url, headers=headers, data='{}')
         if response.ok:
-            # TODO: set the bearer token
-            print(response.text)
+            print('Login response: ' + response.text)
+            try:
+                response_json = response.json()
+                self._bearer_token = response_json.get('response').get('token')
+                print(self._bearer_token)
+            except json.decoder.JSONDecodeError as e:
+                LOG.error(e)
+                print(e)
 
     def logout(self):
         # Log out of the current DB session.
         headers = {'Content-Type': 'application/json'}
         url = self.host_url + f'/fmi/data/{self.api_version}/databases/{self.database}/sessions/{self._bearer_token}'
         response = requests.delete(url, headers=headers)
+        print('Logout response: ' + response.text)
         if response.ok:
             print(response.text)
-            self.session = None
+            self._bearer_token = None
             # TODO: log this
 
     def new_record(self, layout, data):
@@ -227,7 +234,7 @@ class FMCloudInstance:
             'Content-Type': 'application/json',
             'Authorization': f'Bearer {self._bearer_token}'
         }
-        url = f'/fmi/data/{self.api_version}/databases/{self.database}/layouts/{layout}/records'
+        url = self.host_url + f'/fmi/data/{self.api_version}/databases/{self.database}/layouts/{layout}/records'
         record_data = json.dumps({'fieldData': data})
         response = requests.post(url, headers=headers, data=record_data)
         if response.ok:
