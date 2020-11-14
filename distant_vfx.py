@@ -189,21 +189,20 @@ class FileMakerCloudInstance:
 
     def __enter__(self):
         # TODO: Add custom context manager support.
-        self.connect()
+        self.establish_session()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         # TODO: Add custom context manager support.
         pass
 
-    def connect(self):
+    def establish_session(self):
         self.__get_fmid_token()
-        post_url = self.host_url + f'/fmi/data/{self.api_version}/databases/{self.database}/sessions'
         headers = {
             'Content-Type': 'application/json',
             'Authorization': f'FMID {self._fmid_token}'
         }
-        response = requests.post(post_url, headers=headers)
+        response = self.__call_sessions_endpoint(method='POST', headers=headers, params=None)
         if response.status_code == '200':
             # set the bearer token
             print(response.text)
@@ -216,3 +215,9 @@ class FileMakerCloudInstance:
         user.authenticate(self.password)
         self._fmid_token = user.id_token
         self._refresh_token = user.refresh_token
+
+    def __call_sessions_endpoint(self, method, headers, params):
+        # TODO: Use this for logout with http method DELETE
+        url = self.host_url + f'/fmi/data/{self.api_version}/databases/{self.database}/sessions'
+        response = requests.request(method, url, headers=headers, params=params)
+        return response
