@@ -253,6 +253,9 @@ class FMCloudInstance:
         # If the response is valid, reset the bearer token.
         if response.ok:
             self._bearer_token = None
+        else:
+            pass
+            # TODO: Notify user of invalid http response.
 
     def new_record(self, layout, data):
         """
@@ -281,6 +284,33 @@ class FMCloudInstance:
             response_json = response.json()
             record_id = response_json.get('response').get('recordId')
             return record_id
+        else:
+            pass
+            # TODO: Notify user of invalid http response (this will not throw an error).
+
+    def get_record(self, layout, record_id):
+        """
+        Get data for a single record based on the provided unique record ID.
+        :param layout: The layout to retrieve the record from.
+        :param record_id: The unique ID of the record to retrieve.
+        :return: A dict containing the field data for the requested record.
+        """
+
+        # Set the headers and url for the request.
+        headers = {'Authorization': f'Bearer {self._bearer_token}'}
+        url = self.host_url + f'/fmi/data/{self.api_version}/databases/{self.database}/layouts/{layout}/records/{record_id}'
+
+        # Perform the api request.
+        response = requests.get(url, headers=headers)
+
+        # If successful, convert the response to json and return the record data.
+        if response.ok:
+            response_json = response.json()
+            record = response_json.get('response').get('data')
+            return record[0]
+        else:
+            pass
+        # TODO: Notify user of invalid http response.
 
     def find_records(self, layout, query, sort=None, limit=None):
         """
@@ -319,6 +349,9 @@ class FMCloudInstance:
             response_json = response.json()
             response_data = response_json.get('response').get('data')
             return response_data
+        else:
+            pass
+            # TODO: Notify user of invalid http response.
 
     def _get_fmid_token(self):
         """
