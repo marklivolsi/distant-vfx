@@ -143,27 +143,34 @@ class Config:
 
 class ShotgunInstance:
 
-    def __init__(self, base_url, username, password):
+    def __init__(self, base_url, script_name, api_key):
         self.base_url = base_url
-        self.username = username
-        self.password = password
+        self.script_name = script_name
+        self.api_key = api_key
         self.session = None
 
+    def __enter__(self):
+        self.connect()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.session.close()
+        if exc_type:
+            LOG.error(f'{exc_type}: {exc_val}')
+
     def connect(self):
-        # Initialize Shotgun connection. Must pass cert path to avoid FileNotFoundError.
-        try:
-            session = shotgun_api3.Shotgun(self.base_url,
-                                           login=self.username,
-                                           password=self.password,
-                                           ca_certs=ShotgunInstance.__get_cert_path())
-            self.session = session
-            return True
-        except shotgun_api3.ShotgunError as e:
-            LOG.error(e)
-            return False
+        self._connect_via_script(self.script_name, self.api_key)
+
+    def _connect_via_script(self, script_name, api_key):
+        session = shotgun_api3.Shotgun(self.base_url,
+                                       script_name=script_name,
+                                       api_key=api_key,
+                                       # Manually pass cert path to avoid FileNotFoundError.
+                                       ca_certs=ShotgunInstance._get_cert_path())
+        self.session = session
 
     @staticmethod
-    def __get_cert_path():
+    def _get_cert_path():
         # Get the ca_certs file path (depending on Python installation, this is different for 2 vs. 3)
         module_parent_path = os.path.abspath(os.path.dirname(shotgun_api3.__file__))
         if sys.version_info[0] == 3:
@@ -356,7 +363,7 @@ class FMCloudInstance:
     def _get_fmid_token(self):
         """
         Obtain a FMID token from Amazon Cognito, necessary for authenticating FileMaker Cloud Data API login requests.
-        :return:
+        :return: None.
         """
         # Get the FMID token for FMP Cloud login via Amazon Cognito.
         user = pycognito.Cognito(user_pool_id=self.user_pool_id,
