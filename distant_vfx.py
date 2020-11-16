@@ -178,6 +178,9 @@ class FMCloudInstance:
     def __init__(self, host_url, username, password, database, user_pool_id, client_id, api_version='vLatest'):
         """
         Create an new FMCloudInstance object. Uses the specified params to connect to a FileMaker Cloud hosted DB.
+        This API is based off of the FileMaker 19 Data API Guide, see here for more information:
+        https://help.claris.com/en/data-api-guide/
+
         :param host_url: The base url of the FileMaker Cloud server.
         :param username: The Claris ID username used to sign in to FileMaker Cloud.
         :param password: The Claris ID password used to sign in to FileMaker Cloud.
