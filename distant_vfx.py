@@ -318,6 +318,10 @@ class FMCloudInstance:
             return response_data
 
     def _get_fmid_token(self):
+        """
+        Obtain a FMID token from Amazon Cognito, necessary for authenticating FileMaker Cloud Data API login requests.
+        :return:
+        """
         # Get the FMID token for FMP Cloud login via Amazon Cognito.
         user = pycognito.Cognito(user_pool_id=self.user_pool_id,
                                  client_id=self.client_id,
