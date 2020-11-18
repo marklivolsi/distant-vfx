@@ -1,0 +1,41 @@
+name: Upload Release artifact to s3
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  create-release-bundle:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      name: Checkout
+    - name: Build zip
+      id: build-zip
+      run: |
+        mkdir ${GITHUB_WORKSPACE}/artifacts
+        mkdir ${GITHUB_WORKSPACE}/artifacts/latest
+        cd python
+        zip -r ${GITHUB_WORKSPACE}/artifacts/distant_vfx_${GITHUB_REF##*/}.zip distant_vfx
+        cp ${GITHUB_WORKSPACE}/artifacts/distant_vfx_${GITHUB_REF##*/}.zip ${GITHUB_WORKSPACE}/artifacts/latest/distant_vfx.zip
+        cd ${GITHUB_WORKSPACE}
+        echo ::set-output name=asset-name::distant_vfx_${GITHUB_REF##*/}.zip
+        echo ::set-output name=asset-path::${GITHUB_WORKSPACE}/artifacts/distant_vfx_${GITHUB_REF##*/}.zip
+        echo ::set-output name=asset-directory::${GITHUB_WORKSPACE}/artifacts
+    - name: Generate Upload URL
+      id: gen-upload-url
+      run: |
+        sudo apt-get install jq;
+        RELEASE_ID=$(jq --raw-output '.release.id' $GITHUB_EVENT_PATH);
+        echo ::set-output name=upload-url::https://uploads.github.com/repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}/assets
+    - name: Uplopad Release Asset
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+          upload_url: ${{ steps.gen-upload-url.outputs.upload-url }}?name=${{ steps.build-zip.outputs.asset-name }}
+          asset_path: ${{ steps.build-zip.outputs.asset-path }}
+          asset_name: ${{ steps.build-zip.outputs.asset-name }}
+          asset_content_type: application/zip
+
