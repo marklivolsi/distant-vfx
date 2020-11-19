@@ -94,33 +94,34 @@ class EDLParser:
     def parse_edl(self, edl_path):
         pass
 
-    def _read_edl_file(self, edl_path):
-        title, fcm, events = None, None, []
+    @staticmethod
+    def _read_edl_file(edl_path):
+        title, fcm, event, events = None, None, None, []
 
-        # Read the edl file line by line
+        # Read in the lines from the edl
         with open(edl_path, 'r', encoding='utf-8') as edl:
-            event = None
-            for line in edl:
+            lines = edl.readlines()
 
-                # Extract the title and fcm values.
-                if line.startswith('TITLE'):
-                    title = line
-                elif line.startswith('FCM'):
-                    fcm = line
+        for line in lines:
 
-                # If line starts with a digit, it is assumed to be an event
-                elif line.split()[0].isdigit():
-                    if event is not None:
-                        events.append(event)
-                    event = line
+            # Extract the title and fcm values.
+            if line.startswith('TITLE'):
+                title = line
+            elif line.startswith('FCM'):
+                fcm = line
 
-                # If not the start of a new event, add the line to the current event
-                else:
-                    event += line
+            # If line starts with a digit, it is assumed to be an event
+            elif line.split()[0].isdigit():
+                if event is not None:
+                    events.append(event)
+                event = line
 
-            # Add the final event
-            events.append(event)
+            # If not the start of a new event, add the line to the current event
+            else:
+                event += line
 
+        # Add the final event
+        events.append(event)
         return title, fcm, events
 
     @staticmethod
