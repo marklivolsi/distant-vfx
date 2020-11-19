@@ -1,9 +1,15 @@
 #!/usr/bin/env python
 
+import logging.config
 import os
 import sys
 
-from distant_vfx import EDLHandler
+from ..parsers import EDLHandler
+
+# Configure logging.
+from ..constants import LOG_SETTINGS
+logging.config.dictConfig(LOG_SETTINGS)
+LOG = logging.getLogger(__name__)
 
 
 def main():

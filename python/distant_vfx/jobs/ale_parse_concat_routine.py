@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 
+import logging.config
 import os
 import sys
 import pandas as pd
 from datetime import datetime
 
-from distant_vfx import ALEHandler
+from ..parsers import ALEHandler
+
+# Configure logging.
+from ..constants import LOG_SETTINGS
+logging.config.dictConfig(LOG_SETTINGS)
+LOG = logging.getLogger(__name__)
 
 
 def main():
