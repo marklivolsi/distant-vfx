@@ -89,13 +89,22 @@ class ALEParser:
 class EDLParser:
 
     def __init__(self):
-        self.events = []
+        self.title = None
+        self.fcm = None
+        self.event_list = None
+        self.events = None
 
     def parse_edl(self, edl_path):
-        pass
+        self._read_edl_file(edl_path)
+        for event in self.event_list:
+            self._parse_event(event)
 
     @staticmethod
-    def _read_edl_file(edl_path):
+    def _parse_event(event_str):
+        event_dict = {}
+        # TODO: Parse data from event string.
+
+    def _read_edl_file(self, edl_path):
         title, fcm, event, events = None, None, None, []
 
         # Read in the lines from the edl
@@ -122,7 +131,7 @@ class EDLParser:
 
         # Add the final event
         events.append(event)
-        return title, fcm, events
+        self.title, self.fcm, self.event_list = title, fcm, events
 
     @staticmethod
     def loc_to_lower(edl_path):
