@@ -6,7 +6,7 @@ import sys
 import pandas as pd
 from datetime import datetime
 
-from ..parsers import ALEHandler
+from ..parsers import ALEParser
 
 # Configure logging.
 from ..constants import LOG_SETTINGS
@@ -28,7 +28,7 @@ def main():
 
     # If a single ALE file, parse that file and export a .xlsx doc.
     if os.path.isfile(path) and os.path.splitext(path)[1] in ale_ext:
-        handler = ALEHandler()
+        handler = ALEParser()
         handler.parse_ale(path)
         handler.column_data.to_excel(output_path, index=False)
 
@@ -39,7 +39,7 @@ def main():
         # Parse data from each found ALE file.
         handlers = []
         for path in file_paths:
-            handler = ALEHandler()
+            handler = ALEParser()
             handler.parse_ale(path)
             handlers.append(handler)
 

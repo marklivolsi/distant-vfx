@@ -4,7 +4,7 @@ import logging.config
 import os
 import sys
 
-from ..parsers import EDLHandler
+from ..parsers import EDLParser
 
 # Configure logging.
 from ..constants import LOG_SETTINGS
@@ -12,14 +12,12 @@ logging.config.dictConfig(LOG_SETTINGS)
 LOG = logging.getLogger(__name__)
 
 
-def main():
-    # Get path to either directory or file.
-    path = sys.argv[1]
+def main(path):
 
     # If path is a file and is an edl, rewrite all *LOC lines to lowercase.
     if os.path.isfile(path):
         if os.path.splitext(path)[1] == '.edl':
-            handler = EDLHandler()
+            handler = EDLParser()
             handler.loc_to_lower(path)
 
     # If path is a directory, scan for edls and rewrite *LOC lines to lowercase for each.
@@ -40,9 +38,9 @@ def main():
 
         # Rewrite each edl with lowercase *LOC lines.
         for edl in edls:
-            handler = EDLHandler()
+            handler = EDLParser()
             handler.loc_to_lower(edl)
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1])

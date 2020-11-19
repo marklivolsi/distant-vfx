@@ -5,7 +5,7 @@ import pandas as pd
 LOG = logging.getLogger(__name__)
 
 
-class ALEHandler:
+class ALEParser:
 
     def __init__(self):
         self.ale_path = None
@@ -86,10 +86,42 @@ class ALEHandler:
         self.column_data = self.column_data.dropna(how='all', axis=1)
 
 
-class EDLHandler:
+class EDLParser:
 
     def __init__(self):
+        self.events = []
+
+    def parse_edl(self, edl_path):
         pass
+
+    def _read_edl_file(self, edl_path):
+        title, fcm, events = None, None, []
+
+        # Read the edl file line by line
+        with open(edl_path, 'r', encoding='utf-8') as edl:
+            event = None
+            for line in edl:
+
+                # Extract the title and fcm values.
+                if line.startswith('TITLE'):
+                    title = line
+                elif line.startswith('FCM'):
+                    fcm = line
+
+                # If line starts with a digit, it is assumed to be an event
+                elif line.split()[0].isdigit():
+                    if event is not None:
+                        events.append(event)
+                    event = line
+
+                # If not the start of a new event, add the line to the current event
+                else:
+                    event += line
+
+            # Add the final event
+            events.append(event)
+
+        return title, fcm, events
 
     @staticmethod
     def loc_to_lower(edl_path):
