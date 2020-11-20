@@ -26,9 +26,7 @@ def main(root_path):
         full_pkg_name = base_pkg_name + 'a'
     else:
         latest_pkg = max(packages_from_today)
-        print(latest_pkg)
         latest_alpha = latest_pkg.split('_')[-1]
-        print(latest_alpha)
         alpha = (''.join(letters) for length in range(1, 3) for letters in itertools.product(string.ascii_lowercase, repeat=length))
         while True:
             next_alpha = next(alpha)
