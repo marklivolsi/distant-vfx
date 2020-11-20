@@ -6,10 +6,10 @@ import sys
 import pandas as pd
 from datetime import datetime
 
-from ..parsers import ALEParser
+from python.distant_vfx.parsers import ALEParser
 
 # Configure logging.
-from ..constants import LOG_SETTINGS
+from python.distant_vfx.constants import LOG_SETTINGS
 logging.config.dictConfig(LOG_SETTINGS)
 LOG = logging.getLogger(__name__)
 

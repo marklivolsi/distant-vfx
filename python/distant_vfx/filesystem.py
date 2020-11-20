@@ -7,14 +7,14 @@ class Chunker:
     def __init__(self):
         pass
 
-    def chunk(self, root_path, chunk_size):
+    def chunk(self, root_paths, chunk_size):
         """
         Public facing method to chunk files in a directory into relatively constant size bins.
-        :param root_path: The directory to scan (items in the root_path directory will be chunked into bins).
+        :param root_paths: The directory to scan (items in the root_path directory will be chunked into bins).
         :param chunk_size: The target size (bytes) for each bin.
         :return: A list of lists, each sublist representing a bin of roughly constant size.
         """
-        items = self._get_item_sizes(root_path)
+        items = self._get_item_sizes(root_paths)
         return self._chunk_items(items, chunk_size)
 
     @staticmethod
@@ -31,21 +31,23 @@ class Chunker:
             result.append(list(item.keys()))
         return result
 
-    def _get_item_sizes(self, root_path):
+    def _get_item_sizes(self, root_paths):
         """
         Get the size of each item in the root path directory.
-        :param root_path: The directory to scan.
+        :param root_paths: The directory to scan.
         :return: A dictionary of items in the directory in the format {filepath: size in bytes}
         """
         size_dict = {}
-        items = os.scandir(root_path)
-        for item in items:
-            item_size = 0
-            if item.is_file():
-                item_size = os.path.getsize(item.path)
-            elif item.is_dir():
-                item_size = self._get_dir_size(item.path)
-            size_dict[item.path] = item_size
+        for path in root_paths:
+            items = os.scandir(path)
+            for item in items:
+                # item_path = Path(item.path)
+                item_size = 0
+                if item.is_file():
+                    item_size = os.path.getsize(item.path)
+                elif item.is_dir():
+                    item_size = self._get_dir_size(item.path)
+                size_dict[item.path] = item_size
         return size_dict
 
     @staticmethod

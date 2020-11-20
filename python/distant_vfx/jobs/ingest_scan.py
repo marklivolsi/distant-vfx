@@ -4,10 +4,9 @@ import logging.config
 import sys
 
 from . import edl_lowercase_loc
-from ..filemaker import FMCloudInstance
 
 # Configure logging.
-from ..constants import LOG_SETTINGS
+from python.distant_vfx.constants import LOG_SETTINGS
 logging.config.dictConfig(LOG_SETTINGS)
 LOG = logging.getLogger(__name__)
 

@@ -38,6 +38,8 @@ def main(root_path):
     path = os.path.join(root_path, full_pkg_name)
     os.mkdir(path)
 
+    return path
+
 
 if __name__ == '__main__':
     main(sys.argv[1])
