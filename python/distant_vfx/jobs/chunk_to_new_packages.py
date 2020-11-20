@@ -21,7 +21,11 @@ def main(dest_dir, *paths):
             print(f'Copying chunk: {chunk}')
             for item in chunk:
                 cmd = ['cp', '-r', item, new_package_path]
-                subprocess.call(cmd, shell=False)
+                result = subprocess.run(cmd,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE,
+                                        universal_newlines=True,
+                                        shell=False)
 
 
 if __name__ == '__main__':
