@@ -2,6 +2,7 @@ from python.distant_vfx.jobs import chunk_to_new_packages
 import sys
 
 
+# A quick entry point for any distant vfx job routine.
 def main():
     chunk_to_new_packages.main(sys.argv[1], sys.argv[2:])
 
