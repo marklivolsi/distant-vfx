@@ -4,15 +4,15 @@ import subprocess
 from . import new_package
 
 
-# Chunk out files in the provided *paths to roughly equal sized new vendor delivery packages
-def main(dest_dir, *paths):
+# Chunk out files in the provided paths to roughly equal sized new vendor delivery packages
+def main(dest_dir, paths):
 
     # The target size for each new package (will get as close as possible without breaking up subfolders)
     chunk_size = 16106127360  # 15 GB
 
     # Split into relatively constant volume bins (list of lists)
     chunker = Chunker()
-    chunks = chunker.chunk(*paths, chunk_size=chunk_size)
+    chunks = chunker.chunk(paths, chunk_size=chunk_size)
 
     # Create a new package for each chunk and copy the files.
     for chunk in chunks:

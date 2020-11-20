@@ -134,3 +134,4 @@ mltest.py
 log
 config.yml
 venv3.6
+.DS_Store
