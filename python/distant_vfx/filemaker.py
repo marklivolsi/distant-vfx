@@ -175,7 +175,7 @@ class FMCloudInstance:
             data['limit'] = limit
 
         # Convert request data to json and perform the request.
-        request_json = json.dumps(data)
+        request_json = json.dumps(data, default=self._set_default)
         response = requests.post(url, headers=headers, data=request_json)
 
         # If successful, extract and return the list of record data.
@@ -199,3 +199,9 @@ class FMCloudInstance:
         user.authenticate(self.password)
         self._fmid_token = user.id_token
         self._refresh_token = user.refresh_token
+
+    @staticmethod
+    def _set_default(obj):
+        if isinstance(obj, set):
+            return list(obj)
+        raise TypeError
