@@ -1,6 +1,7 @@
 import sys
-from python.distant_vfx.filesystem import Chunker
 import subprocess
+
+from ..filesystem import Chunker
 from . import new_package
 
 

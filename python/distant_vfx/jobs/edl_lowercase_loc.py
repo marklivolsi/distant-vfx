@@ -4,7 +4,7 @@ import logging.config
 import os
 import sys
 
-from python.distant_vfx.parsers import EDLParser
+from ..parsers import EDLParser
 
 # Configure logging.
 from python.distant_vfx.constants import LOG_SETTINGS
