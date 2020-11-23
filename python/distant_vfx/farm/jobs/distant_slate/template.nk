@@ -1,0 +1,154 @@
+BackdropNode {
+ inputs 0
+ name BackdropNode9
+ tile_color 0x444666ff
+ label "Overlays\n"
+ selected true
+ xpos -322
+ ypos -226
+ bdwidth 181
+ bdheight 135
+ z_order 3
+}
+Read {
+ inputs 0
+ file_type exr
+ file "\[argv 0]"
+ format "1920 1080 0 0 1920 1080 1 HD_1080"
+ first {{"\[argv 2]"}}
+ last {{"\[argv 3]"}}
+ origfirst {{"\[argv 2]"}}
+ origlast {{"\[argv 3]"}}
+ origset true
+ name Plate
+ selected true
+ xpos -272
+ ypos -348
+}
+Text {
+ message "Width: \[argv 4]"
+ font /usr/share/fonts/open-sans/OpenSans-Regular.ttf
+ xjustify center
+ yjustify center
+ Transform 1
+ box {{"width * 0.25"} {"(height * 0.25)"} {"width - (width * 0.25)"} {"height - (height *0.25)"}}
+ center {2048 1080}
+ color {1 0.1 0.1 1}
+ name Width
+ size 25
+ selected true
+ xpos -26
+ ypos -312
+ disable true
+}
+Text {
+ message "Height: \[argv 5]"
+ font /usr/share/fonts/open-sans/OpenSans-Regular.ttf
+ xjustify center
+ yjustify center
+ Transform 1
+ box {{"width * 0.25"} {"(height * 0.2)"} {"width - (width * 0.25)"} {"height - (height *0.3)"}}
+ center {2048 1080}
+ color {1 0.1 0.1 1}
+ name Height
+ size 25
+ selected true
+ xpos -26
+ ypos -191
+ disable true
+}
+Text {
+ message "\[if \{ \[catch \{expr \[argv 6]\} ]\} \{set output \[argv 6]\} \{set output \[expr \[argv 6]]\}]"
+ font /usr/share/fonts/open-sans/OpenSans-Regular.ttf
+ yjustify top
+ Transform 1
+ box {{"(width * 0.02)"} {"height - (height * 0.1) "} {"width/2 - (width * 0.02)"} {"height - (height *0.02)"}}
+ center {2048 1080}
+ name TopLeft
+ size 25
+ selected true
+ xpos -272
+ ypos -191
+}
+Text {
+ message "\[if \{ \[catch \{expr \[argv 7]\} ]\} \{set output \[argv 7]\} \{set output \[expr \[argv 7]]\}]"
+ font /usr/share/fonts/open-sans/OpenSans-Regular.ttf
+ xjustify right
+ yjustify top
+ Transform 1
+ box {{"width/2 + (width * 0.02)"} {"height - (height * 0.1) "} {"width - (width * 0.02)"} {"height - (height *0.02)"}}
+ center {2048 1080}
+ name TopRight
+ size 25
+ selected true
+ xpos -272
+ ypos -167
+}
+Text {
+ message "\[if \{ \[catch \{expr \[argv 8]\} ]\} \{set output \[argv 8]\} \{set output \[expr \[argv 8]]\}]"
+ font /usr/share/fonts/open-sans/OpenSans-Regular.ttf
+ yjustify bottom
+ Transform 1
+ box {{"(width * 0.02)"} {"height * 0.02"} {"width/2 - (width * 0.02)"} {"(height *0.1) "}}
+ center {2048 1080}
+ name BottomLeft
+ size 25
+ selected true
+ xpos -272
+ ypos -143
+}
+Text {
+ message "\[if \{ \[catch \{expr \[argv 9]\} ]\} \{set output \[argv 9]\} \{set output \[expr \[argv 9]]\}]"
+ font /usr/share/fonts/open-sans/OpenSans-Regular.ttf
+ xjustify right
+ yjustify bottom
+ Transform 1
+ box {{"width/2 + (width * 0.02)"} {"height * 0.02"} {"width - (width * 0.02)"} {"(height *0.1) "}}
+ center {2048 1080}
+ name BottomRight
+ size 25
+ selected true
+ xpos -272
+ ypos -119
+}
+Reformat {
+ type "to box"
+ box_width {{"\[argv 4]"}}
+ box_height {{"\[argv 5]"}}
+ box_fixed true
+ resize fit
+ black_outside true
+ name Reformat
+ selected true
+ xpos -272
+ ypos -95
+}
+set Na028a400 [stack 0]
+Dot {
+ name Dot10
+ selected true
+ xpos -238
+ ypos 52
+}
+Write {
+ file "\[argv 1]"
+ colorspace sRGB
+ file_type mov
+ mov64_format "mov (QuickTime / MOV)"
+ mov64_codec AVdn
+ mov64_dnxhd_codec_profile "DNxHD 422 8-bit 36Mbit"
+ mov64_pixel_format {{0} "yuv420p\tYCbCr 4:2:0 8-bit"}
+ mov64_quality High
+ mov64_advanced 1
+ mov64_bitrate 20000
+ mov64_bitrate_tolerance 40000000
+ mov64_quality_min 2
+ mov64_quality_max 31
+ mov64_gop_size 12
+ mov64_b_frames 0
+ checkHashOnRead false
+ name Write
+ selected true
+ xpos -272
+ ypos 102
+}
