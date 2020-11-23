@@ -14,7 +14,8 @@ def main(versions_dict_list, filename_dict_list, package_dict):
                                                 'DeliveryNote': <subNote> }
 
     :param filename_dict_list: A list of filename dicts containing filename data. Format each dict like:
-                               filename_dict = { 'Filename': <filename> }
+                               filename_dict = { 'Filename': <filename>,
+                                                 'Path': <sorted_file_path> }
     :param package_dict: A single dictionary describing the package data. Format like:
                          package_dict = { 'package': <package_name>,
                                           'path': <package_path> }
