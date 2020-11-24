@@ -187,6 +187,37 @@ class FMCloudInstance:
             pass
             # TODO: Notify user of invalid http response.
 
+    def upload_container_data(self, layout, record_id, field_name, filepath):
+        """
+        Upload a file to a container field in the specified record.
+        :param layout: The layout to access.
+        :param record_id: The ID of the record (use get_record method to get the ID).
+        :param field_name: The name of the container field to upload to.
+        :param filepath: The path of the file to upload.
+        :return: The response in JSON format.
+        """
+
+        # Set headers and url.
+        headers = {
+            'Authorization': f'Bearer {self._bearer_token}'
+        }
+        url = self.host_url + f'/fmi/data/{self.api_version}/databases/{self.database}/layouts/{layout}/records/' \
+                              f'{record_id}/containers/{field_name}/1'
+
+        # Open the file in binary mode and set the request dict
+        file = open(filepath, 'rb')
+        container_data = {'upload': file}
+
+        # Perform the api call and close the open file
+        response = requests.post(url, headers=headers, files=container_data)
+        file.close()
+
+        if response.ok:
+            response_json = response.json()
+            return response_json
+        else:
+            pass
+
     def _get_fmid_token(self):
         """
         Obtain a FMID token from Amazon Cognito, necessary for authenticating FileMaker Cloud Data API login requests.
