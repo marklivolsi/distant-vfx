@@ -6,7 +6,7 @@ from . import new_package
 
 
 # Chunk out files in the provided paths to roughly equal sized new vendor delivery packages
-def main(dest_dir, paths):
+def main(dest_dir, paths, should_move=False):
 
     # The target size for each new package (will get as close as possible without breaking up subfolders)
     chunk_size = 16106127360  # 15 GB
@@ -17,12 +17,15 @@ def main(dest_dir, paths):
     chunks = chunker.chunk(paths, chunk_size=chunk_size)
 
     # Create a new package for each chunk and copy the files.
-    for chunk in chunks:
+    for index, chunk in enumerate(chunks):
         if chunk:
             new_package_path = new_package.main(dest_dir)
-            print('Copying chunk to path {} (chunk {})'.format(new_package_path, chunk))
+            print('Copying chunk {} of {} to path {} (chunk {})'.format(index + 1, len(chunks), new_package_path, chunk))
             for item in chunk:
-                cmd = ['cp', '-r', item, new_package_path]
+                if not should_move:
+                    cmd = ['cp', '-r', item, new_package_path]
+                else:
+                    cmd = ['mv', item, new_package_path]
                 result = subprocess.run(cmd,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE,
