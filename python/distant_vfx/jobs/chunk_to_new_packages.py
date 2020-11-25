@@ -10,6 +10,7 @@ def main(dest_dir, paths):
 
     # The target size for each new package (will get as close as possible without breaking up subfolders)
     chunk_size = 16106127360  # 15 GB
+    print('Target chunk size is {} bytes.'.format(chunk_size))
 
     # Split into relatively constant volume bins (list of lists)
     chunker = Chunker()
