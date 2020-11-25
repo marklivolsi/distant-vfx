@@ -19,7 +19,7 @@ def main(dest_dir, paths):
     for chunk in chunks:
         if chunk:
             new_package_path = new_package.main(dest_dir)
-            print(f'Copying chunk: {chunk}')
+            print('Copying chunk to path {} (chunk {})'.format(new_package_path, chunk))
             for item in chunk:
                 cmd = ['cp', '-r', item, new_package_path]
                 result = subprocess.run(cmd,

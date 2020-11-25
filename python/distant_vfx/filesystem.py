@@ -14,6 +14,7 @@ class Chunker:
         :param chunk_size: The target size (bytes) for each bin.
         :return: A list of lists, each sublist representing a bin of roughly constant size.
         """
+        print('Chunking paths to size {} (paths {})'.format(chunk_size, root_paths))
         items = self._get_item_sizes(root_paths)
         return self._chunk_items(items, chunk_size)
 
@@ -26,6 +27,7 @@ class Chunker:
         :return: A list of lists, each sublist representing a bin of roughly constant size.
         """
         result = []
+        print('Packing bins...')
         bins = binpacking.to_constant_volume(items, chunk_size)
         for item in bins:
             result.append(list(item.keys()))
@@ -39,15 +41,17 @@ class Chunker:
         """
         size_dict = {}
         for path in root_paths:
+            print('Scanning path: {}'.format(path))
             items = os.scandir(path)
             for item in items:
-                # item_path = Path(item.path)
                 item_size = 0
+                print('Getting item size: {} '.format(item.path))
                 if item.is_file():
                     item_size = os.path.getsize(item.path)
                 elif item.is_dir():
                     item_size = self._get_dir_size(item.path)
                 size_dict[item.path] = item_size
+                print('Item size is {}'.format(item_size))
         return size_dict
 
     @staticmethod

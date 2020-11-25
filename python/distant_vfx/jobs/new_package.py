@@ -45,7 +45,7 @@ def main(root_path):
 
     # Create the new package directory
     path = os.path.join(root_path, full_pkg_name)
-    print(f'Creating new package directory: {path}')
+    print('Creating new package directory: {}'.format(path))
     os.mkdir(path)
 
     return path
