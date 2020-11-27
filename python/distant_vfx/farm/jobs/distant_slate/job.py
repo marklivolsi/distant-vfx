@@ -16,6 +16,8 @@ class DistantSlateFarmJob(nuke_quicktime_render.NukeQuickTimeRenderFarmJob):
     ):
         if "nukescript_path" not in kwargs:
             kwargs["nukescript_path"] = self.NUKESCRIPT_PATH
+        if "first_frame" in kwargs:
+            kwargs["first_frame"] = kwargs.get("first_frame") - 1
 
         super(DistantSlateFarmJob, self).__init__(**kwargs)
 
