@@ -17,16 +17,29 @@ TYPE_MAP = {
     'hdriMPC': 'hdri',
     'refMPC': 'ref',
     'witMPC': 'wit',
-    'movMPC': 'mov'
+    'movMPC': 'mov',
+    'slateMPC': 'slate'
 }
 
 
 # Get the type of the item based on the name (e.g. asset, slate)
-def get_type(item_name):
+def get_type(item_type, item_name):
+
+    if item_type == 'slate':
+        return 'slate'
+
     for prefix in ASSET_PREFIXES:
         if item_name.lower().startswith(prefix):
             return 'asset'
-    return 'slate'
+
+    num_alphas = sum(c.isalpha() for c in item_name)
+    num_digits = sum(c.isdigit() for c in item_name)
+
+    if num_alphas <= 4 and num_digits <= 4:
+        return 'slate'
+
+    else:
+        return None
 
 
 def main(pkg_path):
@@ -55,9 +68,9 @@ def main(pkg_path):
         # TODO: Do we want to use exiftool to rename folders at this point?
 
         # Get the destination path based on item type
-        if get_type(item_name) == 'asset':
+        if get_type(item_type_fmt, item_name) == 'asset':
             dest_path = os.path.join(ASSETS_BASE_PATH, item_name, item_type_fmt)
-        elif get_type(item_name) == 'slate':
+        elif get_type(item_type_fmt, item_name) == 'slate':
             dest_path = os.path.join(SLATES_BASE_PATH, item_name, item_type_fmt)
         else:
 
