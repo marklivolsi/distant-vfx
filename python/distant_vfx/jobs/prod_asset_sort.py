@@ -7,7 +7,7 @@ ASSETS_BASE_PATH = '/mnt/Projects/dst/production/assets'
 SLATES_BASE_PATH = '/mnt/Projects/dst/production/assets/refSlates'  # TODO: may need to change this
 # SLATES_BASE_PATH = '/Users/marklivolsi/Desktop/out/refSlates'  # For testing
 
-MANUAL_SORT_BASE_PATH = '/mnt/Projects/dst/production/manualSort'  # TODO: Add this
+MANUAL_SORT_BASE_PATH = '/mnt/Projects/dst/production/zManualSort'  # TODO: Add this
 # MANUAL_SORT_BASE_PATH = '/Users/marklivolsi/Desktop/out/manualSort'  # For testing
 
 
@@ -124,7 +124,7 @@ def main(pkg_path):
 
         # Execute the move
         cmd = ['mv', src_path, dest_path]
-        print('Moving item {} to destination: {}'.format(item_name, dest_path))
+        print('Moving item {} to destination: {}'.format(item, dest_path))
         result = subprocess.run(cmd,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
