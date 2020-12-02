@@ -7,6 +7,10 @@ EDIT_VENDOR_NAME = "edt"
 INTERNAL_MAILBOX_TEMPLATE = "{direction}_{vendor}"
 MAILBOX_PACKAGE_NAME_TEMPLATE_BASE = "{vendor}_{source_vendor}_{date}_%s"
 
+def directory_is_larger_than(directory, maxsize):
+    # Not implemented
+    return False
+
 
 def _build_internal_mailbox_name(direction="to", vendor=None):
     if direction not in ("to", "from"):
