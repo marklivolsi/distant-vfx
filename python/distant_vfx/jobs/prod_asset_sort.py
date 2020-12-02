@@ -22,7 +22,7 @@ TYPE_MAP = {
 }
 
 
-# Get the type of the item based on the name (e.g. asset, slate)
+# Get the type of the item based on the name (e.g. asset, slate). Assumes 'tree' is installed.
 def get_type(item_type, item_name):
 
     if item_type == 'slate':
@@ -44,12 +44,27 @@ def get_type(item_type, item_name):
 
 def main(pkg_path):
 
+    # Generate a log file of the package contents prior to sorting
+    log_file = os.path.basename(pkg_path) + '_log.txt'
+    log_path = os.path.join(pkg_path, log_file)
+    cmd = ['tree', pkg_path, '-o', log_path]
+    result = subprocess.run(cmd,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            universal_newlines=True,
+                            shell=False)
+
     # Iterate through the provided package
+    print('Scanning path: {}\n'.format(pkg_path))
     for item in os.listdir(pkg_path):
 
-        # Get the full path of the package
+        # Skip over the log file
+        if item == log_file:
+            continue
+
+        # Get the full path of the item
         src_path = os.path.join(pkg_path, item)
-        print('Scanning path: {}\n'.format(src_path))
+        print('Found item: {}\n'.format(item))
 
         # Get the item type and asset / slate name
         item_split = item.split('_')
@@ -65,7 +80,7 @@ def main(pkg_path):
         # Set a manual sort flag
         manual_sort = False
 
-        # TODO: Do we want to use exiftool to rename folders at this point?
+        # TODO: Do we want to use exiftool to rename folders?
 
         # Get the destination path based on item type
         if get_type(item_type_fmt, item_name) == 'asset':
