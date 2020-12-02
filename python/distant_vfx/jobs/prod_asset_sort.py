@@ -2,8 +2,14 @@ import os
 import subprocess
 
 ASSETS_BASE_PATH = '/mnt/Projects/dst/production/assets'
+# ASSETS_BASE_PATH = '/Users/marklivolsi/Desktop/out/assets'
+
 SLATES_BASE_PATH = '/mnt/Projects/dst/production/refslates'  # TODO: may need to change this
-MANUAL_SORT_BASE_PATH = ''  # TODO: Add this
+# SLATES_BASE_PATH = '/Users/marklivolsi/Desktop/out/refSlates'  # TODO: may need to change this
+
+MANUAL_SORT_BASE_PATH = '/mnt/Projects/dst/production/manualSort'  # TODO: Add this
+# MANUAL_SORT_BASE_PATH = '/Users/marklivolsi/Desktop/out/manualSort'  # TODO: Add this
+
 
 ASSET_PREFIXES = ['char', 'dd', 'env', 'prop', 'prp', 'vhcl', 'ext']
 
@@ -55,16 +61,16 @@ def main(pkg_path):
                             shell=False)
 
     # Iterate through the provided package
-    print('Scanning path: {}\n'.format(pkg_path))
+    print('Scanning path: {}'.format(pkg_path))
     for item in os.listdir(pkg_path):
 
         # Skip over the log file
-        if item == log_file:
+        if item == log_file or item == '.DS_Store':
             continue
 
         # Get the full path of the item
         src_path = os.path.join(pkg_path, item)
-        print('Found item: {}\n'.format(item))
+        print('Found item: {}'.format(item))
 
         # Get the item type and asset / slate name
         item_split = item.split('_')
@@ -102,15 +108,16 @@ def main(pkg_path):
         dest_item_exists = os.path.exists(dest_item)
         if dest_item_exists and not manual_sort:
             dest_path = MANUAL_SORT_BASE_PATH
+            print('Item {} already exists at sort destination. Moving to manual sort path.'.format(item))
 
         # If the item is not sortable and already exists at the manual sort path, flag it but don't move it.
         elif dest_item_exists and manual_sort:
-            print('Cannot sort item {} (already exists at manual sort path) {}\n'.format(item_name,
-                                                                                         MANUAL_SORT_BASE_PATH))
+            print('Cannot sort item {} (already exists at manual sort path) {}'.format(item_name,
+                                                                                       MANUAL_SORT_BASE_PATH))
 
         # Execute the move
         cmd = ['mv', src_path, dest_path]
-        print('Moving item {} to destination: {}\n'.format(item_name, dest_path))
+        print('Moving item {} to destination: {}'.format(item_name, dest_path))
         result = subprocess.run(cmd,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
