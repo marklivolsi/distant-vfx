@@ -31,6 +31,9 @@ TYPE_MAP = {
 # Get the type of the item based on the name (e.g. asset, slate). Assumes 'tree' is installed.
 def get_type(item_type, item_name):
 
+    if item_type is None or item_name is None:
+        return None
+
     if item_type == 'slate':
         return 'slate'
 
@@ -54,6 +57,7 @@ def main(pkg_path):
     log_file = os.path.basename(pkg_path) + '_log.txt'
     log_path = os.path.join(pkg_path, log_file)
     cmd = ['tree', pkg_path, '-o', log_path]
+    print('Creating log file for path: {}'.format(pkg_path))
     result = subprocess.run(cmd,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
@@ -61,7 +65,6 @@ def main(pkg_path):
                             shell=False)
 
     # Iterate through the provided package
-    print('Scanning path: {}'.format(pkg_path))
     for item in os.listdir(pkg_path):
 
         # Skip over the log file
@@ -72,19 +75,23 @@ def main(pkg_path):
         src_path = os.path.join(pkg_path, item)
         print('Found item: {}'.format(item))
 
+        # Set a manual sort flag
+        manual_sort = False
+
         # Get the item type and asset / slate name
-        item_split = item.split('_')
-        item_type = item_split[0]
-        item_name = item_split[1]
+        try:
+            item_split = item.split('_')
+            item_type = item_split[0]
+            item_name = item_split[1]
+        except IndexError:
+            item_type = None
+            item_name = None
 
         # Standardize the item type
         if item_type in TYPE_MAP:
             item_type_fmt = TYPE_MAP[item_type]
         else:
             item_type_fmt = item_type
-
-        # Set a manual sort flag
-        manual_sort = False
 
         # TODO: Do we want to use exiftool to rename folders?
 
