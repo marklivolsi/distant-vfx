@@ -1,4 +1,3 @@
-from pathlib import Path
 from dateutil.parser import parse
 import subprocess
 import os
@@ -24,12 +23,13 @@ def main(paths):
 
                 # Use exiftool to get the image metadata
                 cmd = ['exiftool', '-json', cr2_path]
-                result = subprocess.run(cmd,
+                process = subprocess.Popen(cmd,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE,
                                         universal_newlines=True,
                                         shell=False)
-                exif_data = result.stdout
+                stdout, _ = process.communicate()
+                exif_data = stdout
                 exif_json = json.loads(exif_data)[0]
 
                 # Extract the created datetime and format it
@@ -44,6 +44,6 @@ def main(paths):
 
                 # Rename the cr2 parent dir, appending the created datetime
                 if date_time_fmt is not None:
-                    parent_dir = Path(cr2_path).parent
+                    parent_dir = os.path.dirname(cr2_path)
                     new_parent_dir_path = parent_dir.parent / (parent_dir.name + '_' + date_time_fmt)
                     os.rename(parent_dir, new_parent_dir_path)

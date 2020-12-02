@@ -12,6 +12,12 @@ logging.config.dictConfig(LOG_SETTINGS)
 LOG = logging.getLogger(__name__)
 
 
+def scandir(path):
+    for root, dirs, files in os.walk(path):
+        for file_ in files:
+            yield file_
+
+
 def main(path):
 
     # If path is a file and is an edl, rewrite all *LOC lines to lowercase.
@@ -25,7 +31,7 @@ def main(path):
 
         # If running Python 3.5+, os.scandir can be used.
         if sys.version_info[0] == 3 and sys.version_info[1] >= 5:
-            edls = [item.path for item in os.scandir(path) if item.is_file() and os.path.splitext(item.path)[1] == '.edl']
+            edls = [item for item in scandir(path) if os.path.isfile(item) and os.path.splitext(item)[1] == '.edl']
 
         # For earlier Python installations, use os.listdir
         else:

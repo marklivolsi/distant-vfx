@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import logging.config
 import os
@@ -12,6 +12,12 @@ from ..parsers import ALEParser
 from ..constants import LOG_SETTINGS
 logging.config.dictConfig(LOG_SETTINGS)
 LOG = logging.getLogger(__name__)
+
+
+def scandir(path):
+    for root, dirs, files in os.walk(path):
+        for file_ in files:
+            yield file_
 
 
 def main():
@@ -34,7 +40,7 @@ def main():
 
     # If a directory, scan for any ALE files (.ale or .txt file extension).
     elif os.path.isdir(path):
-        file_paths = [f.path for f in os.scandir(path) if f.is_file() and os.path.splitext(f.path)[1] in ale_ext]
+        file_paths = [f for f in scandir(path) if os.path.isfile(f) and os.path.splitext(f)[1] in ale_ext]
 
         # Parse data from each found ALE file.
         handlers = []
