@@ -5,9 +5,8 @@ import time
 from ..filemaker import FMCloudInstance
 from ..video import VideoProcessor
 
-# TODO: Get from env variable
-SG_SCRIPT_NAME = ''
-SG_SCRIPT_KEY = ''
+SG_SCRIPT_NAME = os.environ['SG_VERSION_INJECT_NAME']
+SG_SCRIPT_KEY = os.environ['SG_VERSION_INJECT_KEY']
 
 FMP_URL = os.environ['FMP_URL']
 FMP_USERNAME = os.environ['FMP_USERNAME']
@@ -194,7 +193,6 @@ def inject_versions(sg, logger, event, args):
         # TODO: Kick off FMP script to generate sub-images
 
 
-
 def _get_thumbnail(path_to_movie):
 
     # Get the thumbnail output path
@@ -211,7 +209,7 @@ def _get_thumbnail(path_to_movie):
 
 def _get_vendor(event_description):
     ih_phrase = 'to "ihapp" on Version'
-    ext_phrase = 'to "extapp" on Version'  # TODO: Set mrx / ext vendor phrase to listen for
+    ext_phrase = 'to "extapp" on Version'
     if ih_phrase in event_description:
         return 'ih'
     elif ext_phrase in event_description:
