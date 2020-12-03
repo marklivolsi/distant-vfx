@@ -26,11 +26,12 @@ def main(dest_dir, paths, should_move=False):
                     cmd = ['cp', '-r', item, new_package_path]
                 else:
                     cmd = ['mv', item, new_package_path]
-                result = subprocess.run(cmd,
+                process = subprocess.Popen(cmd,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE,
                                         universal_newlines=True,
                                         shell=False)
+                _, _ = process.communicate()
 
 
 if __name__ == '__main__':

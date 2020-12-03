@@ -58,11 +58,12 @@ def main(pkg_path):
     log_path = os.path.join(pkg_path, log_file)
     cmd = ['tree', pkg_path, '-o', log_path]
     print('Creating log file for path: {}'.format(pkg_path))
-    result = subprocess.run(cmd,
+    process = subprocess.Popen(cmd,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
                             universal_newlines=True,
                             shell=False)
+    _, _ = process.communicate()
 
     # Iterate through the provided package
     for item in os.listdir(pkg_path):
@@ -125,14 +126,15 @@ def main(pkg_path):
         # Execute the move
         cmd = ['mv', src_path, dest_path]
         print('Moving item {} to destination: {}'.format(item, dest_path))
-        result = subprocess.run(cmd,
+        process = subprocess.Popen(cmd,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
                                 universal_newlines=True,
                                 shell=False)
+        stdout, stderr = process.communicate()
 
         # Print any output / errors to terminal
-        if result.stdout:
-            print(result.stdout)
-        if result.stderr:
-            print(result.stderr)
+        if stdout:
+            print(stdout)
+        if stderr:
+            print(stderr)

@@ -1,4 +1,5 @@
 import os
+import sys
 import binpacking
 
 
@@ -33,6 +34,10 @@ class Chunker:
             result.append(list(item.keys()))
         return result
 
+    def _scandir(self, path):
+        for filename in os.listdir(path):
+            yield os.path.join(path, filename)
+
     def _get_item_sizes(self, root_paths):
         """
         Get the size of each item in the root path directory.
@@ -42,15 +47,15 @@ class Chunker:
         size_dict = {}
         for path in root_paths:
             print('Scanning path: {}'.format(path))
-            items = os.scandir(path)
+            items = self._scandir(path)
             for item in items:
                 item_size = 0
-                print('Getting item size: {} '.format(item.path))
-                if item.is_file():
-                    item_size = os.path.getsize(item.path)
-                elif item.is_dir():
-                    item_size = self._get_dir_size(item.path)
-                size_dict[item.path] = item_size
+                print('Getting item size: {} '.format(item))
+                if os.path.isfile(item):
+                    item_size = os.path.getsize(item)
+                elif os.path.isdir(item):
+                    item_size = self._get_dir_size(item)
+                size_dict[item] = item_size
                 print('Item size is {}'.format(item_size))
         return size_dict
 

@@ -22,7 +22,7 @@ class ShotgunInstance:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.session.close()
         if exc_type:
-            LOG.error(f'{exc_type}: {exc_val}')
+            LOG.error('{exc_type}: {exc_val}'.format(exc_type=exc_type, exc_val=exc_val))
 
     def connect(self):
         """
@@ -69,12 +69,12 @@ class ShotgunInstance:
 
         # If additional data is provided, merge into the original data dict. Note this will override any duplicate keys.
         if other_data is not None:
-            data = {**data, **other_data}
+            data.update(other_data)
 
         # Create the shot and return the new shot data.
         new_shot = self.session.create('Shot', data)
         if new_shot is None:
-            LOG.error(f'Create new shot {shot_code} failed.')
+            LOG.error('Create new shot {shot_code} failed.'.format(shot_code=shot_code))
         return new_shot
 
     def find_shot(self, shot_code):
@@ -95,7 +95,7 @@ class ShotgunInstance:
         # Look for a matching shot. Will only return one result, if a match is found.
         shot_data = self.session.find_one('Shot', filters, fields)
         if shot_data is None:
-            LOG.error(f'Could not find Shotgun data for shot {shot_code}.')
+            LOG.error('Could not find Shotgun data for shot {shot_code}.'.format(shot_code=shot_code))
         return shot_data
 
     def update_shot(self, shot_code, data):
@@ -111,7 +111,7 @@ class ShotgunInstance:
             updated_shot = self.session.update('Shot', shot_id, data)
             return updated_shot
         else:
-            LOG.error(f'Could not update data for shot {shot_code}.')
+            LOG.error('Could not update data for shot {shot_code}.'.format(shot_code=shot_code))
 
     def update_shot_status(self, shot_code, status):
         """
@@ -142,12 +142,12 @@ class ShotgunInstance:
 
         # If additional data is provided, merge into the original data dict. Note this will override any duplicate keys.
         if other_data is not None:
-            data = {**data, **other_data}
+            data.update(other_data)
 
         # Create the sequence and return the new sequence data.
         new_seq = self.session.create('Sequence', data)
         if new_seq is None:
-            LOG.error(f'Create new sequence {seq_code} failed.')
+            LOG.error('Create new sequence {seq_code} failed.'.format(seq_code=seq_code))
         return new_seq
 
     def get_sequence_id(self, seq_code):
@@ -178,7 +178,7 @@ class ShotgunInstance:
         # Look for a matching sequence. Will only return one result, if a match is found.
         seq_data = self.session.find_one('Sequence', filters, fields)
         if seq_data is None:
-            LOG.error(f'Could not find Shotgun data for sequence {seq_code}.')
+            LOG.error('Could not find Shotgun data for sequence {seq_code}.'.format(seq_code=seq_code))
         return seq_data
 
     @staticmethod

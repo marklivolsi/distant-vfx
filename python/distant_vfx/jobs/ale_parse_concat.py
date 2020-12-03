@@ -14,6 +14,11 @@ logging.config.dictConfig(LOG_SETTINGS)
 LOG = logging.getLogger(__name__)
 
 
+def scandir(path):
+    for filename in os.listdir(path):
+        yield os.path.join(path, filename)
+
+
 def main():
     # Set the path of the output .xlsx file to the desktop.
     desktop = os.path.normpath(os.path.expanduser("~/Desktop"))
@@ -34,7 +39,7 @@ def main():
 
     # If a directory, scan for any ALE files (.ale or .txt file extension).
     elif os.path.isdir(path):
-        file_paths = [f.path for f in os.scandir(path) if f.is_file() and os.path.splitext(f.path)[1] in ale_ext]
+        file_paths = [f for f in scandir(path) if os.path.isfile(f) and os.path.splitext(f)[1] in ale_ext]
 
         # Parse data from each found ALE file.
         handlers = []

@@ -47,7 +47,7 @@ class FMCloudInstance:
         # Automatically log out when we leave the context
         self.logout()
         if exc_type:
-            LOG.error(f'{exc_type}: {exc_val}')
+            LOG.error('{exc_type}: {exc_val}'.format(exc_type=exc_type, exc_val=exc_val))
 
     def login(self):
         """
@@ -61,9 +61,11 @@ class FMCloudInstance:
         # Set the url and headers and perform the login api request.
         headers = {
             'Content-Type': 'application/json',
-            'Authorization': f'FMID {self._fmid_token}'
+            'Authorization': 'FMID {fmid_token}'.format(fmid_token=self._fmid_token)
         }
-        url = self.host_url + f'/fmi/data/{self.api_version}/databases/{self.database}/sessions'
+        url = self.host_url + '/fmi/data/{api_version}/databases/{database}/sessions'.format(
+            api_version=self.api_version, database=self.database
+        )
         response = requests.post(url, headers=headers, data='{}')
 
         # Using raise_for_status here since if login fails, we can't do anything else.
@@ -81,7 +83,9 @@ class FMCloudInstance:
 
         # Set headers and url and perform the logout api request.
         headers = {'Content-Type': 'application/json'}
-        url = self.host_url + f'/fmi/data/{self.api_version}/databases/{self.database}/sessions/{self._bearer_token}'
+        url = self.host_url + '/fmi/data/{api_version}/databases/{database}/sessions/{bearer_token}'.format(
+            api_version=self.api_version, database=self.database, bearer_token=self._bearer_token
+        )
         response = requests.delete(url, headers=headers)
 
         # If the response is valid, reset the bearer token.
@@ -103,9 +107,11 @@ class FMCloudInstance:
         # Set headers and url for the request.
         headers = {
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self._bearer_token}'
+            'Authorization': 'Bearer {bearer_token}'.format(bearer_token=self._bearer_token)
         }
-        url = self.host_url + f'/fmi/data/{self.api_version}/databases/{self.database}/layouts/{layout}/records'
+        url = self.host_url + '/fmi/data/{api_version}/databases/{database}/layouts/{layout}/records'.format(
+            api_version=self.api_version, database=self.database, layout=layout
+        )
 
         # Convert new record data to JSON.
         request_json = json.dumps({'fieldData': data})
@@ -131,8 +137,10 @@ class FMCloudInstance:
         """
 
         # Set the headers and url for the request.
-        headers = {'Authorization': f'Bearer {self._bearer_token}'}
-        url = self.host_url + f'/fmi/data/{self.api_version}/databases/{self.database}/layouts/{layout}/records/{record_id}'
+        headers = {'Authorization': 'Bearer {bearer_token}'.format(bearer_token=self._bearer_token)}
+        url = self.host_url + '/fmi/data/{api_version}/databases/{database}/layouts/{layout}/records/{record_id}'.format(
+            api_version=self.api_version, database=self.database, layout=layout, record_id=record_id
+        )
 
         # Perform the api request.
         response = requests.get(url, headers=headers)
@@ -161,9 +169,11 @@ class FMCloudInstance:
         # Set the headers and url.
         headers = {
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self._bearer_token}'
+            'Authorization': 'Bearer {bearer_token}'.format(bearer_token=self._bearer_token)
         }
-        url = self.host_url + f'/fmi/data/{self.api_version}/databases/{self.database}/layouts/{layout}/_find'
+        url = self.host_url + '/fmi/data/{api_version}/databases/{database}/layouts/{layout}/_find'.format(
+            api_version=self.api_version, database=self.database, layout=layout
+        )
 
         # At minimum, query must be provided.
         data = {'query': query}
@@ -199,10 +209,12 @@ class FMCloudInstance:
 
         # Set headers and url.
         headers = {
-            'Authorization': f'Bearer {self._bearer_token}'
+            'Authorization': 'Bearer {bearer_token}'.format(bearer_token=self._bearer_token)
         }
-        url = self.host_url + f'/fmi/data/{self.api_version}/databases/{self.database}/layouts/{layout}/records/' \
-                              f'{record_id}/containers/{field_name}/1'
+        url = self.host_url + ('/fmi/data/{api_version}/databases/{database}/layouts/{layout}/records/' +
+                              '{record_id}/containers/{field_name}/1').format(
+            api_version=self.api_version, database=self.database, layout=layout, record_id=record_id, field_name=field_name
+        )
 
         # Open the file in binary mode and set the request dict
         file = open(filepath, 'rb')

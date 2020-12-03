@@ -1,5 +1,5 @@
 import logging
-from pathlib import Path
+import os
 import pandas as pd
 
 LOG = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ class ALEParser:
     @property
     def ale_name(self):
         if self.ale_path is not None:
-            return Path(self.ale_path).name
+            return os.path.basename(self.ale_path)
 
     @property
     def field_delim(self):
@@ -53,7 +53,7 @@ class ALEParser:
 
     def _read_column_data(self):
         # Reads in the data columns, skipping the header and starting with the 'Name' column.
-        print(f'Reading ALE data for {self.ale_path}')
+        print('Reading ALE data for {ale_path}'.format(ale_path=self.ale_path))
         with open(self.ale_path, 'r') as file:
             position = 0
             current_line = file.readline()
@@ -68,10 +68,17 @@ class ALEParser:
         self.column_data = self.column_data[self.column_data.Name != 'Data']
 
     def _rename_columns(self):
+        def column_replacer(column_name):
+            """
+            :param str column_name:
+            :return: Replaced column name
+            """
+            forbidden_chars = '",+-*/^&=≠><()[]{};:$ '
+            for char in forbidden_chars:
+                column_name = column_name.replace(char, "_")
+            return column_name
         # Replace problematic characters in the headers with _
-        forbidden_chars = '",+-*/^&=≠><()[]{};:$ '
-        translate_table = str.maketrans(forbidden_chars, '_' * len(forbidden_chars))
-        self.column_data.rename(columns=lambda x: x.translate(translate_table), inplace=True)
+        self.column_data.rename(columns=column_replacer, inplace=True)
 
     def _add_header_data_as_columns(self):
         # Append the header data as columns to the dataframe.
@@ -108,7 +115,7 @@ class EDLParser:
         title, fcm, event, events = None, None, None, []
 
         # Read in the lines from the edl
-        with open(edl_path, 'r', encoding='utf-8') as edl:
+        with open(edl_path, 'r') as edl:
             lines = edl.readlines()
 
         for line in lines:

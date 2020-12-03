@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import logging.config
 import os
@@ -10,6 +10,11 @@ from ..parsers import EDLParser
 from python.distant_vfx.constants import LOG_SETTINGS
 logging.config.dictConfig(LOG_SETTINGS)
 LOG = logging.getLogger(__name__)
+
+
+def scandir(path):
+    for filename in os.listdir(path):
+        yield os.path.join(path, filename)
 
 
 def main(path):
@@ -25,7 +30,7 @@ def main(path):
 
         # If running Python 3.5+, os.scandir can be used.
         if sys.version_info[0] == 3 and sys.version_info[1] >= 5:
-            edls = [item.path for item in os.scandir(path) if item.is_file() and os.path.splitext(item.path)[1] == '.edl']
+            edls = [item for item in scandir(path) if os.path.isfile(item) and os.path.splitext(item)[1] == '.edl']
 
         # For earlier Python installations, use os.listdir
         else:
