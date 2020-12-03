@@ -22,10 +22,14 @@ def registerCallbacks(reg):
 
 def inject_ihapp_versions_to_filemaker(sg, logger, event, args):
 
-    match_phrase = 'to "ihapp" on Version'
     description = event.get('description')
+    event_id = event.get('id')
 
+    match_phrase = 'to "ihapp" on Version'
     if match_phrase in description:
+
+        logger.info('Event description: {description} (record ID {id})'
+                    .format(description=description, id=event_id))
 
         # Wait for any additional changes
         time.sleep(1)
@@ -40,7 +44,7 @@ def inject_ihapp_versions_to_filemaker(sg, logger, event, args):
                                                                       'sg_path_to_movie'])
 
         if entity is None:
-            logger.error('Could not find matching {entity_type} entity with ID {entity_id}'
+            logger.error('Could not find matching {entity_type} entity with ID {entity_id}. Cannot inject version.'
                          .format(entity_type=entity_type, entity_id=entity_id))
             return
 
@@ -61,7 +65,7 @@ def inject_ihapp_versions_to_filemaker(sg, logger, event, args):
 
         # Prep version data for injection to filemaker
         versions_layout = 'api_Versions_form'
-        package = 'dst_inh_' + datetime.now().strftime('%Y%m%d')  # TODO: How do we want these IH pkgs named?
+        package = 'dst_ih_' + datetime.now().strftime('%Y%m%d')
         version_dict = {
             'Filename': code,
             'DeliveryPackage': package,
@@ -78,7 +82,9 @@ def inject_ihapp_versions_to_filemaker(sg, logger, event, args):
 
             new_record_id = fmp.new_record(versions_layout, version_dict)
             if new_record_id is None:
-                pass  # Flag this
+                logger.error('Error injection version data (data: {data})'
+                             .format(data=version_dict))
+                return
 
         # Prep transfer log data for injection to filemaker
         database = os.environ['FMP_ADMINDB']
@@ -96,20 +102,26 @@ def inject_ihapp_versions_to_filemaker(sg, logger, event, args):
 
             # First check to see if package exists so we don't create multiple of the same package
             records = fmp.find_records(transfers_layout, query=[package_dict])
+            logger.info('Searching for existing package records (data: {data})'
+                        .format(data=package_dict))
 
             if not records:
                 # Create a new transfer log record
                 record_id = fmp.new_record(transfers_layout, package_dict)
                 record_data = fmp.get_record(transfers_layout, record_id=record_id)
                 primary_key = record_data.get('fieldData').get('PrimaryKey')
+                logger.info('Created new transfer record for {package} (record id {id})'
+                            .format(package=package, id=record_id))
 
             else:
                 primary_key = records[0].get('fieldData').get('PrimaryKey')
+                logger.info('Transfer record for {package} already exists.'
+                            .format(package=package))
 
             # Create transfer data records
             filename_dict['Foriegnkey'] = primary_key
             filename_record_id = fmp.new_record(transfers_data_layout, filename_dict)
 
-
-
-
+            if filename_record_id:
+                logger.info('Created new transfer data record for {filename} (record id {id}).'
+                            .format(filename=uploaded_movie, id=filename_record_id))
