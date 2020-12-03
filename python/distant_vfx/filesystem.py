@@ -35,9 +35,8 @@ class Chunker:
         return result
 
     def _scandir(self, path):
-        for root, dirs, files in os.walk(path):
-            for file_ in files:
-                yield file_
+        for filename in os.listdir(path):
+            yield os.path.join(path, filename)
 
     def _get_item_sizes(self, root_paths):
         """

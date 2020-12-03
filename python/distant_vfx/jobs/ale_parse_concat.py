@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import logging.config
 import os
@@ -15,9 +15,8 @@ LOG = logging.getLogger(__name__)
 
 
 def scandir(path):
-    for root, dirs, files in os.walk(path):
-        for file_ in files:
-            yield file_
+    for filename in os.listdir(path):
+        yield os.path.join(path, filename)
 
 
 def main():

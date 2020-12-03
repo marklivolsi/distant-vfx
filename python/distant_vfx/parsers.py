@@ -69,9 +69,13 @@ class ALEParser:
 
     def _rename_columns(self):
         def column_replacer(column_name):
+            """
+            :param str column_name:
+            :return: Replaced column name
+            """
             forbidden_chars = '",+-*/^&=≠><()[]{};:$ '
             for char in forbidden_chars:
-                column_name.repplace(char, "_")
+                column_name.replace(char, "_")
             return column_name
         # Replace problematic characters in the headers with _
         self.column_data.rename(columns=column_replacer, inplace=True)
