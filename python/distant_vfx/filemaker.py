@@ -212,7 +212,7 @@ class FMCloudInstance:
             'Authorization': 'Bearer {bearer_token}'.format(bearer_token=self._bearer_token)
         }
         url = self.host_url + ('/fmi/data/{api_version}/databases/{database}/layouts/{layout}/records/' +
-                              '{record_id}/containers/{field_name}/1').format(
+                               '{record_id}/containers/{field_name}/1').format(
             api_version=self.api_version, database=self.database, layout=layout, record_id=record_id, field_name=field_name
         )
 
@@ -229,6 +229,26 @@ class FMCloudInstance:
             return response_json
         else:
             pass
+
+    def run_script(self, layout, script, param):
+
+        # Set headers and url.
+        headers = {
+            'Authorization': 'Bearer {bearer_token}'.format(bearer_token=self._bearer_token),
+            'Content-Type': 'application/json'
+        }
+        url = self.host_url + '/fmi/data/{api_version}/databases/{database}/layouts/{layout}/script/{script}'.format(
+            api_version=self.api_version, database=self.database, layout=layout, script=script
+        )
+        params = {'script.param': param}
+
+        # Run the script
+        response = requests.get(url, headers=headers, params=params)
+
+
+
+
+
 
     def _get_fmid_token(self):
         """

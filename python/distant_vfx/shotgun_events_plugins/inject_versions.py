@@ -189,7 +189,12 @@ def inject_versions(sg, logger, event, args):
 
         response = fmp.upload_container_data(FMP_IMAGES_LAYOUT, record_id, 'Image', thumb_path)
 
-        # TODO: Kick off FMP script to generate sub-images
+        # TODO: Kick off FMP script to generate sub-images, need to retrieve primary key from img record
+        record_data = fmp.get_record(layout=FMP_IMAGES_LAYOUT, record_id=record_id)
+        primary_key = record_data.get('fieldData').get('PrimaryKey')
+        script_res = fmp.run_script(layout=FMP_IMAGES_LAYOUT,
+                                    script='process_image_set_on_server',
+                                    param=primary_key)
 
 
 def _get_thumbnail(path_to_movie):
