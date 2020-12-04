@@ -58,7 +58,6 @@ def inject_versions(sg, logger, event, args):
     entity = sg.find_one(entity_type, [['id', 'is', entity_id]], ['code',
                                                                   'description',
                                                                   'published_files',
-                                                                  'sg_uploaded_movie',
                                                                   'sg_path_to_movie',
                                                                   'sg_status_list'])  # TODO: get mrx pkg name
 
@@ -72,9 +71,10 @@ def inject_versions(sg, logger, event, args):
     description = entity.get('description', '')
     code = entity.get('code', '')
     published_files = entity.get('published_files', '')
-    uploaded_movie = entity.get('sg_uploaded_movie', '')
     path_to_movie = entity.get('sg_path_to_movie', '')
     status = entity.get('sg_status_list', '')
+
+    # TODO: Parse exr path.
 
     # Get the package name (varies between ih and ext vendors)
     if vendor == 'ext':
@@ -84,13 +84,12 @@ def inject_versions(sg, logger, event, args):
 
     # Prep version data for injection to filemaker
     version_dict = {
-        'Filename': code,
+        'Filename': code,  # TODO: We might want to use the basename of the movie file instead here
         'DeliveryPackage': package,
         'Status': status,
         'DeliveryNote': description,
         'ShotgunID': entity_id,
         'ShotgunPublishedFiles': published_files,
-        'ShotgunUploadedMovie': uploaded_movie,
         'ShotgunPathToMovie': path_to_movie
     }
 
@@ -100,7 +99,7 @@ def inject_versions(sg, logger, event, args):
         'path': ''  # TODO: Add path to package for mrx packages - what sg field will this be?
     }
     filename_dict = {
-        'Filename': uploaded_movie,
+        'Filename': os.path.basename(path_to_movie),
         'Path': path_to_movie
     }
 
