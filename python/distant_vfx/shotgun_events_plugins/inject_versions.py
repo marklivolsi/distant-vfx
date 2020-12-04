@@ -11,9 +11,7 @@ SG_SCRIPT_KEY = os.environ['SG_VERSION_INJECT_KEY']
 FMP_URL = os.environ['FMP_URL']
 FMP_USERNAME = os.environ['FMP_USERNAME']
 FMP_PASSWORD = os.environ['FMP_PASSWORD']
-FMP_VFXDB = os.environ['FMP_VFXDB']
 FMP_ADMINDB = os.environ['FMP_ADMINDB']
-FMP_IMAGEDB = os.environ['FMP_IMAGEDB']
 FMP_USERPOOL = os.environ['FMP_USERPOOL']
 FMP_CLIENT = os.environ['FMP_CLIENT']
 FMP_VERSIONS_LAYOUT = 'api_Versions_form'
@@ -146,7 +144,7 @@ def inject_versions(sg, logger, event, args):
                         .format(package=package))
 
         # Create transfer data records
-        filename_dict['Foriegnkey'] = transfer_primary_key  # Foriegnkey is intentionally misspelled to match db field name
+        filename_dict['Foriegnkey'] = transfer_primary_key  # Foriegnkey is intentionally misspelled to match db field
         filename_record_id = fmp.new_record(FMP_TRANSFER_DATA_LAYOUT, filename_dict)
 
         if filename_record_id:
@@ -178,7 +176,7 @@ def inject_versions(sg, logger, event, args):
         record_data = fmp.get_record(layout=FMP_IMAGES_LAYOUT, record_id=img_record_id)
         img_primary_key = record_data.get('fieldData').get('PrimaryKey')
         script_res = fmp.run_script(layout=FMP_IMAGES_LAYOUT,
-                                    script='process_image_set_on_server',
+                                    script='call_process_image_set',
                                     param=img_primary_key)
 
 
