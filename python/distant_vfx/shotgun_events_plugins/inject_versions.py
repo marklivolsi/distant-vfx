@@ -111,23 +111,7 @@ def inject_versions(sg, logger, event, args):
         logger.error('Could not generate thumbnail for version {code}. (error: {exc})'
                      .format(code=code, exc=e))
 
-    # Inject new version data into vfx db
-    with FMCloudInstance(host_url=FMP_URL,
-                         username=FMP_USERNAME,
-                         password=FMP_PASSWORD,
-                         database=FMP_VFXDB,
-                         user_pool_id=FMP_USERPOOL,
-                         client_id=FMP_CLIENT) as fmp:
-
-        record_id = fmp.new_record(FMP_VERSIONS_LAYOUT, version_dict)
-        if not record_id:
-            logger.error('Error injecting version data (data: {data})'
-                         .format(data=version_dict))
-            return
-
-        # TODO: Inject version thumbnail
-
-    # Inject transfer log data to admin db
+    # Connect to FMP admin DB and inject data
     with FMCloudInstance(host_url=FMP_URL,
                          username=FMP_USERNAME,
                          password=FMP_PASSWORD,
@@ -135,6 +119,14 @@ def inject_versions(sg, logger, event, args):
                          user_pool_id=FMP_USERPOOL,
                          client_id=FMP_CLIENT) as fmp:
 
+        # Inject new version data into versions table
+        version_record_id = fmp.new_record(FMP_VERSIONS_LAYOUT, version_dict)
+        if not version_record_id:
+            logger.error('Error injecting version data (data: {data})'
+                         .format(data=version_dict))
+            return
+
+        # Inject transfer log data to transfer tables
         # First check to see if package exists so we don't create multiple of the same package
         records = fmp.find_records(FMP_TRANSFER_LOG_LAYOUT, query=[package_dict])
         logger.info('Searching for existing package records (data: {data})'
@@ -142,19 +134,19 @@ def inject_versions(sg, logger, event, args):
 
         if not records:
             # Create a new transfer log record
-            record_id = fmp.new_record(FMP_TRANSFER_LOG_LAYOUT, package_dict)
-            record_data = fmp.get_record(FMP_TRANSFER_LOG_LAYOUT, record_id=record_id)
-            primary_key = record_data.get('fieldData').get('PrimaryKey')
+            transfer_record_id = fmp.new_record(FMP_TRANSFER_LOG_LAYOUT, package_dict)
+            transfer_record_data = fmp.get_record(FMP_TRANSFER_LOG_LAYOUT, record_id=transfer_record_id)
+            transfer_primary_key = transfer_record_data.get('fieldData').get('PrimaryKey')
             logger.info('Created new transfer record for {package} (record id {id})'
-                        .format(package=package, id=record_id))
+                        .format(package=package, id=transfer_record_id))
 
         else:
-            primary_key = records[0].get('fieldData').get('PrimaryKey')
+            transfer_primary_key = records[0].get('fieldData').get('PrimaryKey')
             logger.info('Transfer record for {package} already exists.'
                         .format(package=package))
 
         # Create transfer data records
-        filename_dict['Foriegnkey'] = primary_key  # Foriegnkey is intentionally misspelled to match db field name
+        filename_dict['Foriegnkey'] = transfer_primary_key  # Foriegnkey is intentionally misspelled to match db field name
         filename_record_id = fmp.new_record(FMP_TRANSFER_DATA_LAYOUT, filename_dict)
 
         if filename_record_id:
@@ -164,37 +156,30 @@ def inject_versions(sg, logger, event, args):
             logger.error('Error creating transfer data record for version {version}.'
                          .format(version=code))
 
-    if thumb_path is None:
-        return
+        # If we have a thumbnail, inject to image layout
+        if thumb_path is None:
+            return
 
-    thumb_data = {
-        'Filename': thumb_filename,
-        'Path': thumb_path
-    }
+        thumb_data = {
+            'Filename': thumb_filename,
+            'Path': thumb_path
+        }
 
-    # If we have a thumbnail, inject to image db
-    with FMCloudInstance(host_url=FMP_URL,
-                         username=FMP_USERNAME,
-                         password=FMP_PASSWORD,
-                         database=FMP_IMAGEDB,
-                         user_pool_id=FMP_USERPOOL,
-                         client_id=FMP_CLIENT) as fmp:
+        img_record_id = fmp.new_record(FMP_IMAGES_LAYOUT, thumb_data)
 
-        record_id = fmp.new_record(FMP_IMAGES_LAYOUT, thumb_data)
-
-        if not record_id:
+        if not img_record_id:
             logger.error('Error injecting thumbnail (data: {data})'
                          .format(data=version_dict))
             return
 
-        response = fmp.upload_container_data(FMP_IMAGES_LAYOUT, record_id, 'Image', thumb_path)
+        response = fmp.upload_container_data(FMP_IMAGES_LAYOUT, img_record_id, 'Image', thumb_path)
 
         # TODO: Kick off FMP script to generate sub-images, need to retrieve primary key from img record
-        record_data = fmp.get_record(layout=FMP_IMAGES_LAYOUT, record_id=record_id)
-        primary_key = record_data.get('fieldData').get('PrimaryKey')
+        record_data = fmp.get_record(layout=FMP_IMAGES_LAYOUT, record_id=img_record_id)
+        img_primary_key = record_data.get('fieldData').get('PrimaryKey')
         script_res = fmp.run_script(layout=FMP_IMAGES_LAYOUT,
                                     script='process_image_set_on_server',
-                                    param=primary_key)
+                                    param=img_primary_key)
 
 
 def _get_thumbnail(path_to_movie):
