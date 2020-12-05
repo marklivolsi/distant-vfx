@@ -1,9 +1,9 @@
 import os
 
-from distant_vfx.farm.jobs import distant_slate
+from distant_vfx.farm.jobs import distant_colour
 
 
-class DistantH264FarmJob(distant_slate.DistantSlateFarmJob):
+class DistantH264FarmJob(distant_colour.DistantColourQuicktimeFarmJob):
     NUKESCRIPT_PATH = os.path.join(os.path.dirname(__file__), "template.nk")
 
     @classmethod
@@ -15,7 +15,7 @@ class DistantH264FarmJob(distant_slate.DistantSlateFarmJob):
             + """
   DistantH264FarmJob
 ==============================
-A DistantH264FarmJob subclasses a DistantSlateFarmJob with specific settings for H264
+A DistantH264FarmJob subclasses a DistantColourQuicktimeFarmJob with specific settings for H264
 
 :param str|None slate_image: Path to the slate image we want to use.
 :param str|None slate_left_text: Text for the top left side of the slate.
