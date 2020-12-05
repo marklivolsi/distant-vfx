@@ -164,17 +164,16 @@ def inject_versions(sg, logger, event, args):
         }
 
         img_record_id = fmp.new_record(FMP_IMAGES_LAYOUT, thumb_data)
-
         if not img_record_id:
             logger.error('Error injecting thumbnail (data: {data})'
                          .format(data=version_dict))
             return
 
         response = fmp.upload_container_data(FMP_IMAGES_LAYOUT, img_record_id, 'Image', thumb_path)
-
-        # TODO: Kick off FMP script to generate sub-images, need to retrieve primary key from img record
         record_data = fmp.get_record(layout=FMP_IMAGES_LAYOUT, record_id=img_record_id)
         img_primary_key = record_data.get('fieldData').get('PrimaryKey')
+
+        # Kick off script to process sub-images
         script_res = fmp.run_script(layout=FMP_IMAGES_LAYOUT,
                                     script='call_process_image_set',
                                     param=img_primary_key)
