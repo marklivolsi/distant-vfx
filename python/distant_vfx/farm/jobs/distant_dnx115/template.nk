@@ -4,8 +4,8 @@ BackdropNode {
  tile_color 0x444666ff
  label "Overlays\n"
  selected true
- xpos -101
- ypos -13
+ xpos -280
+ ypos -124
  bdwidth 181
  bdheight 135
  z_order 3
@@ -20,10 +20,61 @@ Read {
  origfirst {{"\[argv 2]"}}
  origlast {{"\[argv 3]"}}
  origset true
+ on_error black
  name Plate
  selected true
- xpos -51
- ypos -275
+ xpos -230
+ ypos -386
+}
+Colorspace {
+ primary_in "Wide Gamut"
+ colorspace_out AlexaV3LogC
+ primary_out "Wide Gamut"
+ name Linear_AlexLog
+ selected true
+ xpos -230
+ ypos -302
+}
+NoOp {
+ name ShowLUT
+ label "\[argv 14]"
+ selected true
+ xpos -230
+ ypos -267
+}
+Vectorfield {
+ vfield_file "\[argv 15]"
+ version 11
+ file_type cube
+ name Apply_CDL
+ selected true
+ xpos -230
+ ypos -229
+}
+Vectorfield {
+ vfield_file /mnt/dst/mailbox/technicolor/fr_technicolor/20200910_a/dis_20767_jc_PHS_trim_scd60_rec709.cube
+ version 10
+ file_type cube
+ colorspaceOut rec709
+ name Log_to_Rec709
+ selected true
+ xpos -230
+ ypos -203
+}
+Transform {
+ scale 1.0525
+ center {1078 750}
+ name Transform1
+ selected true
+ xpos -230
+ ypos -177
+}
+Reformat {
+ format "1920 1080 0 0 1920 1080 1 HD_1080"
+ name Reformat1
+ selected true
+ xpos -230
+ ypos -151
 }
 Text {
  message "\[if \{ \[catch \{expr \[argv 6]\} ]\} \{set output \[argv 6]\} \{set output \[expr \[argv 6]]\}]"
@@ -35,8 +86,8 @@ Text {
  center {2048 1080}
  name TopLeft
  selected true
- xpos -51
- ypos 22
+ xpos -230
+ ypos -89
 }
 Text {
  message "\[if \{ \[catch \{expr \[argv 7]\} ]\} \{set output \[argv 7]\} \{set output \[expr \[argv 7]]\}]"
@@ -49,8 +100,8 @@ Text {
  center {2048 1080}
  name TopRight
  selected true
- xpos -51
- ypos 46
+ xpos -230
+ ypos -65
 }
 Text {
  message "\[if \{ \[catch \{expr \[argv 8]\} ]\} \{set output \[argv 8]\} \{set output \[expr \[argv 8]]\}]"
@@ -62,8 +113,8 @@ Text {
  center {2048 1080}
  name BottomLeft
  selected true
- xpos -51
- ypos 70
+ xpos -230
+ ypos -41
 }
 Text {
  message "\[if \{ \[catch \{expr \[argv 9]\} ]\} \{set output \[argv 9]\} \{set output \[expr \[argv 9]]\}]"
@@ -76,20 +127,8 @@ Text {
  center {2048 1080}
  name BottomRight
  selected true
- xpos -51
- ypos 94
-}
-Reformat {
- type "to box"
- box_width {{"\[argv 4]"}}
- box_height {{"\[argv 5]"}}
- box_fixed true
- resize fit
- black_outside true
- name Reformat
- selected true
- xpos -51
- ypos 120
+ xpos -230
+ ypos -17
 }
 Read {
  inputs 0
@@ -99,8 +138,8 @@ Read {
  origset true
  name Read2
  selected true
- xpos -228
- ypos -272
+ xpos -407
+ ypos -383
 }
 Text {
  message "\[if \{ \[catch \{expr \[argv 11]\} ]\} \{set output \[argv 11]\} \{set output \[expr \[argv 11]]\}]"
@@ -112,8 +151,8 @@ Text {
  center {2048 1080}
  name SlateLeft
  selected true
- xpos -228
- ypos 26
+ xpos -407
+ ypos -85
 }
 Text {
  message "\[if \{ \[catch \{expr \[argv 12]\} ]\} \{set output \[argv 12]\} \{set output \[expr \[argv 12]]\}]"
@@ -126,8 +165,8 @@ Text {
  center {2048 1080}
  name SlateRight
  selected true
- xpos -228
- ypos 52
+ xpos -407
+ ypos -59
 }
 Text {
  message "\[if \{ \[catch \{expr \[argv 13]\} ]\} \{set output \[argv 13]\} \{set output \[expr \[argv 13]]\}]"
@@ -139,29 +178,29 @@ Text {
  center {2048 1080}
  name SlateBottom
  selected true
- xpos -228
- ypos 78
+ xpos -407
+ ypos -33
 }
 FrameHold {
  first_frame 1000
  name FrameHold1
  selected true
- xpos -228
- ypos 166
+ xpos -407
+ ypos 55
 }
 Switch {
  inputs 2
- which {{!(frame==1000)}}
+ which {{"!(frame==\[argv 2])"}}
  name Switch1
  selected true
- xpos -51
- ypos 172
+ xpos -230
+ ypos 61
 }
 Dot {
  name Dot10
  selected true
- xpos -17
- ypos 265
+ xpos -196
+ ypos 154
 }
 Write {
  file "\[argv 1]"
@@ -183,6 +222,6 @@ Write {
  checkHashOnRead false
  name Write
  selected true
- xpos -272
- ypos 102
+ xpos -230
+ ypos 207
 }
