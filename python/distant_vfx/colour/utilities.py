@@ -128,7 +128,7 @@ def _path_get_shot_lut_from_path(path):
         shot_dir = os.path.dirname(os.path.dirname(dirname_three))
         plates_dir = os.path.join(shot_dir, "plate")
         plates = {}
-        for folder_name in plates_dir:
+        for folder_name in os.listdir(plates_dir):
             data_struct = descriptor_from_filename(folder_name)
             descriptor = data_struct.get("descriptor")
             version = data_struct.get("version")
