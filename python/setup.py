@@ -11,7 +11,7 @@ setuptools.setup(
     description='A toolkit for the Distant VFX team.',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/marklivolsi/distant_vfx',
+    url='https://github.com/marklivolsi/distant-vfx',
     packages=setuptools.find_packages(),
     classifiers=(
         'Programming Language :: Python',
