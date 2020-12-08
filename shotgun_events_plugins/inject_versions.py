@@ -1,6 +1,7 @@
 from datetime import datetime
 import os
 import time
+import yagmail
 
 from distant_vfx.filemaker import FMCloudInstance
 from distant_vfx.video import VideoProcessor
@@ -20,6 +21,11 @@ FMP_TRANSFER_DATA_LAYOUT = 'api_TransfersData_form'
 FMP_IMAGES_LAYOUT = 'api_Images_form'
 
 THUMBS_BASE_PATH = '/mnt/Projects/dst/post/thumbs'
+
+EMAIL_USER = os.environ['EMAIL_USERNAME']
+EMAIL_PASSWORD = os.environ['EMAIL_PASSWORD']
+EMAIL_RECIPIENTS = os.environ['INJECT_VERSIONS_EMAIL_RECIPIENTS'].split(',')
+EMAIL_EVENTS = []
 
 
 def registerCallbacks(reg):
@@ -42,8 +48,10 @@ def inject_versions(sg, logger, event, args):
     vendor = _get_vendor(event_description)
     if vendor is None:
         return
-    logger.info('Valid injection candidate found for vendor type {vendor} in Event #{id}'
-                .format(vendor=vendor, id=event_id))
+
+    msg = 'Valid injection candidate found for vendor type {vendor} in Event #{id}'.format(vendor=vendor, id=event_id)
+    EMAIL_EVENTS.append(msg)
+    logger.info(msg)
 
     # Wait to make sure the entity is fully created and updated
     time.sleep(1)
@@ -61,8 +69,11 @@ def inject_versions(sg, logger, event, args):
 
     # If the entity can't be found, return.
     if entity is None:
-        logger.error('Could not find matching {entity_type} entity with ID {entity_id}. Cannot inject.'
-                     .format(entity_type=entity_type, entity_id=entity_id))
+        msg = 'Could not find matching {entity_type} entity with ID {entity_id}. Cannot inject.'.format(
+            entity_type=entity_type, entity_id=entity_id)
+        logger.error(msg)
+        EMAIL_EVENTS.append(msg)
+        _send_email()
         return
 
     # Extract entity data
@@ -106,8 +117,9 @@ def inject_versions(sg, logger, event, args):
     try:
         thumb_filename, thumb_path = _get_thumbnail(path_to_movie)
     except Exception as e:
-        logger.error('Could not generate thumbnail for version {code}. (error: {exc})'
-                     .format(code=code, exc=e))
+        msg = 'Could not generate thumbnail for version {code}. (error: {exc})'.format(code=code, exc=e)
+        logger.error(msg)
+        EMAIL_EVENTS.append(msg)
 
     # Connect to FMP admin DB and inject data
     with FMCloudInstance(host_url=FMP_URL,
@@ -120,42 +132,52 @@ def inject_versions(sg, logger, event, args):
         # Inject new version data into versions table
         version_record_id = fmp.new_record(FMP_VERSIONS_LAYOUT, version_dict)
         if not version_record_id:
-            logger.error('Error injecting version data (data: {data})'
-                         .format(data=version_dict))
+            msg = 'Error injecting version data (data: {data})'.format(data=version_dict)
+            logger.error(msg)
+            EMAIL_EVENTS.append(msg)
+            _send_email()
             return
 
         # Inject transfer log data to transfer tables
         # First check to see if package exists so we don't create multiple of the same package
         records = fmp.find_records(FMP_TRANSFER_LOG_LAYOUT, query=[package_dict])
-        logger.info('Searching for existing package records (data: {data})'
-                    .format(data=package_dict))
+        msg = 'Searching for existing package records (data: {data})'.format(data=package_dict)
+        logger.info(msg)
+        EMAIL_EVENTS.append(msg)
 
         if not records:
             # Create a new transfer log record
             transfer_record_id = fmp.new_record(FMP_TRANSFER_LOG_LAYOUT, package_dict)
             transfer_record_data = fmp.get_record(FMP_TRANSFER_LOG_LAYOUT, record_id=transfer_record_id)
             transfer_primary_key = transfer_record_data.get('fieldData').get('PrimaryKey')
-            logger.info('Created new transfer record for {package} (record id {id})'
-                        .format(package=package, id=transfer_record_id))
+            msg = 'Created new transfer record for {package} (record id {id})'.format(
+                package=package, id=transfer_record_id)
+            logger.info(msg)
+            EMAIL_EVENTS.append(msg)
 
         else:
             transfer_primary_key = records[0].get('fieldData').get('PrimaryKey')
-            logger.info('Transfer record for {package} already exists.'
-                        .format(package=package))
+            msg = 'Transfer record for {package} already exists.'.format(package=package)
+            logger.info(msg)
+            EMAIL_EVENTS.append(msg)
 
         # Create transfer data records
         filename_dict['Foriegnkey'] = transfer_primary_key  # Foriegnkey is intentionally misspelled to match db field
         filename_record_id = fmp.new_record(FMP_TRANSFER_DATA_LAYOUT, filename_dict)
 
         if filename_record_id:
-            logger.info('Created new transfer data record for version {version} (record id {id}).'
-                        .format(version=code, id=filename_record_id))
+            msg = 'Created new transfer data record for version {version} (record id {id}).'.format(
+                version=code, id=filename_record_id)
+            logger.info(msg)
+            EMAIL_EVENTS.append(msg)
         else:
-            logger.error('Error creating transfer data record for version {version}.'
-                         .format(version=code))
+            msg = 'Error creating transfer data record for version {version}.'.format(version=code)
+            logger.error(msg)
+            EMAIL_EVENTS.append(msg)
 
         # If we have a thumbnail, inject to image layout
         if thumb_path is None:
+            _send_email()
             return
 
         thumb_data = {
@@ -165,8 +187,10 @@ def inject_versions(sg, logger, event, args):
 
         img_record_id = fmp.new_record(FMP_IMAGES_LAYOUT, thumb_data)
         if not img_record_id:
-            logger.error('Error injecting thumbnail (data: {data})'
-                         .format(data=version_dict))
+            msg = 'Error injecting thumbnail (data: {data})'.format(data=version_dict)
+            logger.error(msg)
+            EMAIL_EVENTS.append(msg)
+            _send_email()
             return
 
         response = fmp.upload_container_data(FMP_IMAGES_LAYOUT, img_record_id, 'Image', thumb_path)
@@ -177,6 +201,21 @@ def inject_versions(sg, logger, event, args):
         script_res = fmp.run_script(layout=FMP_IMAGES_LAYOUT,
                                     script='call_process_image_set',
                                     param=img_primary_key)
+
+    _send_email()
+
+
+def _send_email():
+    subject, contents = _format_email()
+    yag = yagmail.SMTP(EMAIL_USER, EMAIL_PASSWORD)
+    yag.send(EMAIL_RECIPIENTS, subject=subject, contents=contents)
+
+
+def _format_email():
+    subject = ''
+    contents = ''
+    return subject, contents
+    # TODO: format events into email body + subject
 
 
 def _get_thumbnail(path_to_movie):
