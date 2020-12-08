@@ -6,9 +6,11 @@ import yagmail
 from distant_vfx.filemaker import FMCloudInstance
 from distant_vfx.video import VideoProcessor
 
+# Shotgun constants
 SG_SCRIPT_NAME = os.environ['SG_VERSION_INJECT_NAME']
 SG_SCRIPT_KEY = os.environ['SG_VERSION_INJECT_KEY']
 
+# FileMaker constants
 FMP_URL = os.environ['FMP_URL']
 FMP_USERNAME = os.environ['FMP_USERNAME']
 FMP_PASSWORD = os.environ['FMP_PASSWORD']
@@ -20,8 +22,10 @@ FMP_TRANSFER_LOG_LAYOUT = 'api_Transfers_form'
 FMP_TRANSFER_DATA_LAYOUT = 'api_TransfersData_form'
 FMP_IMAGES_LAYOUT = 'api_Images_form'
 
+# Filesystem constants
 THUMBS_BASE_PATH = '/mnt/Projects/dst/post/thumbs'
 
+# Email constants
 EMAIL_USER = os.environ['EMAIL_USERNAME']
 EMAIL_PASSWORD = os.environ['EMAIL_PASSWORD']
 EMAIL_RECIPIENTS = os.environ['INJECT_VERSIONS_EMAIL_RECIPIENTS'].split(',')
@@ -30,7 +34,7 @@ EMAIL_EVENTS = []
 
 def registerCallbacks(reg):
     matchEvents = {
-        'Shotgun_Version_Change': ['*'],
+        'Shotgun_Version_Change': ['*'],  # look for any version change event
     }
     reg.registerCallback(SG_SCRIPT_NAME,
                          SG_SCRIPT_KEY,
@@ -41,8 +45,10 @@ def registerCallbacks(reg):
 
 def inject_versions(sg, logger, event, args):
 
-    event_description = event.get('description')
+    # event_description = event.get('description')
     event_id = event.get('id')
+    event_entity = sg.find_one('EventLogEntry', [['id', 'is', event_id]], ['description'])
+    event_description = event_entity.get('description')
 
     # Determine if this is an in house or external vendor version to inject, or not at all
     vendor = _get_vendor(event_description)
