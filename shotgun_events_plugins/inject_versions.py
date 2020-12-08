@@ -212,10 +212,13 @@ def _send_email():
 
 
 def _format_email():
-    subject = ''
+    dt = datetime.now()
+    subject = '[DISTANT_API] {} events processed by Shotgun Events at {}'.format(len(EMAIL_EVENTS), dt)
     contents = ''
+    for index, event in enumerate(EMAIL_EVENTS):
+        line = '[{}]'.format(index) + ': ' + event + '\n\n'
+        contents += line
     return subject, contents
-    # TODO: format events into email body + subject
 
 
 def _get_thumbnail(path_to_movie):
