@@ -2,8 +2,8 @@ from datetime import datetime
 import os
 import time
 
-from ..filemaker import FMCloudInstance
-from ..video import VideoProcessor
+from distant_vfx.filemaker import FMCloudInstance
+from distant_vfx.video import VideoProcessor
 
 SG_SCRIPT_NAME = os.environ['SG_VERSION_INJECT_NAME']
 SG_SCRIPT_KEY = os.environ['SG_VERSION_INJECT_KEY']
