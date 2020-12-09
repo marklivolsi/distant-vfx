@@ -2,6 +2,7 @@ from datetime import datetime
 import os
 import time
 import yagmail
+from fmrest import CloudServer
 
 from distant_vfx.filemaker import FMCloudInstance
 from distant_vfx.video import VideoProcessor
@@ -41,7 +42,7 @@ THUMBS_BASE_PATH = '/mnt/Projects/dst/post/thumbs'
 # Email constants
 EMAIL_USER = CONFIG['EMAIL_USERNAME']
 EMAIL_PASSWORD = CONFIG['EMAIL_PASSWORD']
-EMAIL_RECIPIENTS = CONFIG['FMP_USERPOOL']
+EMAIL_RECIPIENTS = CONFIG['EMAIL_RECIPIENTS'].split(',')
 EMAIL_EVENTS = []
 
 
@@ -140,88 +141,97 @@ def inject_versions(sg, logger, event, args):
         logger.error(msg)
         EMAIL_EVENTS.append(msg)
 
-    # Connect to FMP admin DB and inject data
-    with FMCloudInstance(host_url=FMP_URL,
-                         username=FMP_USERNAME,
-                         password=FMP_PASSWORD,
-                         database=FMP_ADMINDB,
-                         user_pool_id=FMP_USERPOOL,
-                         client_id=FMP_CLIENT) as fmp:
+    # # Connect to FMP admin DB and inject data
+    # with FMCloudInstance(host_url=FMP_URL,
+    #                      username=FMP_USERNAME,
+    #                      password=FMP_PASSWORD,
+    #                      database=FMP_ADMINDB,
+    #                      user_pool_id=FMP_USERPOOL,
+    #                      client_id=FMP_CLIENT) as fmp:
+    with CloudServer(url=FMP_URL,
+                     user=FMP_USERNAME,
+                     password=FMP_PASSWORD,
+                     database=FMP_ADMINDB,
+                     layout=FMP_VERSIONS_LAYOUT) as fmp:
+
+        fmp.login()
 
         # Inject new version data into versions table
-        version_record_id = fmp.new_record(FMP_VERSIONS_LAYOUT, version_dict)
+        # version_record_id = fmp.new_record(FMP_VERSIONS_LAYOUT, version_dict)
+        version_record_id = fmp.create_record(version_dict)
+        print('Record ID is {}'.format(version_record_id))
         if not version_record_id:
             msg = 'Error injecting version data (data: {data})'.format(data=version_dict)
             logger.error(msg)
             EMAIL_EVENTS.append(msg)
             _send_email()
             return
-
-        # Inject transfer log data to transfer tables
-        # First check to see if package exists so we don't create multiple of the same package
-        records = fmp.find_records(FMP_TRANSFER_LOG_LAYOUT, query=[package_dict])
-        msg = 'Searching for existing package records (data: {data})'.format(data=package_dict)
-        logger.info(msg)
-        EMAIL_EVENTS.append(msg)
-
-        if not records:
-            # Create a new transfer log record
-            transfer_record_id = fmp.new_record(FMP_TRANSFER_LOG_LAYOUT, package_dict)
-            transfer_record_data = fmp.get_record(FMP_TRANSFER_LOG_LAYOUT, record_id=transfer_record_id)
-            transfer_primary_key = transfer_record_data.get('fieldData').get('PrimaryKey')
-            msg = 'Created new transfer record for {package} (record id {id})'.format(
-                package=package, id=transfer_record_id)
-            logger.info(msg)
-            EMAIL_EVENTS.append(msg)
-
-        else:
-            transfer_primary_key = records[0].get('fieldData').get('PrimaryKey')
-            msg = 'Transfer record for {package} already exists.'.format(package=package)
-            logger.info(msg)
-            EMAIL_EVENTS.append(msg)
-
-        # Create transfer data records
-        filename_dict['Foriegnkey'] = transfer_primary_key  # Foriegnkey is intentionally misspelled to match db field
-        filename_record_id = fmp.new_record(FMP_TRANSFER_DATA_LAYOUT, filename_dict)
-
-        if filename_record_id:
-            msg = 'Created new transfer data record for version {version} (record id {id}).'.format(
-                version=code, id=filename_record_id)
-            logger.info(msg)
-            EMAIL_EVENTS.append(msg)
-        else:
-            msg = 'Error creating transfer data record for version {version}.'.format(version=code)
-            logger.error(msg)
-            EMAIL_EVENTS.append(msg)
-
-        # If we have a thumbnail, inject to image layout
-        if thumb_path is None:
-            _send_email()
-            return
-
-        thumb_data = {
-            'Filename': thumb_filename,
-            'Path': thumb_path
-        }
-
-        img_record_id = fmp.new_record(FMP_IMAGES_LAYOUT, thumb_data)
-        if not img_record_id:
-            msg = 'Error injecting thumbnail (data: {data})'.format(data=version_dict)
-            logger.error(msg)
-            EMAIL_EVENTS.append(msg)
-            _send_email()
-            return
-
-        response = fmp.upload_container_data(FMP_IMAGES_LAYOUT, img_record_id, 'Image', thumb_path)
-        record_data = fmp.get_record(layout=FMP_IMAGES_LAYOUT, record_id=img_record_id)
-        img_primary_key = record_data.get('fieldData').get('PrimaryKey')
-
-        # Kick off script to process sub-images
-        script_res = fmp.run_script(layout=FMP_IMAGES_LAYOUT,
-                                    script='call_process_image_set',
-                                    param=img_primary_key)
-
-    _send_email()
+    #
+    #     # Inject transfer log data to transfer tables
+    #     # First check to see if package exists so we don't create multiple of the same package
+    #     records = fmp.find_records(FMP_TRANSFER_LOG_LAYOUT, query=[package_dict])
+    #     msg = 'Searching for existing package records (data: {data})'.format(data=package_dict)
+    #     logger.info(msg)
+    #     EMAIL_EVENTS.append(msg)
+    #
+    #     if not records:
+    #         # Create a new transfer log record
+    #         transfer_record_id = fmp.new_record(FMP_TRANSFER_LOG_LAYOUT, package_dict)
+    #         transfer_record_data = fmp.get_record(FMP_TRANSFER_LOG_LAYOUT, record_id=transfer_record_id)
+    #         transfer_primary_key = transfer_record_data.get('fieldData').get('PrimaryKey')
+    #         msg = 'Created new transfer record for {package} (record id {id})'.format(
+    #             package=package, id=transfer_record_id)
+    #         logger.info(msg)
+    #         EMAIL_EVENTS.append(msg)
+    #
+    #     else:
+    #         transfer_primary_key = records[0].get('fieldData').get('PrimaryKey')
+    #         msg = 'Transfer record for {package} already exists.'.format(package=package)
+    #         logger.info(msg)
+    #         EMAIL_EVENTS.append(msg)
+    #
+    #     # Create transfer data records
+    #     filename_dict['Foriegnkey'] = transfer_primary_key  # Foriegnkey is intentionally misspelled to match db field
+    #     filename_record_id = fmp.new_record(FMP_TRANSFER_DATA_LAYOUT, filename_dict)
+    #
+    #     if filename_record_id:
+    #         msg = 'Created new transfer data record for version {version} (record id {id}).'.format(
+    #             version=code, id=filename_record_id)
+    #         logger.info(msg)
+    #         EMAIL_EVENTS.append(msg)
+    #     else:
+    #         msg = 'Error creating transfer data record for version {version}.'.format(version=code)
+    #         logger.error(msg)
+    #         EMAIL_EVENTS.append(msg)
+    #
+    #     # If we have a thumbnail, inject to image layout
+    #     if thumb_path is None:
+    #         _send_email()
+    #         return
+    #
+    #     thumb_data = {
+    #         'Filename': thumb_filename,
+    #         'Path': thumb_path
+    #     }
+    #
+    #     img_record_id = fmp.new_record(FMP_IMAGES_LAYOUT, thumb_data)
+    #     if not img_record_id:
+    #         msg = 'Error injecting thumbnail (data: {data})'.format(data=version_dict)
+    #         logger.error(msg)
+    #         EMAIL_EVENTS.append(msg)
+    #         _send_email()
+    #         return
+    #
+    #     response = fmp.upload_container_data(FMP_IMAGES_LAYOUT, img_record_id, 'Image', thumb_path)
+    #     record_data = fmp.get_record(layout=FMP_IMAGES_LAYOUT, record_id=img_record_id)
+    #     img_primary_key = record_data.get('fieldData').get('PrimaryKey')
+    #
+    #     # Kick off script to process sub-images
+    #     script_res = fmp.run_script(layout=FMP_IMAGES_LAYOUT,
+    #                                 script='call_process_image_set',
+    #                                 param=img_primary_key)
+    #
+    # _send_email()
 
 
 def _send_email():
