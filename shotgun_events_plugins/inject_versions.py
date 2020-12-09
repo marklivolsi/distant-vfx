@@ -127,7 +127,7 @@ def inject_versions(sg, logger, event, args):
         'path': ''  # TODO: Add path to package for mrx packages - what sg field will this be?
     }
     filename_dict = {
-        'Filename': os.path.basename(path_to_movie),
+        'Filename': os.path.basename(path_to_movie) if path_to_movie else '',
         'Path': path_to_movie
     }
 
