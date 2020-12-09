@@ -245,11 +245,6 @@ class FMCloudInstance:
         # Run the script
         response = requests.get(url, headers=headers, params=params)
 
-
-
-
-
-
     def _get_fmid_token(self):
         """
         Obtain a FMID token from Amazon Cognito, necessary for authenticating FileMaker Cloud Data API login requests.
@@ -258,7 +253,9 @@ class FMCloudInstance:
         # Get the FMID token for FMP Cloud login via Amazon Cognito.
         user = pycognito.Cognito(user_pool_id=self.user_pool_id,
                                  client_id=self.client_id,
-                                 username=self.username)
+                                 username=self.username,
+                                 access_key='1',
+                                 secret_key='1')
         user.authenticate(self.password)
         self._fmid_token = user.id_token
         self._refresh_token = user.refresh_token

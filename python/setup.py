@@ -5,7 +5,7 @@ with open('../README.md', 'r', encoding='utf-8') as fh:
 
 setuptools.setup(
     name='distant_vfx',
-    version='0.2.1',
+    version='0.2.2',
     author='Mark Livolsi',
     author_email='mark.c.livolsi@gmail.com',
     description='A toolkit for the Distant VFX team.',
