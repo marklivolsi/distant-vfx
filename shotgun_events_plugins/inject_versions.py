@@ -5,18 +5,31 @@ import yagmail
 
 from distant_vfx.filemaker import FMCloudInstance
 from distant_vfx.video import VideoProcessor
+from distant_vfx.config import Config
+
+
+def _load_config(config_path):
+    config = Config()
+    config_did_load = config.load_config(config_path)
+    if config_did_load:
+        return config.data
+    return None
+
+
+CONFIG = _load_config('shotgun_events_config.yml')
+
 
 # Shotgun constants
-SG_SCRIPT_NAME = os.environ['SG_VERSION_INJECT_NAME']
-SG_SCRIPT_KEY = os.environ['SG_VERSION_INJECT_KEY']
+SG_SCRIPT_NAME = CONFIG['SG_VERSION_INJECT_NAME']
+SG_SCRIPT_KEY = CONFIG['SG_VERSION_INJECT_KEY']
 
 # FileMaker constants
-FMP_URL = os.environ['FMP_URL']
-FMP_USERNAME = os.environ['FMP_USERNAME']
-FMP_PASSWORD = os.environ['FMP_PASSWORD']
-FMP_ADMINDB = os.environ['FMP_ADMINDB']
-FMP_USERPOOL = os.environ['FMP_USERPOOL']
-FMP_CLIENT = os.environ['FMP_CLIENT']
+FMP_URL = CONFIG['FMP_URL']
+FMP_USERNAME = CONFIG['FMP_USERNAME']
+FMP_PASSWORD = CONFIG['FMP_PASSWORD']
+FMP_ADMINDB = CONFIG['FMP_ADMINDB']
+FMP_USERPOOL = CONFIG['FMP_USERPOOL']
+FMP_CLIENT = CONFIG['FMP_CLIENT']
 FMP_VERSIONS_LAYOUT = 'api_Versions_form'
 FMP_TRANSFER_LOG_LAYOUT = 'api_Transfers_form'
 FMP_TRANSFER_DATA_LAYOUT = 'api_TransfersData_form'
@@ -26,9 +39,9 @@ FMP_IMAGES_LAYOUT = 'api_Images_form'
 THUMBS_BASE_PATH = '/mnt/Projects/dst/post/thumbs'
 
 # Email constants
-EMAIL_USER = os.environ['EMAIL_USERNAME']
-EMAIL_PASSWORD = os.environ['EMAIL_PASSWORD']
-EMAIL_RECIPIENTS = os.environ['INJECT_VERSIONS_EMAIL_RECIPIENTS'].split(',')
+EMAIL_USER = CONFIG['EMAIL_USERNAME']
+EMAIL_PASSWORD = CONFIG['EMAIL_PASSWORD']
+EMAIL_RECIPIENTS = CONFIG['FMP_USERPOOL']
 EMAIL_EVENTS = []
 
 

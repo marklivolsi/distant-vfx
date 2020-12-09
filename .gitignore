@@ -135,3 +135,4 @@ log
 config.yml
 venv3.6
 .DS_Store
+shotgun_events_config.yml
