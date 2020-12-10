@@ -283,12 +283,13 @@ def _get_thumbnail(path_to_movie):
 
     # Get the thumbnail output path
     mov_filename = os.path.basename(path_to_movie)
-    mov_basename = os.path.splitext(mov_filename)[0]
+    mov_split = os.path.splitext(mov_filename)
+    mov_basename, mov_ext = mov_split[0], mov_split[1]
     thumb_filename = '0000 ' + mov_basename + '.jpg'  # Naming structure necessary to parse vfx id with current setup
     thumb_dest = os.path.join(THUMBS_BASE_PATH, thumb_filename)
 
     # Generate thumbnail
-    if not os.path.exists(thumb_dest):
+    if not os.path.exists(thumb_dest) and mov_ext in ['.mov', '.mp4']:
         video_processor = VideoProcessor()
         video_processor.generate_thumbnail(path_to_movie, thumb_dest)
     return thumb_filename, thumb_dest
