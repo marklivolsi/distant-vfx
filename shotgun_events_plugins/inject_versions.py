@@ -85,7 +85,10 @@ def inject_versions(sg, logger, event, args):
                                                                   'description',
                                                                   'published_files',
                                                                   'sg_path_to_movie',
-                                                                  'sg_status_list'])  # TODO: get mrx pkg name
+                                                                  'sg_status_list',
+                                                                  'sg_vendor_package',
+                                                                  'sg_vendor_package_path',
+                                                                  'sg_vendor_exr_path'])  # TODO: get mrx pkg name
 
     # If the entity can't be found, return.
     if entity is None:
@@ -102,12 +105,14 @@ def inject_versions(sg, logger, event, args):
     published_files = entity.get('published_files', '')
     path_to_movie = entity.get('sg_path_to_movie', '')
     status = entity.get('sg_status_list', '')
+    vendor_package = entity.get('vendor_package', '')
+    vendor_package_path = entity.get('vendor_package_path', '')
 
-    # TODO: Parse exr path.
+    # TODO: Parse exr path. Get from published file for IH, sg_vendor_exr_path for mrx
 
     # Get the package name (varies between ih and ext vendors)
     if vendor == 'ext':
-        package = ''  # TODO: Get mrx pkg name - what sg field will this live in?
+        package = vendor_package if vendor_package else ''  # TODO: Get mrx pkg name - what sg field will this live in?
     else:
         package = 'dst_ih_' + datetime.now().strftime('%Y%m%d')
 
