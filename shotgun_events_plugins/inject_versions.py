@@ -4,7 +4,6 @@ import time
 import yagmail
 from fmrest import CloudServer
 
-from distant_vfx.filemaker import FMCloudInstance
 from distant_vfx.video import VideoProcessor
 from distant_vfx.config import Config
 
@@ -17,7 +16,7 @@ def _load_config(config_path):
     return None
 
 
-CONFIG = _load_config('shotgun_events_config.yml')
+CONFIG = _load_config('/mnt/Plugins/python3.6/shotgun_events_plugins/shotgun_events_config.yml')
 
 
 # Shotgun constants
@@ -35,6 +34,7 @@ FMP_VERSIONS_LAYOUT = 'api_Versions_form'
 FMP_TRANSFER_LOG_LAYOUT = 'api_Transfers_form'
 FMP_TRANSFER_DATA_LAYOUT = 'api_TransfersData_form'
 FMP_IMAGES_LAYOUT = 'api_Images_form'
+FMP_PROCESS_IMAGE_SCRIPT = 'process_image_set'
 
 # Filesystem constants
 THUMBS_BASE_PATH = '/mnt/Projects/dst/post/thumbs'
@@ -113,23 +113,23 @@ def inject_versions(sg, logger, event, args):
 
     # Prep version data for injection to filemaker
     version_dict = {
-        'Filename': code,  # TODO: We might want to use the basename of the movie file instead here
-        'DeliveryPackage': package,
-        'Status': status,
-        'DeliveryNote': description,
-        'ShotgunID': entity_id,
-        'ShotgunPublishedFiles': published_files,
-        'ShotgunPathToMovie': path_to_movie
+        'Filename': code if code else '',  # TODO: We might want to use the basename of the movie file instead here
+        'DeliveryPackage': package if package else '',
+        'Status': status if status else '',
+        'DeliveryNote': description if description else '',
+        'ShotgunID': entity_id if entity else '',
+        'ShotgunPublishedFiles': str(published_files) if published_files else '',  # TODO : fix this
+        'ShotgunPathToMovie': path_to_movie if path_to_movie else ''
     }
 
     # Prep transfer log data for injection to filemaker
     package_dict = {
-        'package': package,
+        'package': package if package else 'tmp_{}'.format(datetime.now().strftime('%Y%m%d')),
         'path': ''  # TODO: Add path to package for mrx packages - what sg field will this be?
     }
     filename_dict = {
         'Filename': os.path.basename(path_to_movie) if path_to_movie else '',
-        'Path': path_to_movie
+        'Path': path_to_movie if path_to_movie else ''
     }
 
     # Generate a thumbnail
@@ -141,13 +141,7 @@ def inject_versions(sg, logger, event, args):
         logger.error(msg)
         EMAIL_EVENTS.append(msg)
 
-    # # Connect to FMP admin DB and inject data
-    # with FMCloudInstance(host_url=FMP_URL,
-    #                      username=FMP_USERNAME,
-    #                      password=FMP_PASSWORD,
-    #                      database=FMP_ADMINDB,
-    #                      user_pool_id=FMP_USERPOOL,
-    #                      client_id=FMP_CLIENT) as fmp:
+    # Connect to FMP admin DB and inject data
     with CloudServer(url=FMP_URL,
                      user=FMP_USERNAME,
                      password=FMP_PASSWORD,
@@ -156,82 +150,117 @@ def inject_versions(sg, logger, event, args):
 
         fmp.login()
 
-        # Inject new version data into versions table
-        # version_record_id = fmp.new_record(FMP_VERSIONS_LAYOUT, version_dict)
-        version_record_id = fmp.create_record(version_dict)
-        print('Record ID is {}'.format(version_record_id))
-        if not version_record_id:
-            msg = 'Error injecting version data (data: {data})'.format(data=version_dict)
+        # Inject new version into versions table
+        try:
+            version_record_id = fmp.create_record(version_dict)
+            msg = 'Version created (record id: {id}, data: {data})'.format(id=version_record_id, data=version_dict)
+            logger.info(msg)
+            EMAIL_EVENTS.append(msg)
+        except Exception as e:
+            msg = 'Error injecting version data (data: {data}, error: {error})'.format(data=version_dict, error=e)
             logger.error(msg)
+            EMAIL_EVENTS.append(msg)
+            # If we fail creating version, let users know and return
+            _send_email()
+            return
+
+        # Inject transfer log data to transfer log table
+        fmp.layout = FMP_TRANSFER_LOG_LAYOUT
+
+        # First check to see if package exists so we don't create multiple of the same package
+        try:
+            records = fmp.find([package_dict])
+        except Exception as e:
+            if fmp.last_error == 401:  # no records were found
+                records = None
+            else:
+                msg = 'Error searching for transfer log records (query {query}, error {error}'.format(query=package_dict,
+                                                                                                      error=e)
+                logger.error(msg)
+                EMAIL_EVENTS.append(msg)
+                _send_email()
+                return
+
+        # If the transfer log record doesn't exist, create it
+        if not records:
+            try:
+                transfer_record_id = fmp.create_record(package_dict)
+                transfer_record_data = fmp.get_record(transfer_record_id)
+                transfer_primary_key = transfer_record_data.PrimaryKey
+                msg = 'Created new transfer record for {package} (record id {id})'.format(package=package,
+                                                                                          id=transfer_record_id)
+                logger.info(msg)
+                EMAIL_EVENTS.append(msg)
+            except Exception as e:
+                msg = 'Error creating transfer log record for {package} (error {error})'.format(package=package,
+                                                                                                error=e)
+                logger.error(msg)
+                EMAIL_EVENTS.append(msg)
+
+        else:
+            transfer_primary_key = records[0].PrimaryKey
+
+        # Create transfer data records
+        fmp.layout = FMP_TRANSFER_DATA_LAYOUT
+        filename_dict['Foriegnkey'] = transfer_primary_key  # Foriegnkey is intentionally misspelled to match db field
+
+        try:
+            filename_record_id = fmp.create_record(filename_dict)
+            msg = 'Created new transfer data record (record id {id}, data {data})'.format(id=filename_record_id,
+                                                                                          data=filename_dict)
+            logger.info(msg)
+            EMAIL_EVENTS.append(msg)
+        except Exception as e:
+            msg = 'Error creating new transfer data record (data {data}, error {error})'.format(data=filename_dict,
+                                                                                                error=e)
+            logger.error(msg)
+            EMAIL_EVENTS.append(msg)
+
+        # If there is no thumbnail, we're done
+        if thumb_path is None:
+            _send_email()
+            return
+
+        # If we do have a thumb, inject to image layout
+        fmp.layout = FMP_IMAGES_LAYOUT
+
+        thumb_data = {
+            'Filename': thumb_filename if thumb_filename else '',
+            'Path': thumb_path
+        }
+
+        try:
+            thumb_file = open(thumb_path, 'rb')
+            img_record_id = fmp.create_record(thumb_data)
+            img_did_upload = fmp.upload_container(img_record_id, field_name='Image', file_=thumb_file)
+            thumb_file.close()
+            img_record = fmp.get_record(img_record_id)
+            msg = 'Created new image record (record id {id}, filename {name})'.format(id=img_record_id,
+                                                                                      name=thumb_data['Filename'])
+            logger.info(msg)
+            EMAIL_EVENTS.append(msg)
+        except Exception as e:
+            msg = 'Error creating new image record (filename {name}, error {error})'.format(name=thumb_data['Filename'],
+                                                                                            error=e)
+            logger.error(e)
             EMAIL_EVENTS.append(msg)
             _send_email()
             return
-    #
-    #     # Inject transfer log data to transfer tables
-    #     # First check to see if package exists so we don't create multiple of the same package
-    #     records = fmp.find_records(FMP_TRANSFER_LOG_LAYOUT, query=[package_dict])
-    #     msg = 'Searching for existing package records (data: {data})'.format(data=package_dict)
-    #     logger.info(msg)
-    #     EMAIL_EVENTS.append(msg)
-    #
-    #     if not records:
-    #         # Create a new transfer log record
-    #         transfer_record_id = fmp.new_record(FMP_TRANSFER_LOG_LAYOUT, package_dict)
-    #         transfer_record_data = fmp.get_record(FMP_TRANSFER_LOG_LAYOUT, record_id=transfer_record_id)
-    #         transfer_primary_key = transfer_record_data.get('fieldData').get('PrimaryKey')
-    #         msg = 'Created new transfer record for {package} (record id {id})'.format(
-    #             package=package, id=transfer_record_id)
-    #         logger.info(msg)
-    #         EMAIL_EVENTS.append(msg)
-    #
-    #     else:
-    #         transfer_primary_key = records[0].get('fieldData').get('PrimaryKey')
-    #         msg = 'Transfer record for {package} already exists.'.format(package=package)
-    #         logger.info(msg)
-    #         EMAIL_EVENTS.append(msg)
-    #
-    #     # Create transfer data records
-    #     filename_dict['Foriegnkey'] = transfer_primary_key  # Foriegnkey is intentionally misspelled to match db field
-    #     filename_record_id = fmp.new_record(FMP_TRANSFER_DATA_LAYOUT, filename_dict)
-    #
-    #     if filename_record_id:
-    #         msg = 'Created new transfer data record for version {version} (record id {id}).'.format(
-    #             version=code, id=filename_record_id)
-    #         logger.info(msg)
-    #         EMAIL_EVENTS.append(msg)
-    #     else:
-    #         msg = 'Error creating transfer data record for version {version}.'.format(version=code)
-    #         logger.error(msg)
-    #         EMAIL_EVENTS.append(msg)
-    #
-    #     # If we have a thumbnail, inject to image layout
-    #     if thumb_path is None:
-    #         _send_email()
-    #         return
-    #
-    #     thumb_data = {
-    #         'Filename': thumb_filename,
-    #         'Path': thumb_path
-    #     }
-    #
-    #     img_record_id = fmp.new_record(FMP_IMAGES_LAYOUT, thumb_data)
-    #     if not img_record_id:
-    #         msg = 'Error injecting thumbnail (data: {data})'.format(data=version_dict)
-    #         logger.error(msg)
-    #         EMAIL_EVENTS.append(msg)
-    #         _send_email()
-    #         return
-    #
-    #     response = fmp.upload_container_data(FMP_IMAGES_LAYOUT, img_record_id, 'Image', thumb_path)
-    #     record_data = fmp.get_record(layout=FMP_IMAGES_LAYOUT, record_id=img_record_id)
-    #     img_primary_key = record_data.get('fieldData').get('PrimaryKey')
-    #
-    #     # Kick off script to process sub-images
-    #     script_res = fmp.run_script(layout=FMP_IMAGES_LAYOUT,
-    #                                 script='call_process_image_set',
-    #                                 param=img_primary_key)
-    #
-    # _send_email()
+
+        # If we successfully create an image record, kick off a script to process the images
+        try:
+            img_primary_key = img_record.PrimaryKey
+            script_res = fmp.perform_script(FMP_PROCESS_IMAGE_SCRIPT, param=img_primary_key)
+            msg = 'Launched process image script for image record {key}'.format(key=img_primary_key)
+            EMAIL_EVENTS.append(msg)
+            logger.info(msg)
+        except Exception as e:
+            msg = 'Error launching process image script for image record {name} (error {error})'.format(
+                name=thumb_data['Filename'], error=e)
+            logger.error(msg)
+            EMAIL_EVENTS.append(msg)
+        finally:
+            _send_email()
 
 
 def _send_email():
@@ -259,8 +288,9 @@ def _get_thumbnail(path_to_movie):
     thumb_dest = os.path.join(THUMBS_BASE_PATH, thumb_filename)
 
     # Generate thumbnail
-    video_processor = VideoProcessor()
-    video_processor.generate_thumbnail(path_to_movie, thumb_dest)
+    if not os.path.exists(thumb_dest):
+        video_processor = VideoProcessor()
+        video_processor.generate_thumbnail(path_to_movie, thumb_dest)
     return thumb_filename, thumb_dest
 
 
