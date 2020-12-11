@@ -51,7 +51,7 @@ def inject(sg, logger, event, args):
         fmp_transfer_data_dicts = _build_transfer_data_dicts(published_files, version_name)
 
         # Generate a thumbnail if applicable
-        mov_path = _get_mov_path(published_files)
+        mov_path = _get_mov_path(version_data)
         thumb_name, thumb_path = None, None
         if mov_path:
             thumb_name, thumb_path = _get_thumbnail(mov_path)
@@ -86,6 +86,7 @@ def inject(sg, logger, event, args):
             else:
                 logger.exception(e)
 
+        # If transfer log does not exist, create a new one
         if not records:
             try:
                 transfer_record_id = fmp.create_record(fmp_transfer_log)
@@ -114,11 +115,20 @@ def inject(sg, logger, event, args):
                 img_record_id = fmp.create_record(fmp_thumb_data)
                 img_did_upload = fmp.upload_container(img_record_id, field_name='Image', file_=thumb_file)
                 thumb_file.close()
-                img_record = fmp.get_record(img_record_id)
             except Exception as e:
                 logger.exception(e)
 
-        # TODO: Kick off thumb process script.
+        try:
+            img_record = fmp.get_record(img_record_id)
+            img_primary_key = img_record.PrimaryKey
+            script_res = fmp.perform_script(
+                name=CONFIG['FMP_PROCESS_IMAGE_SCRIPT'],
+                param=img_primary_key
+            )
+        except Exception as e:
+            msg = f'Error performing image processing script. Please see below for details.\n\n{e}'
+            logger.exception(e)
+
         _send_success_email(fmp_version, fmp_transfer_log, fmp_transfer_data_dicts, fmp_thumb_data)
 
 
@@ -145,7 +155,7 @@ def _send_success_email(version_data, fmp_transfer_log, fmp_transfer_data_dicts,
 def _build_thumb_dict(thumb_name, thumb_path):
     thumb_dict = {
         'Filename': thumb_name,
-        'Path': thumb_path
+        'Path': thumb_path,
     }
     return _convert_dict_data_to_str(thumb_dict)
 
@@ -166,12 +176,15 @@ def _get_thumbnail(mov_path):
     return thumb_filename, thumb_dest
 
 
-def _get_mov_path(published_files):
-    for published_file in published_files:
-        path = _get_published_file_path(published_file)
-        if path and os.path.splitext(path)[1] in LEGAL_THUMB_SRC_EXTENSIONS:
-            return path
-    return None
+def _get_mov_path(version_data):
+    return version_data.get('sg_path_to_movie')
+
+    # Do we want to use published files?
+    # for published_file in published_files:
+    #     path = _get_published_file_path(published_file)
+    #     if path and os.path.splitext(path)[1] in LEGAL_THUMB_SRC_EXTENSIONS:
+    #         return path
+    # return None
 
 
 def _format_version_name(version_data):
@@ -255,7 +268,8 @@ def _get_version(sg, event):
             'code',
             'description',
             'entity',  # gets the shots / assets links
-            'published_files'  # gets the file links
+            'published_files',  # gets the file links
+            'sg_path_to_movie'
         ]
     )
     return version
