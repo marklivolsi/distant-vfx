@@ -69,24 +69,35 @@ def inject(sg, logger, event, args):
                      ) as fmp:
         fmp.login()
 
-        # Inject version  TODO: Check if version exists already??
+        # Check if version record already exists
         try:
-            version_record_id = fmp.create_record(fmp_version)
+            version_query = {'Filename': version_name}
+            version_records = fmp.find([version_query])
         except Exception as e:
-            logger.exception(e)
+            if fmp.last_error == 401: # no records were found
+                version_records = None
+            else:
+                logger.exception(e)
+
+        # If version record does not exist, create a new one
+        if not version_records:
+            try:
+                version_record_id = fmp.create_record(fmp_version)
+            except Exception as e:
+                logger.exception(e)
 
         # Inject transfer log, first check if it already exists
         fmp.layout = CONFIG['FMP_TRANSFER_LOG_LAYOUT']
         try:
-            records = fmp.find([fmp_transfer_log])
+            transfer_log_records = fmp.find([fmp_transfer_log])
         except Exception as e:
             if fmp.last_error == 401:  # no records were found
-                records = None
+                transfer_log_records = None
             else:
                 logger.exception(e)
 
         # If transfer log does not exist, create a new one
-        if not records:
+        if not transfer_log_records:
             try:
                 transfer_record_id = fmp.create_record(fmp_transfer_log)
                 transfer_record_data = fmp.get_record(transfer_record_id)
@@ -94,7 +105,7 @@ def inject(sg, logger, event, args):
             except Exception as e:
                 logger.exception(e)
         else:
-            transfer_primary_key = records[0].PrimaryKey
+            transfer_primary_key = transfer_log_records[0].PrimaryKey
 
         # Inject transfer data
         fmp.layout = CONFIG['FMP_TRANSFER_DATA_LAYOUT']
@@ -201,7 +212,6 @@ def _build_transfer_log_dict(published_file):
 def _build_version_dict(published_file, version_name_fmt):
     version_dict = {
         'VFXID': _get_vfx_entity_code(published_file),
-        'ShotgunID': published_file.get('id'),  # TODO: Do we want this? Does this make sense?
         'DeliveryNote': published_file.get('description'),
         'DeliveryPackage': published_file.get('sg_delivery_package_name'),
         'Filename': version_name_fmt
