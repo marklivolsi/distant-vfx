@@ -1,4 +1,5 @@
 import datetime
+import logging
 import os
 import time
 from fmrest import CloudServer
@@ -7,6 +8,7 @@ from distant_vfx.config import Config
 from distant_vfx.video import VideoProcessor
 
 
+logging.addLevelName(55, 'SUCCESS')
 CONFIG = Config().load_config_data('/mnt/Plugins/python3.6/shotgun_events_plugins/shotgun_events_config.yml')
 
 LEGAL_THUMB_SRC_EXTENSIONS = ['.mov', '.mp4', '.jpg']
@@ -98,9 +100,10 @@ def inject(sg, logger, event, args):
         # Inject transfer data
         fmp.layout = CONFIG['FMP_TRANSFER_DATA_LAYOUT']
         try:
-            for data_dict in fmp_transfer_data_dicts:
-                data_dict['Foriegnkey'] = transfer_primary_key
-                filename_record_id = fmp.create_record(data_dict)
+            if fmp_transfer_data_dicts:
+                for data_dict in fmp_transfer_data_dicts:
+                    data_dict['Foriegnkey'] = transfer_primary_key
+                    filename_record_id = fmp.create_record(data_dict)
         except Exception as e:
             logger.exception(e)
 
@@ -120,6 +123,16 @@ def inject(sg, logger, event, args):
             logger.exception(e)
 
         # TODO: Kick off thumb process script.
+        _send_success_email(version_data, fmp_transfer_log, fmp_transfer_data_dicts, thumb_data)
+
+
+def _send_success_email(version_data, fmp_transfer_log, fmp_transfer_data_dicts, thumb_data):
+    message = 'Shotgun data successfully injected into FileMaker. \n\n ' \
+              f'VERSION DATA\n{version_data}\n\n' \
+              f'TRANSFER LOG DATA\n{fmp_transfer_log}\n\n' \
+              f'TRANSFER FILES DATA\n{fmp_transfer_data_dicts}\n\n' \
+              f'IMAGE DATA\n{thumb_data}'
+    # TODO: Send email.
 
 
 def _build_thumb_dict(thumb_name, thumb_path):
@@ -213,7 +226,7 @@ def _get_package_name():
 
 
 def _convert_dict_data_to_str(dictionary):
-    return {str(key): ('' if value is None else str(value)) for key, value in dictionary}
+    return {str(key): ('' if value is None else str(value)) for key, value in dictionary.items()}
 
 
 def _get_vfx_entity_code(version_data):
