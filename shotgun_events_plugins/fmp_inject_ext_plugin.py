@@ -60,6 +60,94 @@ def inject(sg, logger, event, args):
         logger.exception(e)
         return
 
+    # Inject data to filemaker
+    with CloudServer(url=CONFIG['FMP_URL'],
+                     user=CONFIG['FMP_USERNAME'],
+                     password=CONFIG['FMP_PASSWORD'],
+                     database=CONFIG['FMP_ADMINDB'],
+                     layout=CONFIG['FMP_VERSIONS_LAYOUT']
+                     ) as fmp:
+        fmp.login()
+
+        # Inject version  TODO: Check if version exists already??
+        try:
+            version_record_id = fmp.create_record(fmp_version)
+        except Exception as e:
+            logger.exception(e)
+
+        # Inject transfer log, first check if it already exists
+        fmp.layout = CONFIG['FMP_TRANSFER_LOG_LAYOUT']
+        try:
+            records = fmp.find([fmp_transfer_log])
+        except Exception as e:
+            if fmp.last_error == 401:  # no records were found
+                records = None
+            else:
+                logger.exception(e)
+
+        # If transfer log does not exist, create a new one
+        if not records:
+            try:
+                transfer_record_id = fmp.create_record(fmp_transfer_log)
+                transfer_record_data = fmp.get_record(transfer_record_id)
+                transfer_primary_key = transfer_record_data.PrimaryKey
+            except Exception as e:
+                logger.exception(e)
+        else:
+            transfer_primary_key = records[0].PrimaryKey
+
+        # Inject transfer data
+        fmp.layout = CONFIG['FMP_TRANSFER_DATA_LAYOUT']
+        try:
+            fmp_transfer_data['Foriegnkey'] = transfer_primary_key
+            filename_record_id = fmp.create_record(fmp_transfer_data)
+        except Exception as e:
+            logger.exception(e)
+
+        # Inject thumb if available
+        if thumb_path is not None:
+            fmp.layout = CONFIG['FMP_IMAGES_LAYOUT']
+            try:
+                thumb_file = open(thumb_path, 'rb')
+                img_record_id = fmp.create_record(fmp_thumb_data)
+                img_did_upload = fmp.upload_container(img_record_id, field_name='Image', file_=thumb_file)
+                thumb_file.close()
+            except Exception as e:
+                logger.exception(e)
+
+        try:
+            img_record = fmp.get_record(img_record_id)
+            img_primary_key = img_record.PrimaryKey
+            script_res = fmp.perform_script(
+                name=CONFIG['FMP_PROCESS_IMAGE_SCRIPT'],
+                param=img_primary_key
+            )
+        except Exception as e:
+            logger.exception(e)
+
+        logger.info(f'Completed event processing {event}')
+        _send_success_email(fmp_version, fmp_transfer_log, fmp_transfer_data, fmp_thumb_data)
+
+
+def _send_success_email(version_data, fmp_transfer_log, fmp_transfer_data, thumb_data):
+    subject = f'[DISTANT_API] Successful External Vendor data injection at {datetime.datetime.now()}'
+    content = 'Shotgun data successfully injected into FileMaker. Please see below for details.\n\n' \
+              '<hr>' \
+              f'<h3>VERSION DATA</h3>\n{pformat(version_data)}\n\n' \
+              f'<h3>TRANSFER LOG DATA</h3>\n{pformat(fmp_transfer_log)}\n\n' \
+              f'<h3>TRANSFER FILES DATA</h3>\n{pformat(fmp_transfer_data)}\n\n' \
+              f'<h3>IMAGE DATA</h3>\n{pformat(thumb_data)}\n\n' \
+              f'<hr>'
+    yag = yagmail.SMTP(
+        user=CONFIG['EMAIL_USERNAME'],
+        password=CONFIG['EMAIL_PASSWORD']
+    )
+    yag.send(
+        to=CONFIG['EMAIL_RECIPIENTS'].split(','),
+        subject=subject,
+        contents=content
+    )
+
 
 def _build_thumb_dict(thumb_name, thumb_path):
     thumb_dict = {

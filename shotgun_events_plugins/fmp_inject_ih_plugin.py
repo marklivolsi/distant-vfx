@@ -128,7 +128,6 @@ def inject(sg, logger, event, args):
                 param=img_primary_key
             )
         except Exception as e:
-            msg = f'Error performing image processing script. Please see below for details.\n\n{e}'
             logger.exception(e)
 
         logger.info(f'Completed event processing {event}')
