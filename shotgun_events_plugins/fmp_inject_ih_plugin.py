@@ -1,14 +1,14 @@
 import datetime
-import logging
 import os
 import time
+import yagmail
+from pprint import pformat
 from fmrest import CloudServer
 
 from distant_vfx.config import Config
 from distant_vfx.video import VideoProcessor
 
 
-logging.addLevelName(55, 'SUCCESS')
 CONFIG = Config().load_config_data('/mnt/Plugins/python3.6/shotgun_events_plugins/shotgun_events_config.yml')
 
 LEGAL_THUMB_SRC_EXTENSIONS = ['.mov', '.mp4', '.jpg']
@@ -55,6 +55,7 @@ def inject(sg, logger, event, args):
         thumb_name, thumb_path = None, None
         if mov_path:
             thumb_name, thumb_path = _get_thumbnail(mov_path)
+        fmp_thumb_data = _build_thumb_dict(thumb_name, thumb_path)
 
     except Exception as e:
         logger.exception(e)
@@ -74,7 +75,6 @@ def inject(sg, logger, event, args):
             version_record_id = fmp.create_record(fmp_version)
         except Exception as e:
             logger.exception(e)
-            return
 
         # Inject transfer log
         fmp.layout = CONFIG['FMP_TRANSFER_LOG_LAYOUT']
@@ -85,7 +85,6 @@ def inject(sg, logger, event, args):
                 records = None
             else:
                 logger.exception(e)
-                return
 
         if not records:
             try:
@@ -108,31 +107,39 @@ def inject(sg, logger, event, args):
             logger.exception(e)
 
         # Inject thumb if available
-        if thumb_path is None:
-            return
-
-        fmp.layout = CONFIG['FMP_IMAGES_LAYOUT']
-        thumb_data = _build_thumb_dict(thumb_name, thumb_path)
-        try:
-            thumb_file = open(thumb_path, 'rb')
-            img_record_id = fmp.create_record(thumb_data)
-            img_did_upload = fmp.upload_container(img_record_id, field_name='Image', file_=thumb_file)
-            thumb_file.close()
-            img_record = fmp.get_record(img_record_id)
-        except Exception as e:
-            logger.exception(e)
+        if thumb_path is not None:
+            fmp.layout = CONFIG['FMP_IMAGES_LAYOUT']
+            try:
+                thumb_file = open(thumb_path, 'rb')
+                img_record_id = fmp.create_record(fmp_thumb_data)
+                img_did_upload = fmp.upload_container(img_record_id, field_name='Image', file_=thumb_file)
+                thumb_file.close()
+                img_record = fmp.get_record(img_record_id)
+            except Exception as e:
+                logger.exception(e)
 
         # TODO: Kick off thumb process script.
-        _send_success_email(version_data, fmp_transfer_log, fmp_transfer_data_dicts, thumb_data)
+        _send_success_email(fmp_version, fmp_transfer_log, fmp_transfer_data_dicts, fmp_thumb_data)
 
 
 def _send_success_email(version_data, fmp_transfer_log, fmp_transfer_data_dicts, thumb_data):
-    message = 'Shotgun data successfully injected into FileMaker. \n\n ' \
-              f'VERSION DATA\n{version_data}\n\n' \
-              f'TRANSFER LOG DATA\n{fmp_transfer_log}\n\n' \
-              f'TRANSFER FILES DATA\n{fmp_transfer_data_dicts}\n\n' \
-              f'IMAGE DATA\n{thumb_data}'
-    # TODO: Send email.
+    subject = f'[DISTANT_API] Successful In House data injection at {datetime.datetime.now()}'
+    content = 'Shotgun data successfully injected into FileMaker. Please see below for details.\n\n' \
+              '<hr>' \
+              f'<h3>VERSION DATA</h3>\n{pformat(version_data)}\n\n' \
+              f'<h3>TRANSFER LOG DATA</h3>\n{pformat(fmp_transfer_log)}\n\n' \
+              f'<h3>TRANSFER FILES DATA</h3>\n{pformat(fmp_transfer_data_dicts)}\n\n' \
+              f'<h3>IMAGE DATA</h3>\n{pformat(thumb_data)}\n\n' \
+              f'<hr>'
+    yag = yagmail.SMTP(
+        user=CONFIG['EMAIL_USERNAME'],
+        password=CONFIG['EMAIL_PASSWORD']
+    )
+    yag.send(
+        to=CONFIG['EMAIL_RECIPIENTS'].split(','),
+        subject=subject,
+        contents=content
+    )
 
 
 def _build_thumb_dict(thumb_name, thumb_path):
@@ -181,6 +188,7 @@ def _build_transfer_data_dicts(published_files, version_name_fmt):
     for published_file in published_files:
         transfer_data = {
             'Filename': published_file.get('code'),
+            'PublishedFileID': published_file.get('id'),
             'Path': _get_published_file_path(published_file),
             'VersionLink': version_name_fmt
         }
