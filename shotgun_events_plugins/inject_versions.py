@@ -59,7 +59,6 @@ def registerCallbacks(reg):
 
 def inject_versions(sg, logger, event, args):
 
-    # event_description = event.get('description')
     event_id = event.get('id')
     event_entity = sg.find_one('EventLogEntry', [['id', 'is', event_id]], ['description'])
     event_description = event_entity.get('description')
