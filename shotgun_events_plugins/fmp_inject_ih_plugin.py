@@ -33,6 +33,8 @@ def inject(sg, logger, event, args):
     if not is_inject_candidate:
         return
 
+    logger.info(f'Processing event {event}')
+
     # Wait to make sure entity is fully created
     time.sleep(1)
 
@@ -129,6 +131,7 @@ def inject(sg, logger, event, args):
             msg = f'Error performing image processing script. Please see below for details.\n\n{e}'
             logger.exception(e)
 
+        logger.info(f'Completed event processing {event}')
         _send_success_email(fmp_version, fmp_transfer_log, fmp_transfer_data_dicts, fmp_thumb_data)
 
 
