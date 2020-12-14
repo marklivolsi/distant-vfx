@@ -16,18 +16,14 @@ import re
 from python.distant_vfx.config import Config
 from python.distant_vfx.filemaker import FMCloudInstance
 
-config = Config()
-config_did_load = config.load_config()
-config_data = config.data
-
-FMP_URL = config_data['fmp_data_api']['base_url']
-FMP_USERPOOL = config_data['fmp_data_api']['cognito_userpool_id']
-FMP_CLIENT = config_data['fmp_data_api']['cognito_client_id']
-FMP_USERNAME = config_data['fmp_data_api']['username']
-FMP_PASSWORD = config_data['fmp_data_api']['password']
-FMP_EDITORIAL_DB = config_data['fmp_data_api']['databases']['editorial']
-FMP_LAYOUT_CUTHISTORY = 'api_cuthistory'
-FMP_LAYOUT_CUTHISTORYSHOTS = 'api_cuthistoryshots'
+FMP_URL = os.environ['FMP_URL']
+FMP_USERPOOL = os.environ['FMP_USERPOOL']
+FMP_CLIENT = os.environ['FMP_CLIENT']
+FMP_USERNAME = os.environ['FMP_USERNAME']
+FMP_PASSWORD = os.environ['FMP_PASSWORD']
+FMP_EDITORIAL_DB = os.environ['FMP_EDITORIAL_DB']
+FMP_LAYOUT_CUTHISTORY = os.environ['FMP_LAYOUT_CUTHISTORY']
+FMP_LAYOUT_CUTHISTORYSHOTS = os.environ['FMP_LAYOUT_CUTHISTORYSHOTS']
 
 
 
