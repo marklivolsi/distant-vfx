@@ -1,3 +1,14 @@
+from os import environ
+
+# Environment variables
+FMP_URL = environ.get('FMP_URL')
+FMP_USERNAME = environ.get('FMP_USERNAME')
+FMP_PASSWORD = environ.get('FMP_PASSWORD')
+FMP_ADMINDB = environ.get('FMP_ADMINDB')
+FMP_TRANSFER_DATA_LAYOUT = environ.get('FMP_TRANSFER_DATA_LAYOUT')
+
+SHOT_TREE_BASE_PATH = environ.get('SHOT_TREE_BASE_PATH')
+
 # Filesystem path constants
 CONFIG_PATH = './config.yml'
 
