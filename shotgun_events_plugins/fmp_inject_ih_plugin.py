@@ -88,13 +88,15 @@ def inject(sg, logger, event, args):
                     continue
                 else:
                     logger.error(f'Error creating version record: {fmp_version}  (response {e._response})', exc_info=True)
+                    report_version = False
             except Exception:
                 logger.error(f'Error creating version record: {fmp_version}', exc_info=True)
+                report_version = False
                 break
             else:
                 break
 
-        # Inject transfer log
+        # First find if transfer log already exists
         fmp.layout = CONFIG['FMP_TRANSFER_LOG_LAYOUT']
         for i in range(tries):
             try:
@@ -128,8 +130,10 @@ def inject(sg, logger, event, args):
                         continue
                     else:
                         logger.error(f'Error creating transfer log record: {fmp_transfer_log}  (response {e._response})', exc_info=True)
+                        report_transfer_log = False
                 except Exception:
                     logger.error(f'Error creating transfer log record: {fmp_transfer_log}', exc_info=True)
+                    report_transfer_log = False
                     break
                 else:
                     break
@@ -150,8 +154,10 @@ def inject(sg, logger, event, args):
                             continue
                         else:
                             logger.error(f'Error injecting transfer data record: {data_dict}  (response {e._response})', exc_info=True)
+                            report_transfer_data = False
                     except Exception:
                         logger.error(f'Error injecting transfer data record: {data_dict}', exc_info=True)
+                        report_transfer_data = False
                         break
                     else:
                         break
@@ -173,8 +179,11 @@ def inject(sg, logger, event, args):
                         continue
                     else:
                         logger.error(f'Error injecting thumbnail record: {fmp_thumb_data} (response {e._response})', exc_info=True)
+                        report_img = False
                 except Exception:
                     logger.error(f'Error injecting thumbnail record: {fmp_thumb_data}', exc_info=True)
+                    report_img = False
+                    break
                 else:
                     break
 
@@ -201,7 +210,14 @@ def inject(sg, logger, event, args):
                     break
 
         logger.info(f'Completed event processing {event}')
-        _send_success_email(fmp_version, fmp_transfer_log, fmp_transfer_data_dicts, fmp_thumb_data)
+
+        do_not_report_msg = 'There was an error injecting this data. Please see error emails for details.'
+        version_report = fmp_version if report_version else do_not_report_msg
+        transfer_log_report = fmp_transfer_log if report_transfer_log else do_not_report_msg
+        transfer_data_report = fmp_transfer_data_dicts if report_transfer_data else do_not_report_msg
+        img_report = fmp_thumb_data if report_img else do_not_report_msg
+
+        _send_success_email(version_report, transfer_log_report, transfer_data_report, img_report)
 
 
 def _send_success_email(version_data, fmp_transfer_log, fmp_transfer_data_dicts, thumb_data):
