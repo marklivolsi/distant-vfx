@@ -42,9 +42,9 @@ def main():
 
 
 def _find_missing_filepath(filename):
-    vfxid = filename[:7]
-    seq = vfxid[:3]
-    shot_dir_path = os.path.join(SHOT_TREE_BASE_PATH, seq, vfxid, 'shot')
+    vfx_id = filename[:7]
+    seq = vfx_id[:3]
+    shot_dir_path = os.path.join(SHOT_TREE_BASE_PATH, seq, vfx_id, 'shot')
     for root, dirs, files in os.walk(shot_dir_path):
         for file in files:
             if file in filename:

@@ -52,16 +52,19 @@ def inject(sg, logger, event, args):
         published_files = _get_published_file(sg, version_data)
         fmp_transfer_data_dicts = _build_transfer_data_dicts(published_files, version_name)
 
+    except Exception:
+        logger.error('Error prepping data for FMP injection.', exc_info=True)
+        return
+
+    thumb_name, thumb_path, fmp_thumb_data = None, None, None
+    try:
         # Generate a thumbnail if applicable
         mov_path = _get_mov_path(version_data)
-        thumb_name, thumb_path = None, None
         if mov_path:
             thumb_name, thumb_path = _get_thumbnail(mov_path)
         fmp_thumb_data = _build_thumb_dict(thumb_name, thumb_path)
-
-    except Exception as e:
-        logger.exception(e)
-        return
+    except Exception:
+        logger.error(f'Error generating thumbnail for version: {version_name}', exc_info=True)
 
     # Inject data to filemaker
     with CloudServer(url=CONFIG['FMP_URL'],
@@ -75,18 +78,18 @@ def inject(sg, logger, event, args):
         # Inject version
         try:
             version_record_id = fmp.create_record(fmp_version)
-        except Exception as e:
-            logger.exception(e)
+        except Exception:
+            logger.error(f'Error creating version record: {fmp_version}', exc_info=True)
 
         # Inject transfer log
         fmp.layout = CONFIG['FMP_TRANSFER_LOG_LAYOUT']
         try:
             records = fmp.find([fmp_transfer_log])
-        except Exception as e:
+        except Exception:
             if fmp.last_error == 401:  # no records were found
                 records = None
             else:
-                logger.exception(e)
+                logger.error(f'Error finding transfer log record: {fmp_transfer_log}', exc_info=True)
 
         # If transfer log does not exist, create a new one
         if not records:
@@ -94,20 +97,20 @@ def inject(sg, logger, event, args):
                 transfer_record_id = fmp.create_record(fmp_transfer_log)
                 transfer_record_data = fmp.get_record(transfer_record_id)
                 transfer_primary_key = transfer_record_data.PrimaryKey
-            except Exception as e:
-                logger.exception(e)
+            except Exception:
+                logger.error(f'Error creating transfer log record: {fmp_transfer_log}', exc_info=True)
         else:
             transfer_primary_key = records[0].PrimaryKey
 
         # Inject transfer data
         fmp.layout = CONFIG['FMP_TRANSFER_DATA_LAYOUT']
-        try:
-            if fmp_transfer_data_dicts:
-                for data_dict in fmp_transfer_data_dicts:
+        if fmp_transfer_data_dicts:
+            for data_dict in fmp_transfer_data_dicts:
+                try:
                     data_dict['Foriegnkey'] = transfer_primary_key
                     filename_record_id = fmp.create_record(data_dict)
-        except Exception as e:
-            logger.exception(e)
+                except Exception:
+                    logger.error(f'Error injecting transfer data record: {data_dict}', exc_info=True)
 
         # Inject thumb if available
         if thumb_path is not None:
@@ -117,8 +120,8 @@ def inject(sg, logger, event, args):
                 img_record_id = fmp.create_record(fmp_thumb_data)
                 img_did_upload = fmp.upload_container(img_record_id, field_name='Image', file_=thumb_file)
                 thumb_file.close()
-            except Exception as e:
-                logger.exception(e)
+            except Exception:
+                logger.error(f'Error injecting thumbnail record: {fmp_thumb_data}', exc_info=True)
 
         try:
             img_record = fmp.get_record(img_record_id)
@@ -127,8 +130,8 @@ def inject(sg, logger, event, args):
                 name=CONFIG['FMP_PROCESS_IMAGE_SCRIPT'],
                 param=img_primary_key
             )
-        except Exception as e:
-            logger.exception(e)
+        except Exception:
+            logger.error(f'Error running process image script for image {img_primary_key}', exc_info=True)
 
         logger.info(f'Completed event processing {event}')
         _send_success_email(fmp_version, fmp_transfer_log, fmp_transfer_data_dicts, fmp_thumb_data)
