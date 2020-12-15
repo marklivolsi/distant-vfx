@@ -18,15 +18,27 @@ def main():
 
     # Fill in missing file paths where possible
     file_paths = []
+    cut_order_map = {}
     for file in review_records:
+
         try:
             path = file.Path
         except AttributeError:
             path = _find_missing_filepath(file)
+
+        try:
+            cut_order = int(file['VFXEditorialShots::CutOrder'])
+        except:
+            cut_order = 0
+
         if path is not None:
+            cut_order_map[path] = cut_order
             file_paths.append(path)
         else:
             print(f'Could not locate file {file}')
+
+    # Sort files by cut order
+    file_paths.sort(key=lambda x: cut_order_map[x])
 
     # Launch files in RV
     cmd = ['rv']
