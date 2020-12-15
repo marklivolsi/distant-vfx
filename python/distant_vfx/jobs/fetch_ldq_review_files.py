@@ -65,10 +65,7 @@ def _get_records_from_fmp():
         query = {'SupReviewFlag': 1}
         try:
             records = fmp.find([query], limit=500)
-        except Exception as e:
-            if fmp.last_error == 401:  # no records were found
-                records = None
-            else:
-                print('No review items found.')
+        except Exception:
+            print('No review items found.')  # TODO: Send email?
 
         return records
