@@ -76,7 +76,7 @@ def inject(sg, logger, event, args):
         fmp.login()
 
         tries = 3  # define number of retry attempts in case of BadJSON
-        report_version, report_transfer_log, report_transfer_data, report_img = True
+        report_version, report_transfer_log, report_transfer_data, report_img = True, True, True, True
 
         # Inject version
         for i in range(tries):
