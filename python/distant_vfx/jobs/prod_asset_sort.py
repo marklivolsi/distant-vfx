@@ -90,7 +90,7 @@ def main(pkg_path):
 
         # Standardize the item type
         if item_type in TYPE_MAP:
-            item_type_fmt = TYPE_MAP[item_type.lower()]
+            item_type_fmt = TYPE_MAP[item_type].lower()
         else:
             item_type_fmt = item_type.lower()
 
