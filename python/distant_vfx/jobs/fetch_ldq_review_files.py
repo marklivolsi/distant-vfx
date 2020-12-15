@@ -76,7 +76,7 @@ def _get_records_from_fmp():
         # Find eligible review records
         query = {'SupReviewFlag': 1}
         try:
-            records = fmp.find([query], limit=500)
+            records = fmp.find([query], limit=500)  # limit is 100 by default
         except Exception:
             print('No review items found.')  # TODO: Send email?
 
