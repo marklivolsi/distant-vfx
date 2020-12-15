@@ -4,6 +4,7 @@ import time
 import yagmail
 from pprint import pformat
 from fmrest import CloudServer
+from fmrest.exceptions import BadJSON
 
 from distant_vfx.config import Config
 from distant_vfx.video import VideoProcessor
@@ -51,7 +52,6 @@ def inject(sg, logger, event, args):
         fmp_transfer_log = _convert_dict_data_to_str({'package': _get_package_name()})
         published_files = _get_published_file(sg, version_data)
         fmp_transfer_data_dicts = _build_transfer_data_dicts(published_files, version_name)
-
     except Exception:
         logger.error('Error prepping data for FMP injection.', exc_info=True)
         return
@@ -75,30 +75,63 @@ def inject(sg, logger, event, args):
                      ) as fmp:
         fmp.login()
 
+        tries = 3  # define number of retry attempts in case of BadJSON
+
         # Inject version
-        try:
-            version_record_id = fmp.create_record(fmp_version)
-        except Exception:
-            logger.error(f'Error creating version record: {fmp_version}', exc_info=True)
+        for i in range(tries):
+            try:
+                version_record_id = fmp.create_record(fmp_version)
+            except BadJSON:
+                if i <= tries - 1:
+                    time.sleep(0.5)
+                    continue
+                else:
+                    logger.error(f'Error creating version record: {fmp_version}', exc_info=True)
+            except Exception:
+                logger.error(f'Error creating version record: {fmp_version}', exc_info=True)
+                break
+            else:
+                break
 
         # Inject transfer log
         fmp.layout = CONFIG['FMP_TRANSFER_LOG_LAYOUT']
-        try:
-            records = fmp.find([fmp_transfer_log])
-        except Exception:
-            if fmp.last_error == 401:  # no records were found
-                records = None
+        for i in range(tries):
+            try:
+                records = fmp.find([fmp_transfer_log])
+            except BadJSON:
+                if i <= tries - 1:
+                    time.sleep(0.5)
+                    continue
+                else:
+                    logger.error(f'Error finding transfer log record: {fmp_transfer_log}', exc_info=True)
+            except Exception:
+                if fmp.last_error == 401:  # no records were found
+                    records = None
+                    break
+                else:
+                    logger.error(f'Error finding transfer log record: {fmp_transfer_log}', exc_info=True)
+                    break
             else:
-                logger.error(f'Error finding transfer log record: {fmp_transfer_log}', exc_info=True)
+                break
 
         # If transfer log does not exist, create a new one
         if not records:
-            try:
-                transfer_record_id = fmp.create_record(fmp_transfer_log)
-                transfer_record_data = fmp.get_record(transfer_record_id)
-                transfer_primary_key = transfer_record_data.PrimaryKey
-            except Exception:
-                logger.error(f'Error creating transfer log record: {fmp_transfer_log}', exc_info=True)
+            for i in range(tries):
+                try:
+                    transfer_record_id = fmp.create_record(fmp_transfer_log)
+                    transfer_record_data = fmp.get_record(transfer_record_id)
+                    transfer_primary_key = transfer_record_data.PrimaryKey
+                except BadJSON:
+                    if i <= tries - 1:
+                        time.sleep(0.5)
+                        continue
+                    else:
+                        logger.error(f'Error creating transfer log record: {fmp_transfer_log}', exc_info=True)
+                except Exception:
+                    logger.error(f'Error creating transfer log record: {fmp_transfer_log}', exc_info=True)
+                    break
+                else:
+                    break
         else:
             transfer_primary_key = records[0].PrimaryKey
 
@@ -106,32 +139,63 @@ def inject(sg, logger, event, args):
         fmp.layout = CONFIG['FMP_TRANSFER_DATA_LAYOUT']
         if fmp_transfer_data_dicts:
             for data_dict in fmp_transfer_data_dicts:
-                try:
-                    data_dict['Foriegnkey'] = transfer_primary_key
-                    filename_record_id = fmp.create_record(data_dict)
-                except Exception:
-                    logger.error(f'Error injecting transfer data record: {data_dict}', exc_info=True)
+                for i in range(tries):
+                    try:
+                        data_dict['Foriegnkey'] = transfer_primary_key
+                        filename_record_id = fmp.create_record(data_dict)
+                    except BadJSON:
+                        if i <= tries - 1:
+                            time.sleep(0.5)
+                            continue
+                        else:
+                            logger.error(f'Error injecting transfer data record: {data_dict}', exc_info=True)
+                    except Exception:
+                        logger.error(f'Error injecting transfer data record: {data_dict}', exc_info=True)
+                        break
+                    else:
+                        break
 
         # Inject thumb if available
         if thumb_path is not None:
             fmp.layout = CONFIG['FMP_IMAGES_LAYOUT']
-            try:
-                thumb_file = open(thumb_path, 'rb')
-                img_record_id = fmp.create_record(fmp_thumb_data)
-                img_did_upload = fmp.upload_container(img_record_id, field_name='Image', file_=thumb_file)
-                thumb_file.close()
-            except Exception:
-                logger.error(f'Error injecting thumbnail record: {fmp_thumb_data}', exc_info=True)
 
-        try:
-            img_record = fmp.get_record(img_record_id)
-            img_primary_key = img_record.PrimaryKey
-            script_res = fmp.perform_script(
-                name=CONFIG['FMP_PROCESS_IMAGE_SCRIPT'],
-                param=img_primary_key
-            )
-        except Exception:
-            logger.error(f'Error running process image script for image {img_primary_key}', exc_info=True)
+            for i in range(tries):
+                try:
+                    thumb_file = open(thumb_path, 'rb')
+                    img_record_id = fmp.create_record(fmp_thumb_data)
+                    img_did_upload = fmp.upload_container(img_record_id, field_name='Image', file_=thumb_file)
+                    thumb_file.close()
+                except BadJSON:
+                    if i <= tries - 1:
+                        time.sleep(0.5)
+                        continue
+                    else:
+                        logger.error(f'Error injecting thumbnail record: {fmp_thumb_data}', exc_info=True)
+                except Exception:
+                    logger.error(f'Error injecting thumbnail record: {fmp_thumb_data}', exc_info=True)
+                    break
+                else:
+                    break
+
+        for i in range(tries):
+            try:
+                img_record = fmp.get_record(img_record_id)
+                img_primary_key = img_record.PrimaryKey
+                script_res = fmp.perform_script(
+                    name=CONFIG['FMP_PROCESS_IMAGE_SCRIPT'],
+                    param=img_primary_key
+                )
+            except BadJSON:
+                if i <= tries - 1:
+                    time.sleep(0.5)
+                    continue
+                else:
+                    logger.error(f'Error running process image script for image {img_primary_key}', exc_info=True)
+            except Exception:
+                logger.error(f'Error running process image script for image {img_primary_key}', exc_info=True)
+                break
+            else:
+                break
 
         logger.info(f'Completed event processing {event}')
         _send_success_email(fmp_version, fmp_transfer_log, fmp_transfer_data_dicts, fmp_thumb_data)
