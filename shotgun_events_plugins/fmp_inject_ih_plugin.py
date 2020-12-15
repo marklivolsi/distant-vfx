@@ -298,7 +298,6 @@ def _find_transfer_log(fmp, fmp_transfer_log, logger, tries=3):
                              exc_info=True)
         except Exception:
             if fmp.last_error == 401:  # no records were found
-                records = None
                 break
             else:
                 logger.error(f'Error finding transfer log record: {fmp_transfer_log}', exc_info=True)

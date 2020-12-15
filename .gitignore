@@ -138,3 +138,4 @@ venv3.6
 shotgun_events_config.yml
 secrets
 fmp_inject_ih_plugin_OLD.py
+fmp_inject_ext_plugin_OLD.py
