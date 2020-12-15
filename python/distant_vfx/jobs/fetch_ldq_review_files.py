@@ -16,7 +16,7 @@ def main():
     if not review_records:
         sys.exit()
 
-    # Fill in missing file paths where possible
+    # Get file paths and cut order from records
     file_paths = []
     cut_order_map = {}
     for file in review_records:
@@ -24,12 +24,12 @@ def main():
         try:
             path = file.Path
         except AttributeError:
-            path = _find_missing_filepath(file)
+            path = _find_missing_filepath(file)  # fill in file path where possible if not provided
 
         try:
             cut_order = int(file['VFXEditorialShots::CutOrder'])
         except:
-            cut_order = 0
+            cut_order = 0  # default to 0 if can't read cut order
 
         if path is not None:
             cut_order_map[path] = cut_order
@@ -43,7 +43,7 @@ def main():
     # Launch files in RV
     cmd = ['rv']
     for path in file_paths:
-        cmd += path
+        cmd.append(path)
 
     process = subprocess.Popen(cmd,
                                stdout=subprocess.PIPE,
