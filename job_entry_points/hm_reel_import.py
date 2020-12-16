@@ -21,7 +21,7 @@ FMP_USERPOOL = os.environ['FMP_USERPOOL']
 FMP_CLIENT = os.environ['FMP_CLIENT']
 FMP_USERNAME = os.environ['FMP_USERNAME']
 FMP_PASSWORD = os.environ['FMP_PASSWORD']
-FMP_EDITORIAL_DB = os.environ['FMP_EDITORIAL_DB']
+FMP_EDIT_DB = os.environ['FMP_EDIT_DB']
 FMP_LAYOUT_CUTHISTORY = os.environ['FMP_LAYOUT_CUTHISTORY']
 FMP_LAYOUT_CUTHISTORYSHOTS = os.environ['FMP_LAYOUT_CUTHISTORYSHOTS']
 
@@ -238,7 +238,7 @@ if __name__ == "__main__":
     with FMCloudInstance(FMP_URL,
                          FMP_USERNAME,
                          FMP_PASSWORD,
-                         FMP_EDITORIAL_DB,
+                         FMP_EDIT_DB,
                          FMP_USERPOOL,
                          FMP_CLIENT) as fmp:
         # Import shot records
