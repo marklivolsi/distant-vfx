@@ -29,6 +29,7 @@ FMP_PROCESS_IMAGE_SCRIPT = environ['FMP_PROCESS_IMAGE_SCRIPT']
 SHOT_TREE_BASE_PATH = environ['SHOT_TREE_BASE_PATH']
 THUMBS_BASE_PATH = environ['THUMBS_BASE_PATH']
 CONFIG_PATH = './config.yml'
+SG_EVENTS_CONFIG_PATH = '/mnt/Plugins/python3.6/config/shotgun_events_config.yml'
 
 # Email credentials
 EMAIL_USERNAME = environ['EMAIL_USERNAME']

@@ -8,9 +8,10 @@ from fmrest.exceptions import BadJSON
 
 from distant_vfx.config import Config
 from distant_vfx.video import VideoProcessor
+from distant_vfx.constants import SG_EVENTS_CONFIG_PATH
 
 
-CONFIG = Config().load_config_data('/mnt/Plugins/python3.6/shotgun_events_plugins/shotgun_events_config.yml')
+CONFIG = Config().load_config_data(SG_EVENTS_CONFIG_PATH)
 
 LEGAL_THUMB_SRC_EXTENSIONS = ['.mov', '.mp4', '.jpg']
 THUMBS_BASE_PATH = CONFIG['THUMBS_BASE_PATH']
