@@ -1,7 +1,9 @@
 import os
 import subprocess
 import sys
+import time
 from fmrest import CloudServer
+from fmrest.exceptions import BadJSON, FileMakerError
 
 from ..constants import FMP_URL, FMP_PASSWORD, FMP_USERNAME, FMP_ADMIN_DB, FMP_TRANSFER_DATA_LAYOUT, SHOT_TREE_BASE_PATH
 
@@ -65,7 +67,7 @@ def _find_missing_filepath(filename):
     return None
 
 
-def _get_records_from_fmp():
+def _get_records_from_fmp(tries=3):
     with CloudServer(url=FMP_URL,
                      user=FMP_USERNAME,
                      password=FMP_PASSWORD,
@@ -76,9 +78,23 @@ def _get_records_from_fmp():
 
         # Find eligible review records
         query = {'SupReviewFlag': 1}
-        try:
-            records = fmp.find([query], limit=500)  # limit is 100 by default
-        except Exception:
-            print('No review items found.')  # TODO: Send email?
+        records = None
+        for i in range(tries):
+            try:
+                records = fmp.find([query], limit=500)  # limit is 100 by default
+            except BadJSON as e:
+                if i <= tries - 1:
+                    time.sleep(0.5)
+                    continue
+                else:
+                    print(f'Error connecting to FileMaker database.\nError: {e}\nResponse: {e._response}')
+            except Exception as e:
+                if fmp.last_error == 401:  # no records were found
+                    print('No review items found.')
+                else:
+                    print(f'Error connecting to FileMaker database.\nError: {e}')
+                break
+            else:
+                break
 
         return records
