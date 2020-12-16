@@ -112,7 +112,7 @@ def _edl2dict(ifile, fps=24):  # Script expects an edl file, returns dictionary
     for i, event in enumerate(events):
         try:
             events[i].update({'VFXID': event['Filename'].split("_")[0],
-                                      'VFXEditorialShots::SCAN': 1,
+                                      # 'VFXEditorialShots::SCAN': 1,  # turned off, can't import this field
                                       })
 
         except:
