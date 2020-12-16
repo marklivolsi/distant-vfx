@@ -3,7 +3,7 @@ import subprocess
 import sys
 import time
 from fmrest import CloudServer
-from fmrest.exceptions import BadJSON, FileMakerError
+from fmrest.exceptions import BadJSON
 
 from ..constants import FMP_URL, FMP_PASSWORD, FMP_USERNAME, FMP_ADMIN_DB, FMP_TRANSFER_DATA_LAYOUT, SHOT_TREE_BASE_PATH
 
