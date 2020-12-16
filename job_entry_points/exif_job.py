@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from distant_vfx.jobs import exiftool_rename_cr2_dir
 import sys
 
