@@ -3,7 +3,7 @@ import subprocess
 import sys
 from fmrest import CloudServer
 
-from ..constants import FMP_URL, FMP_PASSWORD, FMP_USERNAME, FMP_ADMINDB, FMP_TRANSFER_DATA_LAYOUT, SHOT_TREE_BASE_PATH
+from ..constants import FMP_URL, FMP_PASSWORD, FMP_USERNAME, FMP_ADMIN_DB, FMP_TRANSFER_DATA_LAYOUT, SHOT_TREE_BASE_PATH
 
 
 def main():
@@ -68,7 +68,7 @@ def _get_records_from_fmp():
     with CloudServer(url=FMP_URL,
                      user=FMP_USERNAME,
                      password=FMP_PASSWORD,
-                     database=FMP_ADMINDB,
+                     database=FMP_ADMIN_DB,
                      layout=FMP_TRANSFER_DATA_LAYOUT
                      ) as fmp:
         fmp.login()
