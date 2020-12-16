@@ -32,7 +32,3 @@ def main(dest_dir, paths, should_move=False):
                                         universal_newlines=True,
                                         shell=False)
                 _, _ = process.communicate()
-
-
-if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2:])
