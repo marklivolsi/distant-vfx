@@ -14,6 +14,7 @@ def main():
 
     # If there are no records, exit
     if not review_records:
+        print('No review records were found.')
         sys.exit()
 
     # Get file paths and cut order from records
