@@ -3,20 +3,22 @@ from os import environ
 # Environment variables
 
 # FMP credentials
-FMP_URL = environ.get('FMP_URL')
-FMP_USERNAME = environ.get('FMP_USERNAME')
-FMP_PASSWORD = environ.get('FMP_PASSWORD')
+FMP_URL = environ['FMP_URL']
+FMP_USERNAME = environ['FMP_USERNAME']
+FMP_PASSWORD = environ['FMP_PASSWORD']
 
 # FMP databases
-FMP_ADMIN_DB = environ.get('FMP_ADMIN_DB')
-FMP_EDIT_DB = environ.get('FMP_EDIT_DB')
+FMP_ADMIN_DB = environ['FMP_ADMIN_DB']
+FMP_EDIT_DB = environ['FMP_EDIT_DB']
 
 # FMP layouts
-FMP_TRANSFER_DATA_LAYOUT = environ.get('FMP_TRANSFER_DATA_LAYOUT')
-FMP_SCANS_LAYOUT = environ.get('FMP_SCANS_LAYOUT')
+FMP_TRANSFER_DATA_LAYOUT = environ['FMP_TRANSFER_DATA_LAYOUT']
+FMP_SCANS_LAYOUT = environ['FMP_SCANS_LAYOUT']
+FMP_CUTHISTORY_LAYOUT = environ['FMP_CUTHISTORY_LAYOUT']
+FMP_CUTHISTORYSHOTS_LAYOUT = environ['FMP_CUTHISTORYSHOTS_LAYOUT']
 
 # Filesystem path constants
-SHOT_TREE_BASE_PATH = environ.get('SHOT_TREE_BASE_PATH')
+SHOT_TREE_BASE_PATH = environ['SHOT_TREE_BASE_PATH']
 CONFIG_PATH = './config.yml'
 
 # Template constants
