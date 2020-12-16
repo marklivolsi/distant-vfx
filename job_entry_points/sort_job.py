@@ -1,5 +1,5 @@
 import argparse
-from python.distant_vfx.jobs import prod_asset_sort
+from distant_vfx.jobs import prod_asset_sort
 
 
 def main():

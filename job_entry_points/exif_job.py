@@ -1,4 +1,4 @@
-from python.distant_vfx.jobs import exiftool_rename_cr2_dir
+from distant_vfx.jobs import exiftool_rename_cr2_dir
 import sys
 
 

@@ -1,8 +1,5 @@
-import logging
 import os
 import pandas as pd
-
-LOG = logging.getLogger(__name__)
 
 
 class ALEParser:

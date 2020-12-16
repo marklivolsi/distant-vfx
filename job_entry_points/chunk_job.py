@@ -1,4 +1,4 @@
-from python.distant_vfx.jobs import chunk_to_new_packages
+from distant_vfx.jobs import chunk_to_new_packages
 import argparse
 
 

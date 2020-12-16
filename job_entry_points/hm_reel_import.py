@@ -14,7 +14,7 @@ import re
 
 # Updates to use FM Cloud Instead
 from python.distant_vfx.config import Config
-from python.distant_vfx.filemaker import FMCloudInstance
+from distant_vfx.filemaker import FMCloudInstance
 
 FMP_URL = os.environ['FMP_URL']
 FMP_USERPOOL = os.environ['FMP_USERPOOL']

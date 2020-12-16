@@ -96,6 +96,7 @@ class ShotgunInstance:
         shot_data = self.session.find_one('Shot', filters, fields)
         if shot_data is None:
             LOG.error('Could not find Shotgun data for shot {shot_code}.'.format(shot_code=shot_code))
+            # TODO : Replace log statements here and elsewhere.
         return shot_data
 
     def update_shot(self, shot_code, data):
