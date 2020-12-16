@@ -6,7 +6,7 @@ long_description = ''
 
 setuptools.setup(
     name='distant_vfx',
-    version='0.2.3',
+    version='0.2.5',
     author='Mark Livolsi',
     author_email='mark.c.livolsi@gmail.com',
     description='A toolkit for the Distant VFX team.',
