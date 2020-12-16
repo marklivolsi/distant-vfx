@@ -2,7 +2,6 @@ from datetime import datetime
 import itertools
 import os
 import string
-import sys
 
 
 # Create a new package by scanning a directory for existing packages and iterating up as appropriate
