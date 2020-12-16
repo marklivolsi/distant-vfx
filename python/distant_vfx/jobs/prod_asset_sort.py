@@ -2,13 +2,8 @@ import os
 import subprocess
 
 ASSETS_BASE_PATH = '/mnt/Projects/dst/production/assets'
-# ASSETS_BASE_PATH = '/Users/marklivolsi/Desktop/out/assets'  # For testing
-
-SLATES_BASE_PATH = '/mnt/Projects/dst/production/assets/refSlates'  # TODO: may need to change this
-# SLATES_BASE_PATH = '/Users/marklivolsi/Desktop/out/refSlates'  # For testing
-
-MANUAL_SORT_BASE_PATH = '/mnt/Projects/dst/production/zManualSort'  # TODO: Add this
-# MANUAL_SORT_BASE_PATH = '/Users/marklivolsi/Desktop/out/manualSort'  # For testing
+SLATES_BASE_PATH = '/mnt/Projects/dst/production/assets/refSlates'
+MANUAL_SORT_BASE_PATH = '/mnt/Projects/dst/production/zManualSort'
 
 
 ASSET_PREFIXES = ['char', 'dd', 'env', 'prop', 'prp', 'vhcl', 'ext']
