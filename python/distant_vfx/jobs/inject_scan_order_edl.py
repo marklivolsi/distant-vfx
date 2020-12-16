@@ -173,5 +173,5 @@ def main(edl_path, csv_out=False):
     if not csv_out:
         _inject_scan_edl(edl_dict)
     else:
-        csv_path = edl_path.rsplit('.', 1)[1] + '.csv'
+        csv_path = edl_path.rsplit('.', 1)[0] + '.csv'
         _dict2csv(edl_dict, csv_path)
