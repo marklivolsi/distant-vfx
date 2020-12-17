@@ -8,6 +8,9 @@ from fmrest.exceptions import BadJSON
 from ..constants import FMP_URL, FMP_PASSWORD, FMP_USERNAME, FMP_ADMIN_DB, FMP_TRANSFER_DATA_LAYOUT, SHOT_TREE_BASE_PATH
 
 
+# TODO: --exr flag to grab all exrs where possible
+# TODO: filter dup version files based on for final, also need to filter them out when building fmp review notes
+
 def main():
 
     # Get eligible review files (tagged with SupReviewFlag = 1)

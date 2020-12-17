@@ -372,6 +372,7 @@ def _get_mov_path(published_file):
     return None
 
 
+# TODO: Add 'subStatus' to injection
 def _build_transfer_data_dict(published_file, version_name_fmt):
     transfer_data = {
         'Filename': published_file.get('code'),
@@ -390,6 +391,7 @@ def _build_transfer_log_dict(published_file):
     return _convert_dict_data_to_str(transfer_log_dict)
 
 
+# TODO: Add 'subStatus' to injection - need alex to add
 def _build_version_dict(published_file, version_name_fmt):
     version_dict = {
         'VFXID': _get_vfx_entity_code(published_file),
