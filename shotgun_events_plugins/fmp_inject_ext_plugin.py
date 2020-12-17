@@ -8,8 +8,9 @@ from fmrest.exceptions import BadJSON
 
 from distant_vfx.config import Config
 from distant_vfx.video import VideoProcessor
-from distant_vfx.constants import SG_EVENTS_CONFIG_PATH
+# from distant_vfx.constants import SG_EVENTS_CONFIG_PATH  # TODO: Enable this
 
+SG_EVENTS_CONFIG_PATH = '/mnt/Plugins/python3.6/config/shotgun_events_config.yml'
 
 CONFIG = Config().load_config_data(SG_EVENTS_CONFIG_PATH)
 
