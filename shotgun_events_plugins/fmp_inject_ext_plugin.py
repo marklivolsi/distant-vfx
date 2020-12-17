@@ -22,8 +22,8 @@ def registerCallbacks(reg):
     matchEvents = {
         'Shotgun_PublishedFile_Change': ['*'],  # monitor for published files
     }
-    reg.registerCallback(CONFIG['SG_INJECT_EXT_NAME'],  # TODO: Add SG script
-                         CONFIG['SG_INJECT_EXT_KEY'],   # TODO: Add SG script
+    reg.registerCallback(CONFIG['SG_INJECT_EXT_NAME'],
+                         CONFIG['SG_INJECT_EXT_KEY'],
                          inject,
                          matchEvents,
                          None)
