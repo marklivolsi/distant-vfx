@@ -31,7 +31,7 @@ def main():
 
         if path is None:
             if version_name is not None:
-                path = _find_missing_filepath(version_name)
+                path = _find_missing_filepath(version_name)  # defaults to dnx mov files
                 if path is None:
                     print(f'Could not locate version on disk: {version_name}')
                     continue
@@ -74,7 +74,7 @@ def _get_cut_order_from_record(record):
 
 def _get_filepath_from_record(record):
     try:
-        path = record.Path  # TODO: Change this
+        path = record.Path  # TODO: Change this, currently this will always fail because there is no 'Path' field
         return path
     except AttributeError:
         return None
@@ -94,7 +94,7 @@ def _find_missing_filepath(version_name, identifier='dnx'):
         for path in paths:
             if identifier.lower() in path.lower():
                 return path
-        return paths[0]
+        return paths[0]  # if nothing matches identifier, default to the first file found
     return None
 
 
@@ -104,7 +104,7 @@ def _find_all_matching_filepaths(version_name):
     for root, dirs, files in os.walk(shot_dir_path):
         for file in files:
             path = os.path.join(root, file)
-            if _is_frame_range(path):  # currently will not look for frame ranges
+            if _is_frame_range(path):  # currently will skip over frame ranges
                 break
             else:
                 if version_name in file:
