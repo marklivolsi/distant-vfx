@@ -51,7 +51,7 @@ def inject(sg, logger, event, args):
         version_name = _format_version_name(version_data)
         fmp_version = _build_version_dict(version_data, version_name)
         fmp_transfer_log = _convert_dict_data_to_str({'package': _get_package_name()})
-        published_files = _get_published_file(sg, version_data)
+        published_files = _get_published_files(sg, version_data)
         fmp_transfer_data_dicts = _build_transfer_data_dicts(published_files, version_name)
     except Exception:
         logger.error('Error prepping data for FMP injection.', exc_info=True)
@@ -392,7 +392,7 @@ def _get_published_file_path(published_file):
         return ''
 
 
-def _get_published_file(sg, version_data):
+def _get_published_files(sg, version_data):
     published_files = sg.find(
         entity_type='PublishedFile',
         filters=[
@@ -412,9 +412,18 @@ def _build_version_dict(version_data, version_name_fmt):
         'ShotgunID': version_data.get('id'),
         'DeliveryNote': version_data.get('description'),
         'DeliveryPackage': _get_package_name(),
-        'Filename': version_name_fmt
+        'Filename': version_name_fmt,
+        'ShotgunTaskName': _get_task_name(version_data)
     }
     return _convert_dict_data_to_str(version_dict)
+
+
+def _get_task_name(version_data):
+    try:
+        task_name = version_data['sg_task']['name']
+        return task_name
+    except:
+        return ''
 
 
 def _get_package_name():
@@ -444,7 +453,8 @@ def _get_version(sg, event):
             'description',
             'entity',  # gets the shots / assets links
             'published_files',  # gets the file links
-            'sg_path_to_movie'
+            'sg_path_to_movie',
+            'sg_task'
         ]
     )
     return version
