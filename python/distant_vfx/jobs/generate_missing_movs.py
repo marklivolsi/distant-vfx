@@ -1,8 +1,8 @@
 from collections import defaultdict
 import os
 
-from ..farm.jobs.distant_dnx115 import DistantDNxHDFarmJob
-from ..farm.jobs.distant_h264 import DistantH264FarmJob
+from distant_quicktime.farm.jobs.distant_dnx115 import DistantDNxHDFarmJob
+from distant_quicktime.farm.jobs.distant_h264 import DistantH264FarmJob
 
 
 IMG_SEQ_EXTS = ['exr']
