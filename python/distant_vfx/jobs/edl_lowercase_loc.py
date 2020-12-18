@@ -1,13 +1,7 @@
-import logging.config
 import os
 import sys
 
 from ..parsers import EDLParser
-
-# Configure logging.
-from python.distant_vfx.constants import LOG_SETTINGS
-logging.config.dictConfig(LOG_SETTINGS)
-LOG = logging.getLogger(__name__)
 
 
 def scandir(path):
