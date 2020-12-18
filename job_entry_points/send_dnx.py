@@ -30,9 +30,13 @@ def main():
     args = parser.parse_args()
 
     for item in args.input:
-        send_dnx.main(scan_dir=item,
-                      output_dir=args.output,
-                      new_delivery=args.no_delivery)
+        if args.output:
+            send_dnx.main(scan_dir=item,
+                          output_dir=args.output,
+                          new_delivery=args.no_delivery)
+        else:
+            send_dnx.main(scan_dir=item,
+                          new_delivery=args.no_delivery)
 
 
 if __name__ == '__main__':
