@@ -42,7 +42,7 @@ def _copy_dnx(dnx_path, output_dir):
 def _find_dnx_files(root_path):
     dnx_files = []
     for root, dirs, files in os.walk(root_path):
-        if 'dnx' in root:
+        if 'dnx' in root.lower():
             for file in files:
                 path = os.path.join(root, file)
                 dnx_files.append(path)
