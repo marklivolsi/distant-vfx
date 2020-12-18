@@ -4,6 +4,7 @@ import time
 from fmrest import CloudServer
 from fmrest.exceptions import BadJSON
 from ..constants import FMP_URL, FMP_USERNAME, FMP_PASSWORD, FMP_EDIT_DB, FMP_SCANS_LAYOUT
+from . import edl_lowercase_loc
 
 
 class smpteTC:  # Class for dealing SMPTE Timecode
@@ -169,6 +170,7 @@ def _inject_scan_edl(edl_dict, tries=3):
 
 
 def main(edl_path, csv_out=False):
+    edl_lowercase_loc.main(edl_path)
     edl_dict = _edl2dict(edl_path)
     if not csv_out:
         _inject_scan_edl(edl_dict)

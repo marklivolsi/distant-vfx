@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import logging.config
 import os
 import sys
@@ -45,7 +43,3 @@ def main(path):
         for edl in edls:
             handler = EDLParser()
             handler.loc_to_lower(edl)
-
-
-if __name__ == '__main__':
-    main(sys.argv[1])
