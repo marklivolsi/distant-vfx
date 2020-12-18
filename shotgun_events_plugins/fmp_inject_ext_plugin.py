@@ -106,7 +106,7 @@ def inject(sg, logger, event, args):
         if not filename_record_id:
             report_transfer_data = False
 
-        # Inject thumb if available
+        # Inject thumb if available  # TODO: Alert via email no thumbs if frame range
         img_record_id = None
         if thumb_path is not None:
             fmp.layout = CONFIG['FMP_IMAGES_LAYOUT']
@@ -234,6 +234,8 @@ def _inject_transfer_data(fmp, fmp_transfer_data, transfer_primary_key, logger, 
                 logger.error(f'Error creating transfer data record. (response {e._response})', exc_info=True)
         except Exception:
             logger.error('Error creating transfer data record.', exc_info=True)
+        else:
+            break
     return filename_record_id
 
 
