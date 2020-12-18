@@ -111,6 +111,15 @@ def search_for_cube_by_descriptor(descriptor, plates, root_dir):
         if os.path.exists(cube_path):
             # Perfect! Use it!
             return cube_path
+        cube_path = os.path.join(
+            root_dir,
+            data_struct.get("filename"),
+            "_cdl",
+            data_struct.get("filename") + ".cube"
+        )
+        if os.path.exists(cube_path):
+            # Perfect! Use it!
+            return cube_path
     return None
 
 
@@ -125,7 +134,7 @@ def _path_get_shot_lut_from_path(path):
     version_folder_name = os.path.basename(os.path.dirname(os.path.dirname(path)))
     if os.path.basename(dirname_three) == "shot":
         # We're dealing with a rendered image!
-        shot_dir = os.path.dirname(os.path.dirname(dirname_three))
+        shot_dir = os.path.dirname(dirname_three)
         plates_dir = os.path.join(shot_dir, "plate")
         plates = {}
         for folder_name in os.listdir(plates_dir):

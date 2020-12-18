@@ -13,8 +13,8 @@ def directory_is_larger_than(directory, maxsize):
 
 
 def _build_internal_mailbox_name(direction="to", vendor=None):
-    if direction not in ("to", "from"):
-        raise ValueError("direction kwarg must be one of (\"to\", \"from\")")
+    if direction not in ("to", "fr"):
+        raise ValueError("direction kwarg must be one of (\"to\", \"fr\")")
     if vendor is None:
         raise ValueError("vendor kwarg must not be None")
     return INTERNAL_MAILBOX_TEMPLATE.format(direction=direction, vendor=vendor)
@@ -59,8 +59,8 @@ def _build_mailbox_package_name(directory, vendor, source_vendor, date, maxsize=
 
 
 def get_or_create_edit_package_directory(direction="to", source_vendor="dst", date=None):
-    if direction not in ("to", "from"):
-        raise ValueError("direction kwarg must be one of (\"to\", \"from\")")
+    if direction not in ("to", "fr"):
+        raise ValueError("direction kwarg must be one of (\"to\", \"fr\")")
     if date is None:
         date = datetime.date.today().strftime("%Y%m%d")
 

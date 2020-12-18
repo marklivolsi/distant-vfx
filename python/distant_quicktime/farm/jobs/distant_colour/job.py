@@ -1,6 +1,6 @@
 import os
 
-from distant_vfx.farm.jobs import distant_slate
+from distant_quicktime.farm.jobs import distant_slate
 
 
 class DistantColourQuicktimeFarmJob(distant_slate.DistantSlateFarmJob):
@@ -22,10 +22,10 @@ class DistantColourQuicktimeFarmJob(distant_slate.DistantSlateFarmJob):
         self.shot_lut = shot_lut
 
         if self.shot_lut is None:
-            from distant_vfx.colour import get_shot_lut_from_path
+            from distant_quicktime.colour import get_shot_lut_from_path
             self.shot_lut = get_shot_lut_from_path(self.image_sequence) or self.DEFAULT_LUT
         if self.show_lut is None:
-            from distant_vfx.colour import get_show_lut_from_path
+            from distant_quicktime.colour import get_show_lut_from_path
             self.show_lut = get_show_lut_from_path(self.image_sequence) or self.DEFAULT_LUT
 
     @classmethod

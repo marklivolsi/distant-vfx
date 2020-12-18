@@ -4,8 +4,8 @@ BackdropNode {
  tile_color 0x444666ff
  label "Overlays\n"
  selected true
- xpos -265
- ypos 20
+ xpos -280
+ ypos -124
  bdwidth 181
  bdheight 135
  z_order 3
@@ -23,8 +23,8 @@ Read {
  on_error black
  name Plate
  selected true
- xpos -215
- ypos -242
+ xpos -230
+ ypos -386
 }
 Colorspace {
  primary_in "Wide Gamut"
@@ -32,49 +32,49 @@ Colorspace {
  primary_out "Wide Gamut"
  name Linear_AlexLog
  selected true
- xpos -215
- ypos -158
+ xpos -230
+ ypos -302
 }
 NoOp {
  name ShowLUT
  label "\[argv 14]"
  selected true
- xpos -215
- ypos -123
+ xpos -230
+ ypos -267
 }
 Vectorfield {
  vfield_file "\[argv 15]"
- version 10
+ version 11
  file_type cube
  name Apply_CDL
  selected true
- xpos -215
- ypos -85
+ xpos -230
+ ypos -229
 }
 Vectorfield {
  vfield_file /mnt/dst/mailbox/technicolor/fr_technicolor/20200910_a/dis_20767_jc_PHS_trim_scd60_rec709.cube
- version 9
+ version 10
  file_type cube
  colorspaceOut rec709
  name Log_to_Rec709
  selected true
- xpos -215
- ypos -59
+ xpos -230
+ ypos -203
 }
 Transform {
  scale 1.0525
  center {1078 750}
  name Transform1
  selected true
- xpos -215
- ypos -33
+ xpos -230
+ ypos -177
 }
 Reformat {
  format "1920 1080 0 0 1920 1080 1 HD_1080"
  name Reformat1
  selected true
- xpos -215
- ypos -7
+ xpos -230
+ ypos -151
 }
 Text {
  message "\[if \{ \[catch \{expr \[argv 6]\} ]\} \{set output \[argv 6]\} \{set output \[expr \[argv 6]]\}]"
@@ -86,8 +86,8 @@ Text {
  center {2048 1080}
  name TopLeft
  selected true
- xpos -215
- ypos 55
+ xpos -230
+ ypos -89
 }
 Text {
  message "\[if \{ \[catch \{expr \[argv 7]\} ]\} \{set output \[argv 7]\} \{set output \[expr \[argv 7]]\}]"
@@ -100,8 +100,8 @@ Text {
  center {2048 1080}
  name TopRight
  selected true
- xpos -215
- ypos 79
+ xpos -230
+ ypos -65
 }
 Text {
  message "\[if \{ \[catch \{expr \[argv 8]\} ]\} \{set output \[argv 8]\} \{set output \[expr \[argv 8]]\}]"
@@ -113,8 +113,8 @@ Text {
  center {2048 1080}
  name BottomLeft
  selected true
- xpos -215
- ypos 103
+ xpos -230
+ ypos -41
 }
 Text {
  message "\[if \{ \[catch \{expr \[argv 9]\} ]\} \{set output \[argv 9]\} \{set output \[expr \[argv 9]]\}]"
@@ -127,8 +127,8 @@ Text {
  center {2048 1080}
  name BottomRight
  selected true
- xpos -215
- ypos 127
+ xpos -230
+ ypos -17
 }
 Read {
  inputs 0
@@ -138,8 +138,8 @@ Read {
  origset true
  name Read2
  selected true
- xpos -392
- ypos -239
+ xpos -407
+ ypos -383
 }
 Text {
  message "\[if \{ \[catch \{expr \[argv 11]\} ]\} \{set output \[argv 11]\} \{set output \[expr \[argv 11]]\}]"
@@ -151,8 +151,8 @@ Text {
  center {2048 1080}
  name SlateLeft
  selected true
- xpos -392
- ypos 59
+ xpos -407
+ ypos -85
 }
 Text {
  message "\[if \{ \[catch \{expr \[argv 12]\} ]\} \{set output \[argv 12]\} \{set output \[expr \[argv 12]]\}]"
@@ -165,8 +165,8 @@ Text {
  center {2048 1080}
  name SlateRight
  selected true
- xpos -392
- ypos 85
+ xpos -407
+ ypos -59
 }
 Text {
  message "\[if \{ \[catch \{expr \[argv 13]\} ]\} \{set output \[argv 13]\} \{set output \[expr \[argv 13]]\}]"
@@ -178,52 +178,50 @@ Text {
  center {2048 1080}
  name SlateBottom
  selected true
- xpos -392
- ypos 111
+ xpos -407
+ ypos -33
 }
 FrameHold {
  first_frame 1000
  name FrameHold1
  selected true
- xpos -392
- ypos 199
+ xpos -407
+ ypos 55
 }
 Switch {
  inputs 2
  which {{"!(frame==\[argv 2])"}}
  name Switch1
  selected true
- xpos -215
- ypos 205
+ xpos -230
+ ypos 61
 }
 Dot {
  name Dot10
  selected true
- xpos -181
- ypos 298
+ xpos -196
+ ypos 154
 }
 Write {
  file "\[argv 1]"
  colorspace sRGB
- file_type mov
- mov64_format "mov (QuickTime / MOV)"
- mov64_codec h264
+ mov64_codec AVdn
+ mov64_dnxhd_codec_profile "DNxHD 422 8-bit 145Mbit"
  mov_h264_codec_profile "High 4:2:0 8-bit"
  mov64_pixel_format {{0} "yuv420p\tYCbCr 4:2:0 8-bit"}
  mov64_quality High
- mov64_advanced 1
  mov64_fast_start true
  mov64_write_timecode true
  mov64_gop_size 12
  mov64_b_frames 0
- mov64_bitrate 28000
- mov64_bitrate_tolerance 0
+ mov64_bitrate 20000
+ mov64_bitrate_tolerance 4000000
  mov64_quality_min 1
  mov64_quality_max 3
  create_directories true
  checkHashOnRead false
  name Write
  selected true
- xpos -215
- ypos 348
+ xpos -230
+ ypos 207
 }
