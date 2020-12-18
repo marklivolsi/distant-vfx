@@ -375,7 +375,6 @@ def _get_mov_path(published_file):
     return None
 
 
-# TODO: Add 'subStatus' to injection
 def _build_transfer_data_dict(published_file, version_name_fmt):
     transfer_data = {
         'Filename': published_file.get('code'),
@@ -394,13 +393,13 @@ def _build_transfer_log_dict(published_file):
     return _convert_dict_data_to_str(transfer_log_dict)
 
 
-# TODO: Add 'subStatus' to injection - need alex to add
 def _build_version_dict(published_file, version_name_fmt):
     version_dict = {
         'VFXID': _get_vfx_entity_code(published_file),
         'DeliveryNote': published_file.get('description'),
         'DeliveryPackage': published_file.get('sg_delivery_package_name'),
-        'Filename': version_name_fmt
+        'Filename': version_name_fmt,
+        'IntendedStatus': published_file.get('sg_intended_status')
     }
     return _convert_dict_data_to_str(version_dict)
 
@@ -449,7 +448,8 @@ def _get_published_file(sg, event):
             'path',                      # filepath on disk
             'entity',                    # provides access to shot / asset entity
             'sg_delivery_package_name',  # delivery package
-            'sg_delivery_package_path'   # package path
+            'sg_delivery_package_path',  # package path
+            'sg_intended_status'
         ]
     )
     return published_file
