@@ -8,7 +8,7 @@ import string
 def main(root_path):
 
     # Format the base package name
-    vendor = root_path.split('_')[1]
+    vendor = root_path.rsplit('_', 1)[1]
     show = 'dst'
     date = datetime.now().strftime('%Y%m%d')
     base_pkg_name = vendor + '_' + show + '_' + date + '_'
