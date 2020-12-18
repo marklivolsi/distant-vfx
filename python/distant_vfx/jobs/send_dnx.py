@@ -12,7 +12,7 @@ def main(scan_dir, output_dir=TO_EDT_MAILBOX_PATH, new_delivery=True):
     if not dnx_files:
         print(f'No dnx files found at path: {scan_dir}')
     else:
-        print('Found dnx files:')
+        print(f'Found {len(dnx_files)} dnx files:')
         for dnx in dnx_files:
             print(dnx)
 
