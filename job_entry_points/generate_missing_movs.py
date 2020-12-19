@@ -1,11 +1,19 @@
+#!/usr/bin/env python
+
+# Note - this job MUST be run on python 2 for access to Arch module
+
 from collections import defaultdict
 import os
 
-from distant_quicktime.farm.jobs.distant_dnx115 import DistantDNxHDFarmJob
-from distant_quicktime.farm.jobs.distant_h264 import DistantH264FarmJob
+from python.distant_quicktime.farm.jobs.distant_dnx115 import DistantDNxHDFarmJob
+from python.distant_quicktime.farm.jobs.distant_h264 import DistantH264FarmJob
 
 
 IMG_SEQ_EXTS = ['exr']
+
+
+def main():
+    pass
 
 
 def _render_dnx115(image_path, output_path, nukescript_template_path, first_frame, last_frame, scene_name, username,
@@ -23,7 +31,8 @@ def _render_dnx115(image_path, output_path, nukescript_template_path, first_fram
         name=scene_name + ' - DNxHD 115 Render',
         slate_left_text=os.path.basename(output_path).split('.')[0],
         slate_right_text=username,
-        slate_bottom_text=notes
+        slate_bottom_text=notes,
+        priority=1
     )
     job_id = dnxhd_job.submit()
 
@@ -43,7 +52,8 @@ def _render_h264(image_path, output_path, nukescript_template_path, first_frame,
         name=scene_name + ' - DNxHD 115 Render',
         slate_left_text=os.path.basename(output_path).split('.')[0],
         slate_right_text=username,
-        slate_bottom_text=notes
+        slate_bottom_text=notes,
+        priority=1
     )
     job_id = h264_job.submit()
 
@@ -81,3 +91,7 @@ def _scan_files(root_path):
         for file in files:
             path = os.path.join(root, file)
             yield path
+
+
+if __name__ == '__main__':
+    main()
