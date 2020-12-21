@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
-from distant_vfx.jobs import launch_ldq_review
+from distant_vfx.screening import SupervisorScreening
 
 
 # An entry point for the launch_ldq_review job
 def main():
-    launch_ldq_review.main()
+    screening = SupervisorScreening()
+    screening.run()
 
 
 if __name__ == '__main__':

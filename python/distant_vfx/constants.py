@@ -28,6 +28,7 @@ FMP_PROCESS_IMAGE_SCRIPT = environ.get('FMP_PROCESS_IMAGE_SCRIPT')
 # Filesystem path constants
 SHOT_TREE_BASE_PATH = environ.get('SHOT_TREE_BASE_PATH')
 THUMBS_BASE_PATH = environ.get('THUMBS_BASE_PATH')
+RV_PATH = environ.get('RV_PATH')
 CONFIG_PATH = './config.yml'
 SG_EVENTS_CONFIG_PATH = '/mnt/Plugins/python3.6/config/shotgun_events_config.yml'
 TO_EDT_MAILBOX_PATH = '/mnt/Projects/dst/mailbox/edt/to_edt'

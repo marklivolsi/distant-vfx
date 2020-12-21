@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from distant_vfx.jobs import launch_screening
+from distant_vfx.screening import Screening
 
 
 # An entry point for the launch_screening job
@@ -15,7 +15,8 @@ def main():
 
     args = parser.parse_args()
 
-    launch_screening.main(screening_id=args.screening_id)
+    screening = Screening(args.screening_id)
+    screening.run()
 
 
 if __name__ == '__main__':
