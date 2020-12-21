@@ -76,6 +76,8 @@ def _get_cut_order_from_record(record):
 def _get_filepath_from_record(record):
     try:
         path = record.Path  # TODO: Change this, currently this will always fail because there is no 'Path' field
+        if not path:
+            return None
         return path
     except AttributeError:
         return None
