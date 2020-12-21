@@ -10,6 +10,9 @@ from python.distant_quicktime.farm.jobs.distant_dnx115 import DistantDNxHDFarmJo
 from python.distant_quicktime.farm.jobs.distant_h264 import DistantH264FarmJob
 
 
+# TODO: If mov exists but in wrong place, move it to the right place
+# TODO: Find .cube files
+
 def main(root_path):
     files = _scan_files(root_path)
     basename_map, frame_map = _make_basename_map(files)
@@ -25,7 +28,7 @@ def main(root_path):
             exr_container_path = os.path.dirname(exr_path)
 
         parent_path = os.path.dirname(exr_container_path)
-        width, height = _get_qt_dimensions(parent_path)
+        width, height = _get_qt_dimensions(exr_container_path)
         resolution_folder_base = str(width) + 'x' + str(height)
         filename = basename + '.mov'
 
@@ -44,7 +47,7 @@ def main(root_path):
                 username='Distant VFX',
                 notes='Plate check render',
                 width=width,
-                height=height
+                height=height,
             )
 
         if h264_path is None:
@@ -64,8 +67,8 @@ def main(root_path):
             )
 
 
-def _get_qt_dimensions(parent_path):
-    basename = os.path.basename(parent_path)
+def _get_qt_dimensions(exr_container_dir_path):
+    basename = os.path.basename(exr_container_dir_path)
     split = basename.split('_')
     split2 = split[0].split('x')
     width, height = split2[0], split2[1]
@@ -75,7 +78,7 @@ def _get_qt_dimensions(parent_path):
 def _render_dnx115(image_path, output_path, nukescript_template_path, first_frame, last_frame, scene_name, username,
                    notes, width=1920, height=1080):
     dnxhd_job = DistantDNxHDFarmJob(
-        image_path=image_path,
+        image_sequence=image_path,
         output_path=output_path,
         nukescript_path=nukescript_template_path,
         width=width,
@@ -88,7 +91,6 @@ def _render_dnx115(image_path, output_path, nukescript_template_path, first_fram
         slate_left_text=os.path.basename(output_path).split('.')[0],
         slate_right_text=username,
         slate_bottom_text=notes,
-        priority=1
     )
     job_id = dnxhd_job.submit()
 
@@ -96,7 +98,7 @@ def _render_dnx115(image_path, output_path, nukescript_template_path, first_fram
 def _render_h264(image_path, output_path, nukescript_template_path, first_frame, last_frame, scene_name, username,
                  notes, width=1920, height=1080):
     h264_job = DistantH264FarmJob(
-        image_path=image_path,
+        image_sequence=image_path,
         output_path=output_path,
         nukescript_path=nukescript_template_path,
         width=width,
@@ -109,7 +111,6 @@ def _render_h264(image_path, output_path, nukescript_template_path, first_frame,
         slate_left_text=os.path.basename(output_path).split('.')[0],
         slate_right_text=username,
         slate_bottom_text=notes,
-        priority=1
     )
     job_id = h264_job.submit()
 
@@ -132,6 +133,8 @@ def _make_basename_map(filepath_list):
                 key = 'dnx'
             elif 'h264' in path_lower:
                 key = 'h264'
+        # elif (ext in 'cube') and ('cube' not in basename_map):
+        #     key = 'cube'
 
         if key is None:
             continue

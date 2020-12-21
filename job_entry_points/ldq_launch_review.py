@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import argparse
 from distant_vfx.jobs import launch_ldq_review
 
 

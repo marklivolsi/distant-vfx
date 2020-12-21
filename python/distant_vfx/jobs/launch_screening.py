@@ -1,5 +1,4 @@
 import os
-# import re
 import subprocess
 import sys
 import time
@@ -9,11 +8,11 @@ from fmrest.exceptions import BadJSON
 from ..constants import FMP_URL, FMP_PASSWORD, FMP_USERNAME, FMP_VFX_DB, FMP_VERSIONS_LAYOUT, SHOT_TREE_BASE_PATH
 
 
-def main():
+def main(screening_id):
 
-    # Get eligible review files (tagged with SupReviewFlag = 1)
+    # Get eligible review files
     print('Searching for review files, please wait...')
-    records = _get_records_from_fmp()
+    records = _get_records_from_fmp(screening_id)
 
     # If there are no records, exit
     if not records:
@@ -143,7 +142,7 @@ def _get_ref_dir_path(filename):
     return ref_path
 
 
-def _get_records_from_fmp(tries=3):
+def _get_records_from_fmp(screening_id, tries=3):
     with CloudServer(url=FMP_URL,
                      user=FMP_USERNAME,
                      password=FMP_PASSWORD,
@@ -153,7 +152,7 @@ def _get_records_from_fmp(tries=3):
         fmp.login()
 
         # Find eligible review records
-        query = {'SupReviewFlag': 1}
+        query = {'Screenings:screeningID': int(screening_id)}
         records = None
         for i in range(tries):
             try:
