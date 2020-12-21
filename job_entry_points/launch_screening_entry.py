@@ -11,7 +11,6 @@ def main():
 
     parser.add_argument('screening_id',
                         type=int,
-                        required=True,
                         help='<required> The ID of the screening to launch in RV.')
 
     args = parser.parse_args()

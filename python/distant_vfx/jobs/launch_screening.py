@@ -152,7 +152,7 @@ def _get_records_from_fmp(screening_id, tries=3):
         fmp.login()
 
         # Find eligible review records
-        query = {'Screenings:screeningID': int(screening_id)}
+        query = {'Screenings::screeningID': int(screening_id)}
         records = None
         for i in range(tries):
             try:
