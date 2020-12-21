@@ -48,11 +48,12 @@ def main():
     file_paths.sort(key=lambda x: cut_order_map[x])
 
     # Launch files in RV
+    print('Launching files in RV...')
     _launch_files_in_rv(file_paths)
 
 
 def _launch_files_in_rv(file_paths):
-    cmd = ['rv']
+    cmd = ['/opt/rv/rv-centos7-x86-64-7.6.1/bin/rv']
     for path in file_paths:
         cmd.append(path)
 
@@ -89,7 +90,13 @@ def _get_version_name_from_record(record):
 
 
 def _find_missing_filepath(version_name, identifier='dnx'):
-    paths = _find_all_matching_filepaths(version_name)
+    paths = _find_all_matching_filepaths(version_name, _get_shot_dir_path(version_name))
+
+    # If no paths found in shot dir, try ref dir
+    if not paths:
+        ref_path = _get_ref_dir_path(version_name)
+        paths = _find_all_matching_filepaths(version_name, ref_path)
+
     if paths:
         for path in paths:
             if identifier.lower() in path.lower():
@@ -98,33 +105,40 @@ def _find_missing_filepath(version_name, identifier='dnx'):
     return None
 
 
-def _find_all_matching_filepaths(version_name):
+def _find_all_matching_filepaths(version_name, root_path):
     paths = []
-    shot_dir_path = _get_shot_dir_path(version_name)
-    for root, dirs, files in os.walk(shot_dir_path):
+    # shot_dir_path = _get_shot_dir_path(version_name)
+    for root, dirs, files in os.walk(root_path):
         for file in files:
             path = os.path.join(root, file)
             if _is_frame_range(path):  # currently will skip over frame ranges
                 break
             else:
-                if version_name in file:
+                if version_name.lower() in file.lower():
                     paths.append(path)
     return paths
 
 
 def _is_frame_range(filepath):
-    pattern = re.compile(r'\.\d{4}\.')
-    match = re.search(pattern, filepath)
-    if match:
-        return True
-    return False
+    # pattern = re.compile(r'\.\d{4}\.')
+    # match = re.search(pattern, filepath)
+    # if match:
+    #     return True
+    # return False
+    return os.path.splitext(filepath)[1] in ['.exr']
 
 
 def _get_shot_dir_path(filename):
     vfx_id = filename[:7]
     seq = vfx_id[:3]
-    shot_dir_path = os.path.join(SHOT_TREE_BASE_PATH, seq, vfx_id, 'shot')
+    shot_dir_path = os.path.join(SHOT_TREE_BASE_PATH, seq, vfx_id)
     return shot_dir_path
+
+
+def _get_ref_dir_path(filename):
+    seq = filename[:3]
+    ref_path = os.path.join(SHOT_TREE_BASE_PATH, seq, '_reference')
+    return ref_path
 
 
 def _get_records_from_fmp(tries=3):
