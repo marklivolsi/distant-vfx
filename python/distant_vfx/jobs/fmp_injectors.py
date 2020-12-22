@@ -46,6 +46,8 @@ class BaseInjector:
         is_inject_candidate = self.validate_event()
         if not is_inject_candidate:
             return
+        else:
+            print(f'Processing event: {self.event.get("id")}')
 
         # wait to make sure entity is fully created
         sleep(1)
@@ -76,10 +78,11 @@ class BaseInjector:
         self.send_email()
 
     def send_email(self):
-        version = self.fmp_version if self.report['version'] else ''
-        transfer_log = self.fmp_transfer_log if self.report['transfer_log'] else ''
-        transfer_data = self.fmp_transfer_data if self.report['transfer_data'] else ''
-        image = self.fmp_image_data if self.report['image'] else ''
+        do_not_report_msg = 'There was an error injecting this data. Please see error emails for details.'
+        version = self.fmp_version if self.report['version'] else do_not_report_msg
+        transfer_log = self.fmp_transfer_log if self.report['transfer_log'] else do_not_report_msg
+        transfer_data = self.fmp_transfer_data if self.report['transfer_data'] else do_not_report_msg
+        image = self.fmp_image_data if self.report['image'] else do_not_report_msg
         content = 'Shotgun data successfully injected into FileMaker. Please see below for details.\n\n' \
                   '<hr>' \
                   f'<h3>VERSION DATA</h3>\n{pformat(version)}\n\n' \
@@ -144,7 +147,7 @@ class BaseInjector:
                 self.report['transfer_data'] = False
 
             # inject image data
-            image_path = self.fmp_image_data.get('image_path')
+            image_path = self.fmp_image_data.get('Path')
             if image_path is None:
                 self.report['image'] = False
                 return
