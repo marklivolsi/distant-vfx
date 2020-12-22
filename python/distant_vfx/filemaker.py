@@ -1,6 +1,28 @@
+from functools import wraps
 import time
 from fmrest import CloudServer
 from fmrest.exceptions import BadJSON
+
+
+def _request_with_retry(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        result = None
+        for i in range(self._tries):
+            try:
+                result = func(self, *args, **kwargs)
+            except BadJSON:
+                if i <= self._tries - 1:
+                    time.sleep(0.5)
+                    continue
+                else:
+                    raise
+            except Exception:
+                raise
+            else:
+                break
+        return result
+    return wrapper
 
 
 class CloudServerWrapper:
@@ -43,36 +65,10 @@ class CloudServerWrapper:
     def login(self):
         self._server.login()
 
+    @_request_with_retry
     def find(self, query, limit=100):
-        records = None
-        for i in range(self._tries):
-            try:
-                records = self._server.find([query], limit=limit)
-            except BadJSON:
-                if i <= self._tries - 1:
-                    time.sleep(0.5)
-                    continue
-                else:
-                    raise
-            except Exception:
-                raise
-            else:
-                break
-        return records
+        return self._server.find(query, limit=limit)
 
+    @_request_with_retry
     def create_record(self, record):
-        record_id = None
-        for i in range(self._tries):
-            try:
-                record_id = self._server.create_record(record)
-            except BadJSON:
-                if i <= self._tries - 1:
-                    time.sleep(0.5)
-                    continue
-                else:
-                    raise
-            except Exception:
-                raise
-            else:
-                break
-        return record_id
+        return self._server.create_record(record)
