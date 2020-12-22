@@ -3,7 +3,7 @@ import sys
 import traceback
 
 from ..filemaker import CloudServerWrapper
-from ..utilities import make_basename_map_from_file_path_list, parse_files_from_basename_map, _dict_items_to_str
+from ..utilities import make_basename_map_from_file_path_list, parse_files_from_basename_map, dict_items_to_str
 from ..constants import FMP_URL, FMP_USERNAME, FMP_PASSWORD, FMP_ADMIN_DB, FMP_VERSIONS_LAYOUT, \
     FMP_TRANSFER_LOG_LAYOUT, FMP_TRANSFER_DATA_LAYOUT
 
@@ -85,7 +85,7 @@ def _build_version_dicts(unique_paths, package_name):
     return versions
 
 
-@_dict_items_to_str
+@dict_items_to_str
 def _build_one_version_dict(path, package_name):
     version_name = _get_version_name_from_path(path)
     print(path)
@@ -109,7 +109,7 @@ def _get_package_name(package_path):
     return os.path.basename(package_path)
 
 
-@_dict_items_to_str
+@dict_items_to_str
 def _build_transfer_log(package_path, package_name):
     transfer_log_dict = {
         'package': package_name,
@@ -126,7 +126,7 @@ def _build_transfer_data(unique_paths):
     return transfer_data
 
 
-@_dict_items_to_str
+@dict_items_to_str
 def _build_one_transfer_data_dict(path):
     filename = os.path.basename(path)
     transfer_data = {

@@ -8,6 +8,8 @@ from fmrest.exceptions import BadJSON
 
 from distant_vfx.config import Config
 from distant_vfx.video import VideoProcessor
+from distant_vfx.utilities import dict_items_to_str
+
 # from distant_vfx.constants import SG_EVENTS_CONFIG_PATH  # TODO: Enable this
 
 SG_EVENTS_CONFIG_PATH = '/mnt/Plugins/python3.6/config/shotgun_events_config.yml'
@@ -17,8 +19,7 @@ CONFIG = Config().load_config_data(SG_EVENTS_CONFIG_PATH)
 LEGAL_THUMB_SRC_EXTENSIONS = ['.mov', '.mp4']
 THUMBS_BASE_PATH = CONFIG['THUMBS_BASE_PATH']
 
-
-# TODO : Refactor SG events plugins to base + subclasses to reduce dup code
+# TODO : Enable ENV vars
 # TODO : Refactor to use CloudServerWrapper class and cut down on boilerplate in fmp calls
 
 
@@ -64,7 +65,7 @@ def inject(sg, logger, event, args):
         fmp_thumb_data = _build_thumb_dict(thumb_name, thumb_path)
 
     except Exception as e:
-        logger.exception(e)
+        logger.error(e)
         return
 
     # Inject data to filemaker
@@ -348,12 +349,13 @@ def _find_fmp_version(fmp, version_name, logger, tries=3):
     return version_records
 
 
+@dict_items_to_str
 def _build_thumb_dict(thumb_name, thumb_path):
     thumb_dict = {
         'Filename': thumb_name,
         'Path': thumb_path,
     }
-    return _convert_dict_data_to_str(thumb_dict)
+    return thumb_dict
 
 
 def _get_thumbnail(mov_path):
@@ -379,6 +381,7 @@ def _get_mov_path(published_file):
     return None
 
 
+@dict_items_to_str
 def _build_transfer_data_dict(published_file, version_name_fmt):
     transfer_data = {
         'Filename': published_file.get('code'),
@@ -386,17 +389,19 @@ def _build_transfer_data_dict(published_file, version_name_fmt):
         'Path': _get_published_file_path(published_file),
         'VersionLink': version_name_fmt
     }
-    return _convert_dict_data_to_str(transfer_data)
+    return transfer_data
 
 
+@dict_items_to_str
 def _build_transfer_log_dict(published_file):
     transfer_log_dict = {
         'package': published_file.get('sg_delivery_package_name'),
         'path': published_file.get('sg_delivery_package_path')
     }
-    return _convert_dict_data_to_str(transfer_log_dict)
+    return transfer_log_dict
 
 
+@dict_items_to_str
 def _build_version_dict(published_file, version_name_fmt):
     version_dict = {
         'VFXID': _get_vfx_entity_code(published_file),
@@ -405,7 +410,7 @@ def _build_version_dict(published_file, version_name_fmt):
         'Filename': version_name_fmt,
         'IntendedStatus': published_file.get('sg_intended_status')
     }
-    return _convert_dict_data_to_str(version_dict)
+    return version_dict
 
 
 def _get_vfx_entity_code(published_file):
@@ -414,10 +419,6 @@ def _get_vfx_entity_code(published_file):
         return vfx_entity_name
     except:
         return ''
-
-
-def _convert_dict_data_to_str(dictionary):
-    return {str(key): ('' if value is None else str(value)) for key, value in dictionary.items()}
 
 
 def _format_version_name(published_file):

@@ -8,6 +8,8 @@ from fmrest.exceptions import BadJSON
 
 from distant_vfx.config import Config
 from distant_vfx.video import VideoProcessor
+from distant_vfx.utilities import dict_items_to_str
+
 # from distant_vfx.constants import SG_EVENTS_CONFIG_PATH  # TODO: Enable this
 
 SG_EVENTS_CONFIG_PATH = '/mnt/Plugins/python3.6/config/shotgun_events_config.yml'
@@ -51,7 +53,7 @@ def inject(sg, logger, event, args):
         # Prep data for FileMaker inject
         version_name = _format_version_name(version_data)
         fmp_version = _build_version_dict(version_data, version_name)
-        fmp_transfer_log = _convert_dict_data_to_str({'package': _get_package_name()})
+        fmp_transfer_log = _build_transfer_log()
         published_files = _get_published_files(sg, version_data)
         fmp_transfer_data_dicts = _build_transfer_data_dicts(published_files, version_name)
     except Exception:
@@ -328,12 +330,18 @@ def _inject_version(fmp, fmp_version, logger, tries=3):
     return version_record_id
 
 
+@dict_items_to_str
+def _build_transfer_log():
+    return {'package': _get_package_name()}
+
+
+@dict_items_to_str
 def _build_thumb_dict(thumb_name, thumb_path):
     thumb_dict = {
         'Filename': thumb_name,
         'Path': thumb_path,
     }
-    return _convert_dict_data_to_str(thumb_dict)
+    return thumb_dict
 
 
 def _get_thumbnail(mov_path):
@@ -375,14 +383,20 @@ def _build_transfer_data_dicts(published_files, version_name_fmt):
     if not published_files:
         return None
     for published_file in published_files:
-        transfer_data = {
-            'Filename': published_file.get('code'),
-            'PublishedFileID': published_file.get('id'),
-            'Path': _get_published_file_path(published_file),
-            'VersionLink': version_name_fmt
-        }
-        transfer_dicts.append(_convert_dict_data_to_str(transfer_data))
+        transfer_data = _build_one_transfer_data_dict(published_file, version_name_fmt)
+        transfer_dicts.append(transfer_data)
     return transfer_dicts
+
+
+@dict_items_to_str
+def _build_one_transfer_data_dict(published_file, version_name_fmt):
+    transfer_data = {
+        'Filename': published_file.get('code'),
+        'PublishedFileID': published_file.get('id'),
+        'Path': _get_published_file_path(published_file),
+        'VersionLink': version_name_fmt
+    }
+    return transfer_data
 
 
 def _get_published_file_path(published_file):
@@ -407,6 +421,7 @@ def _get_published_files(sg, version_data):
     return published_files
 
 
+@dict_items_to_str
 def _build_version_dict(version_data, version_name_fmt):
     version_dict = {
         'VFXID': _get_vfx_entity_code(version_data),
@@ -416,7 +431,7 @@ def _build_version_dict(version_data, version_name_fmt):
         'Filename': version_name_fmt,
         'ShotgunTaskName': _get_task_name(version_data)
     }
-    return _convert_dict_data_to_str(version_dict)
+    return version_dict
 
 
 def _get_task_name(version_data):
@@ -429,10 +444,6 @@ def _get_task_name(version_data):
 
 def _get_package_name():
     return 'dst_ih_' + datetime.datetime.now().strftime('%Y%m%d')
-
-
-def _convert_dict_data_to_str(dictionary):
-    return {str(key): ('' if value is None else str(value)) for key, value in dictionary.items()}
 
 
 def _get_vfx_entity_code(version_data):

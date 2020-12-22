@@ -5,7 +5,7 @@ from functools import wraps
 from .sequences import ImageSequence
 
 
-def _dict_items_to_str(func):
+def dict_items_to_str(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         dictionary = func(*args, **kwargs)
