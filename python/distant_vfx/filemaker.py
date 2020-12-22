@@ -7,7 +7,8 @@ from fmrest.exceptions import BadJSON
 def _request_with_retry(func):
     """
     Wrapper function that allows for CloudServer requests to be performed up to _tries number of times in the case of
-    a BadJSON response, which happens intermittently.
+    a BadJSON response, which happens intermittently. Will raise any other exception, or BadJSON if encountered again
+    after _tries failed attempts.
     """
     @wraps(func)
     def wrapper(self, *args, **kwargs):
