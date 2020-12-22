@@ -13,7 +13,7 @@ class ImageSequence:
     @property
     def name(self):
         frame_len = len(self._split[-2])
-        return self.basename + '%' + str(frame_len).zfill(2) + 'd' + self.extension
+        return self.basename + '.%' + str(frame_len).zfill(2) + 'd.' + self.extension
 
     @property
     def basename(self):

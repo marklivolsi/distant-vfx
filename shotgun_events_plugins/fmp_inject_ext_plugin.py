@@ -14,7 +14,7 @@ SG_EVENTS_CONFIG_PATH = '/mnt/Plugins/python3.6/config/shotgun_events_config.yml
 
 CONFIG = Config().load_config_data(SG_EVENTS_CONFIG_PATH)
 
-LEGAL_THUMB_SRC_EXTENSIONS = ['.mov', '.mp4', '.jpg']
+LEGAL_THUMB_SRC_EXTENSIONS = ['.mov', '.mp4']
 THUMBS_BASE_PATH = CONFIG['THUMBS_BASE_PATH']
 
 

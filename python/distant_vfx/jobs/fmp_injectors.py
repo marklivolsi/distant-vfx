@@ -1,18 +1,19 @@
 import os
+import sys
 from datetime import datetime
 from functools import wraps
 from pprint import pformat
 from time import sleep
 
-import pandas as pd
 import yagmail
 
 from ..constants import FMP_URL, FMP_USERNAME, FMP_PASSWORD, FMP_ADMIN_DB, FMP_VERSIONS_LAYOUT, FMP_TRANSFER_LOG_LAYOUT, \
     FMP_TRANSFER_DATA_LAYOUT, FMP_IMAGES_LAYOUT, FMP_PROCESS_IMAGE_SCRIPT, THUMBS_BASE_PATH, LEGAL_THUMB_SRC_EXTENSIONS, \
-    EMAIL_USERNAME, EMAIL_PASSWORD, EMAIL_RECIPIENTS
+    EMAIL_USERNAME, EMAIL_PASSWORD, EMAIL_RECIPIENTS # FRAME_RANGE_EXTS_NO_DOT
 from ..filemaker import CloudServerWrapper
 from ..video import VideoProcessor
-from ..utilities import make_basename_map_from_file_path_list
+# from ..utilities import make_basename_map_from_file_path_list
+# from ..sequences import ImageSequence
 
 
 def _dict_items_to_str(func):
@@ -156,7 +157,7 @@ class BaseInjector:
 
             # inject image data
             image_path = self.fmp_image_data.get('Path')
-            if image_path is None:
+            if not image_path:
                 self.report['image'] = False
                 return
             else:
@@ -519,117 +520,118 @@ class SgEventsExtVendorInjector(BaseInjector):
         return record_id
 
 
-class ManualInjector(BaseInjector):
-
-    def __init__(self, package_path, sg=None, logger=None, event=None, args=None):
-        super().__init__(sg, logger, event, args)
-        self._email_subject = f'[DISTANT_API] Successful Manual data injection at {datetime.now()}'
-        self.package_path = package_path
-        self.csv_path = None
-        self.versions = []
-        self.files = []
-        self._dataframe = None
-        self._basename_map = None
-
-    def validate_event(self):
-        return True  # always valid for manual injections
-
-    def fetch_submission_data(self):
-        self._scan_package_files()
-        self._dataframe = pd.read_csv(self.csv_path)
-        self._basename_map = make_basename_map_from_file_path_list(self.files)
-        self._parse_versions_from_basename_map()
-        if self.files and self.versions and self._basename_map:
-            return True
-        return False
-
-    def _parse_versions_from_basename_map(self):
-        for basename, data in self._basename_map.items():
-            self.versions.append(basename)
-
-    def _scan_package_files(self):
-        for root, dirs, files in os.walk(self.package_path):
-            for file in files:
-                path = os.path.join(root, file)
-                self.files.append(path)
-                if self._get_file_extension(file) in 'csv':
-                    self.csv_path = path
-
-    @staticmethod
-    def _get_file_extension(file):
-        return file.split('.')[-1]
-
-    def _get_vfx_code(self):
-        raise NotImplementedError  # TODO: Implement this
-
-    def _get_package_name(self):
-        csv_name = os.path.basename(self.csv_path)
-        return csv_name.split('.')[0]
-
-    def _format_version_name(self):
-        raise NotImplementedError
-
-    def _build_fmp_version(self):
-        fmp_versions = []
-        for version in self.versions:
-            fmp_version = self._build_one_fmp_version(version)
-            fmp_versions.append(fmp_version)
-        return fmp_versions
-
-    @_dict_items_to_str
-    def _build_one_fmp_version(self, version):
-        fmp_version = {
-            'VFXID': self._get_vfx_code(),
-            'DeliveryNote': self._get_delivery_note_from_csv(version),
-            'DeliveryPackage': self._get_package_name(),
-            'Filename': version,
-            'IntendedStatus': self._get_intended_status_from_csv(version)
-        }
-        return fmp_version
-
-    def _get_delivery_note_from_csv(self, version):
-        row_index = self._get_csv_row_index(version)
-        return self._dataframe.iloc[row_index, self._dataframe.columns.get_loc('subNote')]
-
-    def _get_intended_status_from_csv(self, version):
-        row_index = self._get_csv_row_index(version)
-        return self._dataframe.iloc[row_index, self._dataframe.columns.get_loc('subStatus')]
-
-    def _get_csv_row_index(self, version):
-        return self._dataframe.index[self._dataframe.filename == version][0]
-
-    @_dict_items_to_str
-    def _build_fmp_transfer_log(self):
-        fmp_transfer_log = {
-            'package': self._get_package_name(),
-            'path': os.path.dirname(self.csv_path)
-        }
-        return fmp_transfer_log
-
-    def _build_fmp_transfer_data(self):
-        # transfer_data = {
-        #     'Filename': None,
-        #     'PublishedFileID': self.sg_published_file.get('id'),
-        #     'Path': self._get_sg_published_file_path(self.sg_published_file),
-        #     'VersionLink': self._format_version_name()
-        # }
-        # return transfer_data
-        pass
-
-    def _get_mov_path(self):
-        raise NotImplementedError
-
-    def _inject_version(self, fmp):
-        raise NotImplementedError
-
-    def _inject_transfer_data(self, fmp):
-        record_ids = []
-        for transfer_data_record in self.fmp_transfer_data:
-            primary_key = self._transfer_log_primary_key if self._transfer_log_primary_key else ''
-            transfer_data_record['Foriegnkey'] = primary_key
-            record_id = fmp.create_record(transfer_data_record)
-            record_ids.append(record_id)
-        return record_ids
-
-    def _inject_image(self, fmp):
-        raise NotImplementedError
+# class ManualInjector(BaseInjector):
+#
+#     def __init__(self, package_path, sg=None, logger=None, event=None, args=None):
+#         super().__init__(sg, logger, event, args)
+#         self._email_subject = f'[DISTANT_API] Successful Manual data injection at {datetime.now()}'
+#         self.package_path = package_path
+#         self.csv_path = None
+#         self.versions = []
+#         self.files = []
+#         self._basename_map = None
+#
+#     def validate_event(self):
+#         return True  # always valid for manual injections
+#
+#     def fetch_submission_data(self):
+#         self._scan_package_files()
+#
+#         if self.csv_path is not None:
+#             sys.exit('Please ingest this package using Shotgun.')
+#
+#         self._basename_map = make_basename_map_from_file_path_list(self.files)
+#         self._parse_versions_from_basename_map()
+#         if self.files and self.versions and self._basename_map:
+#             return True
+#         return False
+#
+#     def _parse_versions_from_basename_map(self):
+#         for basename, data in self._basename_map.items():
+#             self.versions.append(basename)
+#
+#     def _scan_package_files(self):
+#         for root, dirs, files in os.walk(self.package_path):
+#             for file in files:
+#                 path = os.path.join(root, file)
+#                 self.files.append(path)
+#                 if self._get_file_extension(file) in 'csv':
+#                     self.csv_path = path
+#
+#     @staticmethod
+#     def _get_file_extension(file):
+#         return file.split('.')[-1]
+#
+#     def _get_vfx_code(self):
+#         raise NotImplementedError  # TODO: Implement this
+#
+#     def _get_package_name(self):
+#         return os.path.basename(self.package_path)
+#
+#     def _format_version_name(self):
+#         raise NotImplementedError
+#
+#     def _build_fmp_version(self):
+#         fmp_versions = []
+#         for version in self.versions:
+#             fmp_version = self._build_one_fmp_version(version)
+#             fmp_versions.append(fmp_version)
+#         return fmp_versions
+#
+#     @_dict_items_to_str
+#     def _build_one_fmp_version(self, version):
+#         fmp_version = {
+#             'VFXID': self._get_vfx_code(),
+#             'DeliveryPackage': self._get_package_name(),
+#             'Filename': version,
+#         }
+#         return fmp_version
+#
+#     @_dict_items_to_str
+#     def _build_fmp_transfer_log(self):
+#         fmp_transfer_log = {
+#             'package': self._get_package_name(),
+#             'path': self.package_path
+#         }
+#         return fmp_transfer_log
+#
+#     def _build_fmp_transfer_data(self):
+#         transfer_data = []
+#         for basename, ext_map in self._basename_map.items():
+#             for ext, file_paths in ext_map.items():
+#                 if ext in FRAME_RANGE_EXTS_NO_DOT:
+#                     if len(file_paths) > 1:
+#                         frame_filenames = [os.path.basename(path) for path in file_paths]
+#                         seq = ImageSequence(frame_filenames)
+#                         parent_path = os.path.dirname(file_paths[0])
+#                         path = os.path.join(parent_path, seq.name)
+#                         transfer_data.append({
+#                             'Filename': seq,
+#                             'Path': path,
+#                             'VersionLink': basename
+#                         })
+#                     elif len(file_paths) == 1:
+#                         transfer_data += file_paths
+#                 else:
+#                     transfer_data += paths
+#
+#
+#
+#
+#     def _get_mov_path(self):
+#         raise NotImplementedError
+#
+#     def _inject_version(self, fmp):
+#         raise NotImplementedError
+#
+#     def _inject_transfer_data(self, fmp):
+#         record_ids = []
+#         for transfer_data_record in self.fmp_transfer_data:
+#             primary_key = self._transfer_log_primary_key if self._transfer_log_primary_key else ''
+#             transfer_data_record['Foriegnkey'] = primary_key
+#             record_id = fmp.create_record(transfer_data_record)
+#             record_ids.append(record_id)
+#         return record_ids
+#
+#     def _inject_image(self, fmp):
+#         raise NotImplementedError
