@@ -17,6 +17,7 @@ class Screening:
         return {'Screenings::screeningID': self.screening_id}
 
     def run(self):
+        print('Searching for review files, please wait...')
         records = self._get_records_from_filemaker()
 
         if not records:
@@ -58,10 +59,14 @@ class Screening:
                                 ) as fmp:
             fmp.login()
 
+            records = None
             try:
                 records = fmp.find(self.query, limit=500)
             except:
-                raise
+                if fmp.last_error == 401:
+                    pass
+                else:
+                    raise
             return records
 
     @staticmethod

@@ -14,6 +14,9 @@ class CloudServerWrapper:
         self._server = self._set_server()
         self._tries = 3
 
+    def __enter__(self):
+        return self
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._server.logout()
 
