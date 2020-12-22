@@ -1,14 +1,18 @@
+import os
 from datetime import datetime
 from functools import wraps
-import os
-from time import sleep
-import yagmail
 from pprint import pformat
-from ..filemaker import CloudServerWrapper
-from ..video import VideoProcessor
+from time import sleep
+
+import pandas as pd
+import yagmail
+
 from ..constants import FMP_URL, FMP_USERNAME, FMP_PASSWORD, FMP_ADMIN_DB, FMP_VERSIONS_LAYOUT, FMP_TRANSFER_LOG_LAYOUT, \
     FMP_TRANSFER_DATA_LAYOUT, FMP_IMAGES_LAYOUT, FMP_PROCESS_IMAGE_SCRIPT, THUMBS_BASE_PATH, LEGAL_THUMB_SRC_EXTENSIONS, \
     EMAIL_USERNAME, EMAIL_PASSWORD, EMAIL_RECIPIENTS
+from ..filemaker import CloudServerWrapper
+from ..video import VideoProcessor
+from ..utilities import make_basename_map_from_file_path_list
 
 
 def _dict_items_to_str(func):
@@ -47,7 +51,8 @@ class BaseInjector:
         if not is_inject_candidate:
             return
         else:
-            print(f'Processing event: {self.event.get("id")}')
+            if self.event:
+                print(f'Processing event: {self.event.get("id")}')
 
         # wait to make sure entity is fully created
         sleep(1)
@@ -55,7 +60,10 @@ class BaseInjector:
         # try to fetch the submission data
         did_fetch_submission_data = self.fetch_submission_data()
         if not did_fetch_submission_data:
-            self.logger.error(f'Could not fetch submission data for event: {self.event}')
+            if self.event:
+                self.logger.error(f'Could not fetch submission data for event: {self.event}')
+            else:
+                print('Could not fetch submission data.')
             return
 
         # format data for injection
@@ -326,7 +334,7 @@ class SgEventsInHouseInjector(BaseInjector):
             fields=[
                 'code',
                 'description',
-                'entity',           # gets the shots / assets links
+                'entity',  # gets the shots / assets links
                 'published_files',  # gets the file links
                 'sg_path_to_movie',
                 'sg_task'
@@ -441,12 +449,12 @@ class SgEventsExtVendorInjector(BaseInjector):
                 ['id', 'is', self.event.get('meta').get('entity_id')]
             ],
             fields=[
-                'code',                       # filename
-                'description',                # submission note
-                'path',                       # filepath on disk
-                'entity',                     # provides access to shot / asset entity
-                'sg_delivery_package_name',   # delivery package
-                'sg_delivery_package_path',   # package path
+                'code',  # filename
+                'description',  # submission note
+                'path',  # filepath on disk
+                'entity',  # provides access to shot / asset entity
+                'sg_delivery_package_name',  # delivery package
+                'sg_delivery_package_path',  # package path
                 'sg_intended_status'
             ]
         )
@@ -513,35 +521,100 @@ class SgEventsExtVendorInjector(BaseInjector):
 
 class ManualInjector(BaseInjector):
 
-    def __init__(self, sg=None, logger=None, event=None, args=None):
+    def __init__(self, package_path, sg=None, logger=None, event=None, args=None):
         super().__init__(sg, logger, event, args)
         self._email_subject = f'[DISTANT_API] Successful Manual data injection at {datetime.now()}'
+        self.package_path = package_path
+        self.csv_path = None
+        self.versions = []
+        self.files = []
+        self._dataframe = None
+        self._basename_map = None
 
     def validate_event(self):
         return True  # always valid for manual injections
 
     def fetch_submission_data(self):
-        raise NotImplementedError
+        self._scan_package_files()
+        self._dataframe = pd.read_csv(self.csv_path)
+        self._basename_map = make_basename_map_from_file_path_list(self.files)
+        self._parse_versions_from_basename_map()
+        if self.files and self.versions and self._basename_map:
+            return True
+        return False
+
+    def _parse_versions_from_basename_map(self):
+        for basename, data in self._basename_map.items():
+            self.versions.append(basename)
+
+    def _scan_package_files(self):
+        for root, dirs, files in os.walk(self.package_path):
+            for file in files:
+                path = os.path.join(root, file)
+                self.files.append(path)
+                if self._get_file_extension(file) in 'csv':
+                    self.csv_path = path
+
+    @staticmethod
+    def _get_file_extension(file):
+        return file.split('.')[-1]
 
     def _get_vfx_code(self):
         raise NotImplementedError  # TODO: Implement this
 
     def _get_package_name(self):
-        raise NotImplementedError
+        csv_name = os.path.basename(self.csv_path)
+        return csv_name.split('.')[0]
 
     def _format_version_name(self):
         raise NotImplementedError
 
-    @_dict_items_to_str
     def _build_fmp_version(self):
-        raise NotImplementedError
+        fmp_versions = []
+        for version in self.versions:
+            fmp_version = self._build_one_fmp_version(version)
+            fmp_versions.append(fmp_version)
+        return fmp_versions
+
+    @_dict_items_to_str
+    def _build_one_fmp_version(self, version):
+        fmp_version = {
+            'VFXID': self._get_vfx_code(),
+            'DeliveryNote': self._get_delivery_note_from_csv(version),
+            'DeliveryPackage': self._get_package_name(),
+            'Filename': version,
+            'IntendedStatus': self._get_intended_status_from_csv(version)
+        }
+        return fmp_version
+
+    def _get_delivery_note_from_csv(self, version):
+        row_index = self._get_csv_row_index(version)
+        return self._dataframe.iloc[row_index, self._dataframe.columns.get_loc('subNote')]
+
+    def _get_intended_status_from_csv(self, version):
+        row_index = self._get_csv_row_index(version)
+        return self._dataframe.iloc[row_index, self._dataframe.columns.get_loc('subStatus')]
+
+    def _get_csv_row_index(self, version):
+        return self._dataframe.index[self._dataframe.filename == version][0]
 
     @_dict_items_to_str
     def _build_fmp_transfer_log(self):
-        raise NotImplementedError
+        fmp_transfer_log = {
+            'package': self._get_package_name(),
+            'path': os.path.dirname(self.csv_path)
+        }
+        return fmp_transfer_log
 
     def _build_fmp_transfer_data(self):
-        raise NotImplementedError
+        # transfer_data = {
+        #     'Filename': None,
+        #     'PublishedFileID': self.sg_published_file.get('id'),
+        #     'Path': self._get_sg_published_file_path(self.sg_published_file),
+        #     'VersionLink': self._format_version_name()
+        # }
+        # return transfer_data
+        pass
 
     def _get_mov_path(self):
         raise NotImplementedError
