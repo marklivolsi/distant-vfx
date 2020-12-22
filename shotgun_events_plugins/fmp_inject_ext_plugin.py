@@ -18,6 +18,9 @@ LEGAL_THUMB_SRC_EXTENSIONS = ['.mov', '.mp4', '.jpg']
 THUMBS_BASE_PATH = CONFIG['THUMBS_BASE_PATH']
 
 
+# TODO : Refactor SG events plugins to base + subclasses to reduce dup code
+
+
 def registerCallbacks(reg):
     matchEvents = {
         'Shotgun_PublishedFile_Change': ['*'],  # monitor for published files
