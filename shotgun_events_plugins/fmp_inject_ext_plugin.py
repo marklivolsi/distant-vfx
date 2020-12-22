@@ -19,6 +19,7 @@ THUMBS_BASE_PATH = CONFIG['THUMBS_BASE_PATH']
 
 
 # TODO : Refactor SG events plugins to base + subclasses to reduce dup code
+# TODO : Refactor to use CloudServerWrapper class and cut down on boilerplate in fmp calls
 
 
 def registerCallbacks(reg):
