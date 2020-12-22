@@ -1,5 +1,5 @@
 from functools import wraps
-import time
+from time import sleep
 from fmrest import CloudServer
 from fmrest.exceptions import BadJSON
 
@@ -13,7 +13,7 @@ def _request_with_retry(func):
                 result = func(self, *args, **kwargs)
             except BadJSON:
                 if i <= self._tries - 1:
-                    time.sleep(0.5)
+                    sleep(0.5)
                     continue
                 else:
                     raise
