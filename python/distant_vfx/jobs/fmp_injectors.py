@@ -2,10 +2,13 @@ from datetime import datetime
 from functools import wraps
 import os
 from time import sleep
+import yagmail
+from pprint import pformat
 from ..filemaker import CloudServerWrapper
 from ..video import VideoProcessor
 from ..constants import FMP_URL, FMP_USERNAME, FMP_PASSWORD, FMP_ADMIN_DB, FMP_VERSIONS_LAYOUT, FMP_TRANSFER_LOG_LAYOUT, \
-    FMP_TRANSFER_DATA_LAYOUT, FMP_IMAGES_LAYOUT, FMP_PROCESS_IMAGE_SCRIPT, THUMBS_BASE_PATH, LEGAL_THUMB_SRC_EXTENSIONS
+    FMP_TRANSFER_DATA_LAYOUT, FMP_IMAGES_LAYOUT, FMP_PROCESS_IMAGE_SCRIPT, THUMBS_BASE_PATH, LEGAL_THUMB_SRC_EXTENSIONS, \
+    EMAIL_USERNAME, EMAIL_PASSWORD, EMAIL_RECIPIENTS
 
 
 def _dict_items_to_str(func):
@@ -35,6 +38,7 @@ class BaseInjector:
             'transfer_data': True,
             'image': True
         }
+        self._email_subject = None
 
     def inject(self):
 
@@ -68,7 +72,30 @@ class BaseInjector:
         # inject the data
         self.inject_to_fmp()
 
+        # send an email report
+        self.send_email()
 
+    def send_email(self):
+        version = self.fmp_version if self.report['version'] else ''
+        transfer_log = self.fmp_transfer_log if self.report['transfer_log'] else ''
+        transfer_data = self.fmp_transfer_data if self.report['transfer_data'] else ''
+        image = self.fmp_image_data if self.report['image'] else ''
+        content = 'Shotgun data successfully injected into FileMaker. Please see below for details.\n\n' \
+                  '<hr>' \
+                  f'<h3>VERSION DATA</h3>\n{pformat(version)}\n\n' \
+                  f'<h3>TRANSFER LOG DATA</h3>\n{pformat(transfer_log)}\n\n' \
+                  f'<h3>TRANSFER FILES DATA</h3>\n{pformat(transfer_data)}\n\n' \
+                  f'<h3>IMAGE DATA</h3>\n{pformat(image)}\n\n' \
+                  f'<hr>'
+        yag = yagmail.SMTP(
+            user=EMAIL_USERNAME,
+            password=EMAIL_PASSWORD,
+        )
+        yag.send(
+            to=EMAIL_RECIPIENTS.split(','),
+            subject=self._email_subject,
+            contents=content
+        )
 
     def inject_to_fmp(self):
         with CloudServerWrapper(url=FMP_URL,
@@ -127,6 +154,7 @@ class BaseInjector:
                     image_record_id = self._inject_image(fmp)
                 except:
                     self.logger.error(f'Error injecting image data: {self.fmp_image_data}', exc_info=True)
+                    self.report['image'] = False
                     return
 
             # get image primary key
@@ -273,6 +301,7 @@ class SgEventsInHouseInjector(BaseInjector):
         super().__init__(sg, logger, event, args)
         self.sg_version = None
         self.sg_published_files = None
+        self._email_subject = f'[DISTANT_API] Successful In House data injection at {datetime.now()}'
 
     def validate_event(self):
         event_attr, new_value = self._get_event_attr_and_new_value()
@@ -390,6 +419,7 @@ class SgEventsExtVendorInjector(BaseInjector):
     def __init__(self, sg, logger, event, args):
         super().__init__(sg, logger, event, args)
         self.sg_published_file = None
+        self._email_subject = f'[DISTANT_API] Successful External Vendor data injection at {datetime.now()}'
 
     def validate_event(self):
         event_attr, new_value = self._get_event_attr_and_new_value()
@@ -482,6 +512,7 @@ class ManualInjector(BaseInjector):
 
     def __init__(self, sg=None, logger=None, event=None, args=None):
         super().__init__(sg, logger, event, args)
+        self._email_subject = f'[DISTANT_API] Successful Manual data injection at {datetime.now()}'
 
     def validate_event(self):
         return True  # always valid for manual injections

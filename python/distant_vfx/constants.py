@@ -38,6 +38,7 @@ TO_EDT_MAILBOX_PATH = '/mnt/Projects/dst/mailbox/edt/to_edt'
 # Email credentials
 EMAIL_USERNAME = environ.get('EMAIL_USERNAME')
 EMAIL_PASSWORD = environ.get('EMAIL_PASSWORD')
+EMAIL_RECIPIENTS = environ.get('EMAIL_RECIPIENTS')
 
 # Shotgun credentials
 SG_INJECT_IH_NAME = environ.get('SG_INJECT_IH_NAME')
