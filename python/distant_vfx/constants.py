@@ -1,5 +1,7 @@
 from os import environ
 
+LEGAL_THUMB_SRC_EXTENSIONS = ['.mov', '.mp4', '.jpg']
+
 # Environment variables
 
 # FMP credentials

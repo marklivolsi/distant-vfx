@@ -75,9 +75,17 @@ class CloudServerWrapper:
         return self._server.find(query, limit=limit)
 
     @_request_with_retry
+    def get_record(self, record_id):
+        return self._server.get_record(record_id)
+
+    @_request_with_retry
     def create_record(self, record):
         return self._server.create_record(record)
 
     @_request_with_retry
     def upload_container(self, record_id, field_name, file_):
         return self._server.upload_container(record_id, field_name, file_)
+
+    @_request_with_retry
+    def perform_script(self, name, param):
+        return self._server.perform_script(name, param=param)
