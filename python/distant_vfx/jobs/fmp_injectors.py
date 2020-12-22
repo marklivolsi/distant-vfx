@@ -554,3 +554,6 @@ class ManualInjector(BaseInjector):
             record_id = fmp.create_record(transfer_data_record)
             record_ids.append(record_id)
         return record_ids
+
+    def _inject_image(self, fmp):
+        raise NotImplementedError
