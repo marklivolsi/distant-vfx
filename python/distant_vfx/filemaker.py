@@ -12,7 +12,7 @@ class CloudServerWrapper:
         self.database = database
         self._layout = layout
         self._server = self._set_server()
-        self._tries = 3
+        self._tries = 3  # try requests up to _tries times to get past BadJSON response
 
     def __enter__(self):
         return self
@@ -59,3 +59,20 @@ class CloudServerWrapper:
             else:
                 break
         return records
+
+    def create_record(self, record):
+        record_id = None
+        for i in range(self._tries):
+            try:
+                record_id = self._server.create_record(record)
+            except BadJSON:
+                if i <= self._tries - 1:
+                    time.sleep(0.5)
+                    continue
+                else:
+                    raise
+            except Exception:
+                raise
+            else:
+                break
+        return record_id
