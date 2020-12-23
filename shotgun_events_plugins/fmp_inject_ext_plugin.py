@@ -42,17 +42,20 @@ def inject(sg, logger, event, args):
         fmp_version = _build_version_dict(published_file, version_name)
         fmp_transfer_log = _build_transfer_log_dict(published_file)
         fmp_transfer_data = _build_transfer_data_dict(published_file, version_name)
-
-        # Generate a thumbnail if applicable
-        mov_path = _get_mov_path(published_file)
-        thumb_name, thumb_path = None, None
-        if mov_path:
-            thumb_name, thumb_path = _get_thumbnail(mov_path)
-        fmp_thumb_data = _build_thumb_dict(thumb_name, thumb_path)
-
     except Exception:
         logger.error('Error prepping data for FMP injection.', exc_info=True)
         return
+
+    thumb_name, thumb_path, fmp_thumb_data = None, None, None
+    try:
+        # Generate a thumbnail if applicable
+        mov_path = _get_mov_path(published_file)
+        if mov_path:
+            thumb_name, thumb_path = _get_thumbnail(mov_path)
+        fmp_thumb_data = _build_thumb_dict(thumb_name, thumb_path)
+    except Exception:
+        logger.error(f'Error generating thumbnail for version: {version_name}', exc_info=True)
+
 
     # Inject data to filemaker
     with CloudServerWrapper(url=FMP_URL,
