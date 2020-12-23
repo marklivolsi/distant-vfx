@@ -28,7 +28,7 @@ def inject(sg, logger, event, args):
     if not is_inject_candidate:
         return
 
-    logger.info(f'Processing event {event}')
+    logger.info(f'Processing event {event.get("id")}')
 
     # Wait to make sure entity is fully created
     time.sleep(1)
@@ -210,19 +210,17 @@ def _inject_transfer_log(fmp, fmp_transfer_log, logger):
     return transfer_record_id
 
 
-def _find_transfer_log(fmp, fmp_transfer_log, logger, tries=3):
+def _find_transfer_log(fmp, fmp_transfer_log, logger):
     records = None
     try:
         records = fmp.find([fmp_transfer_log])
     except:
-        if fmp.last_error == 401:  # no records were found
-            pass
-        else:
+        if not fmp.last_error == 401:  # no records were found
             logger.error(f'Error finding transfer log record: {fmp_transfer_log}', exc_info=True)
     return records
 
 
-def _inject_version(fmp, fmp_version, logger, tries=3):
+def _inject_version(fmp, fmp_version, logger):
     version_record_id = None
     try:
         version_record_id = fmp.create_record(fmp_version)

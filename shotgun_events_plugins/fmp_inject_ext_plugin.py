@@ -3,32 +3,19 @@ import os
 import time
 import yagmail
 from pprint import pformat
-from fmrest import CloudServer
-from fmrest.exceptions import BadJSON
 
-from distant_vfx.config import Config
+from distant_vfx.filemaker import CloudServerWrapper
 from distant_vfx.video import VideoProcessor
 from distant_vfx.utilities import dict_items_to_str
-
-# from distant_vfx.constants import SG_EVENTS_CONFIG_PATH  # TODO: Enable this
-
-SG_EVENTS_CONFIG_PATH = '/mnt/Plugins/python3.6/config/shotgun_events_config.yml'
-
-CONFIG = Config().load_config_data(SG_EVENTS_CONFIG_PATH)
-
-LEGAL_THUMB_SRC_EXTENSIONS = ['.mov', '.mp4']
-THUMBS_BASE_PATH = CONFIG['THUMBS_BASE_PATH']
-
-# TODO : Enable ENV vars
-# TODO : Refactor to use CloudServerWrapper class and cut down on boilerplate in fmp calls
+from distant_vfx.constants import *
 
 
 def registerCallbacks(reg):
     matchEvents = {
         'Shotgun_PublishedFile_Change': ['*'],  # monitor for published files
     }
-    reg.registerCallback(CONFIG['SG_INJECT_EXT_NAME'],
-                         CONFIG['SG_INJECT_EXT_KEY'],
+    reg.registerCallback(SG_INJECT_EXT_NAME,
+                         SG_INJECT_EXT_KEY,
                          inject,
                          matchEvents,
                          None)
@@ -40,7 +27,7 @@ def inject(sg, logger, event, args):
     if not is_inject_candidate:
         return
 
-    logger.info(f'Processing event {event}')
+    logger.info(f'Processing event {event.get("id")}')
 
     # Wait to make sure entity is fully created
     time.sleep(1)
@@ -69,12 +56,12 @@ def inject(sg, logger, event, args):
         return
 
     # Inject data to filemaker
-    with CloudServer(url=CONFIG['FMP_URL'],
-                     user=CONFIG['FMP_USERNAME'],
-                     password=CONFIG['FMP_PASSWORD'],
-                     database=CONFIG['FMP_ADMINDB'],
-                     layout=CONFIG['FMP_VERSIONS_LAYOUT']
-                     ) as fmp:
+    with CloudServerWrapper(url=FMP_URL,
+                            user=FMP_USERNAME,
+                            password=FMP_PASSWORD,
+                            database=FMP_ADMIN_DB,
+                            layout=FMP_VERSIONS_LAYOUT
+                            ) as fmp:
         fmp.login()
 
         report_version, report_transfer_log, report_transfer_data, report_img = True, True, True, True
@@ -89,7 +76,7 @@ def inject(sg, logger, event, args):
                 report_version = False
 
         # Switch to transfer log layout
-        fmp.layout = CONFIG['FMP_TRANSFER_LOG_LAYOUT']
+        fmp.layout = FMP_TRANSFER_LOG_LAYOUT
         transfer_primary_key = None
 
         # Perform find to see if transfer log already exists
@@ -106,7 +93,7 @@ def inject(sg, logger, event, args):
                 transfer_primary_key = _get_transfer_log_primary_key(fmp, transfer_log_id, fmp_transfer_log, logger)
 
         # Inject transfer data
-        fmp.layout = CONFIG['FMP_TRANSFER_DATA_LAYOUT']
+        fmp.layout = FMP_TRANSFER_DATA_LAYOUT
         filename_record_id = _inject_transfer_data(fmp, fmp_transfer_data, transfer_primary_key, logger)
         if not filename_record_id:
             report_transfer_data = False
@@ -114,7 +101,7 @@ def inject(sg, logger, event, args):
         # Inject thumb if available  # TODO: Alert via email no thumbs if frame range
         img_record_id = None
         if thumb_path is not None:
-            fmp.layout = CONFIG['FMP_IMAGES_LAYOUT']
+            fmp.layout = FMP_IMAGES_LAYOUT
             img_record_id = _inject_image(fmp, fmp_thumb_data, logger)
 
         # Run process img script
@@ -146,206 +133,106 @@ def _send_success_email(version_data, fmp_transfer_log, fmp_transfer_data, thumb
               f'<h3>IMAGE DATA</h3>\n{pformat(thumb_data)}\n\n' \
               f'<hr>'
     yag = yagmail.SMTP(
-        user=CONFIG['EMAIL_USERNAME'],
-        password=CONFIG['EMAIL_PASSWORD']
+        user=EMAIL_USERNAME,
+        password=EMAIL_PASSWORD
     )
     yag.send(
-        to=CONFIG['EMAIL_RECIPIENTS'].split(','),
+        to=EMAIL_RECIPIENTS.split(','),
         subject=subject,
         contents=content
     )
 
 
-def _run_process_image_script(fmp, img_primary_key, logger, tries=3):
+def _run_process_image_script(fmp, img_primary_key, logger):
     script_res = None
-    for i in range(tries):
-        try:
-            script_res = fmp.perform_script(
-                name=CONFIG['FMP_PROCESS_IMAGE_SCRIPT'],
-                param=img_primary_key
-            )
-        except BadJSON as e:
-            if i <= tries - 1:
-                time.sleep(0.5)
-                continue
-            else:
-                logger.error(
-                    f'Error running process image script for image {img_primary_key}  (response {e._response})',
-                    exc_info=True)
-        except Exception:
-            logger.error(f'Error running process image script for image {img_primary_key}', exc_info=True)
-            break
-        else:
-            break
+    try:
+        script_res = fmp.perform_script(
+            name=FMP_PROCESS_IMAGE_SCRIPT,
+            param=img_primary_key
+        )
+    except:
+        logger.error(f'Error running process image script for image {img_primary_key}', exc_info=True)
     return script_res
 
 
-def _get_image_primary_key(fmp, img_record_id, logger, tries=3):
+def _get_image_primary_key(fmp, img_record_id, logger):
     img_primary_key = None
-    for i in range(tries):
-        try:
-            img_record = fmp.get_record(img_record_id)
-            img_primary_key = img_record.PrimaryKey
-        except BadJSON as e:
-            if i <= tries - 1:
-                time.sleep(0.5)
-                continue
-            else:
-                logger.error(
-                    f'Error running process image script for image {img_primary_key}  (response {e._response})',
-                    exc_info=True)
-        except Exception:
-            logger.error(f'Error running process image script for image {img_primary_key}', exc_info=True)
-            break
-        else:
-            break
+    try:
+        img_record = fmp.get_record(img_record_id)
+        img_primary_key = img_record.PrimaryKey
+    except:
+        logger.error(f'Error running process image script for image {img_primary_key}', exc_info=True)
     return img_primary_key
 
 
-def _inject_image(fmp, fmp_thumb_data, logger, tries=3):
+def _inject_image(fmp, fmp_thumb_data, logger):
     img_record_id = None
-    for i in range(tries):
-        try:
-            thumb_file = open(fmp_thumb_data.get('Path'), 'rb')
-            img_record_id = fmp.create_record(fmp_thumb_data)
-            img_did_upload = fmp.upload_container(img_record_id, field_name='Image', file_=thumb_file)
-            thumb_file.close()
-        except BadJSON as e:
-            if i <= tries - 1:
-                time.sleep(0.5)
-                continue
-            else:
-                logger.error(f'Error injecting thumbnail record: {fmp_thumb_data} (response {e._response})',
-                             exc_info=True)
-        except Exception:
-            logger.error(f'Error injecting thumbnail record: {fmp_thumb_data}', exc_info=True)
-            break
-        else:
-            break
+    try:
+        thumb_file = open(fmp_thumb_data.get('Path'), 'rb')
+        img_record_id = fmp.create_record(fmp_thumb_data)
+        img_did_upload = fmp.upload_container(img_record_id, field_name='Image', file_=thumb_file)
+        thumb_file.close()
+    except:
+        logger.error(f'Error injecting thumbnail record: {fmp_thumb_data}', exc_info=True)
     return img_record_id
 
 
-def _inject_transfer_data(fmp, fmp_transfer_data, transfer_primary_key, logger, tries=3):
+def _inject_transfer_data(fmp, fmp_transfer_data, transfer_primary_key, logger):
     filename_record_id = None
-    for i in range(tries):
-        try:
-            fmp_transfer_data['Foriegnkey'] = transfer_primary_key
-            filename_record_id = fmp.create_record(fmp_transfer_data)
-        except BadJSON as e:
-            if i <= tries - 1:
-                time.sleep(0.5)
-                continue
-            else:
-                logger.error(f'Error creating transfer data record. (response {e._response})', exc_info=True)
-        except Exception:
-            logger.error('Error creating transfer data record.', exc_info=True)
-        else:
-            break
+    try:
+        fmp_transfer_data['Foriegnkey'] = transfer_primary_key
+        filename_record_id = fmp.create_record(fmp_transfer_data)
+    except:
+        logger.error('Error creating transfer data record.', exc_info=True)
     return filename_record_id
 
 
-def _get_transfer_log_primary_key(fmp, transfer_record_id, fmp_transfer_log, logger, tries=3):
+def _get_transfer_log_primary_key(fmp, transfer_record_id, fmp_transfer_log, logger):
     transfer_primary_key = None
-    for i in range(tries):
-        try:
-            transfer_record_data = fmp.get_record(transfer_record_id)
-            transfer_primary_key = transfer_record_data.PrimaryKey
-        except BadJSON as e:
-            if i <= tries - 1:
-                time.sleep(0.5)
-                continue
-            else:
-                logger.error(f'Error creating transfer log record: {fmp_transfer_log}  (response {e._response})',
-                             exc_info=True)
-        except Exception:
-            logger.error(f'Error creating transfer log record: {fmp_transfer_log}', exc_info=True)
-            break
-        else:
-            break
+    try:
+        transfer_record_data = fmp.get_record(transfer_record_id)
+        transfer_primary_key = transfer_record_data.PrimaryKey
+    except:
+        logger.error(f'Error creating transfer log record: {fmp_transfer_log}', exc_info=True)
     return transfer_primary_key
 
 
-def _inject_transfer_log(fmp, fmp_transfer_log, logger, tries=3):
+def _inject_transfer_log(fmp, fmp_transfer_log, logger):
     transfer_record_id = None
-    for i in range(tries):
-        try:
-            transfer_record_id = fmp.create_record(fmp_transfer_log)
-        except BadJSON as e:
-            if i <= tries - 1:
-                time.sleep(0.5)
-                continue
-            else:
-                logger.error(f'Error creating transfer log record: {fmp_transfer_log}  (response {e._response})',
-                             exc_info=True)
-        except Exception:
-            logger.error(f'Error creating transfer log record: {fmp_transfer_log}', exc_info=True)
-            break
-        else:
-            break
+    try:
+        transfer_record_id = fmp.create_record(fmp_transfer_log)
+    except:
+        logger.error(f'Error creating transfer log record: {fmp_transfer_log}', exc_info=True)
     return transfer_record_id
 
 
-def _find_transfer_log(fmp, fmp_transfer_log, logger, tries=3):
+def _find_transfer_log(fmp, fmp_transfer_log, logger):
     transfer_log_records = None
-    for i in range(tries):
-        try:
-            transfer_log_records = fmp.find([fmp_transfer_log])
-        except BadJSON as e:
-            if i <= tries - 1:
-                time.sleep(0.5)
-                continue
-            else:
-                logger.error(f'Error finding transfer log record. (response {e._response})', exc_info=True)
-        except Exception:
-            if fmp.last_error == 401:  # no records were found
-                break
-            else:
-                logger.error('Error finding transfer log record.', exc_info=True)
-                break
-        else:
-            break
+    try:
+        transfer_log_records = fmp.find([fmp_transfer_log])
+    except:
+        if not fmp.last_error == 401:  # no records were found
+            logger.error('Error finding transfer log record.', exc_info=True)
     return transfer_log_records
 
 
-def _inject_version(fmp, fmp_version, logger, tries=3):
+def _inject_version(fmp, fmp_version, logger):
     version_record_id = None
-    for i in range(tries):
-        try:
-            version_record_id = fmp.create_record(fmp_version)
-        except BadJSON as e:
-            if i <= tries - 1:
-                time.sleep(0.5)
-                continue
-            else:
-                logger.error(f'Error creating version record. (response {e._response})', exc_info=True)
-        except Exception:
-            logger.error('Error creating version record.', exc_info=True)
-            break
-        else:
-            break
+    try:
+        version_record_id = fmp.create_record(fmp_version)
+    except:
+        logger.error('Error creating version record.', exc_info=True)
     return version_record_id
 
 
-def _find_fmp_version(fmp, version_name, logger, tries=3):
+def _find_fmp_version(fmp, version_name, logger):
     version_records = None
-    for i in range(tries):
-        try:
-            version_query = {'Filename': version_name}
-            version_records = fmp.find([version_query])
-        except BadJSON as e:
-            if i <= tries - 1:
-                time.sleep(0.5)
-                continue
-            else:
-                logger.error(f'Error finding version records. (response {e._response})', exc_info=True)
-        except Exception:
-            if fmp.last_error == 401:  # no records were found
-                break
-            else:
-                logger.error('Error finding version records.', exc_info=True)
-                break
-        else:
-            break
+    try:
+        version_query = {'Filename': version_name}
+        version_records = fmp.find([version_query])
+    except:
+        if not fmp.last_error == 401:  # no records were found
+            logger.error('Error finding version records.', exc_info=True)
     return version_records
 
 
