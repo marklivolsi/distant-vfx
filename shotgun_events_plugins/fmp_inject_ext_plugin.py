@@ -50,8 +50,8 @@ def inject(sg, logger, event, args):
             thumb_name, thumb_path = _get_thumbnail(mov_path)
         fmp_thumb_data = _build_thumb_dict(thumb_name, thumb_path)
 
-    except Exception as e:
-        logger.error(e)
+    except Exception:
+        logger.error('Error prepping data for FMP injection.', exc_info=True)
         return
 
     # Inject data to filemaker
