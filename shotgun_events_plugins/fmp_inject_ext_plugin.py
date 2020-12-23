@@ -56,7 +56,6 @@ def inject(sg, logger, event, args):
     except Exception:
         logger.error(f'Error generating thumbnail for version: {version_name}', exc_info=True)
 
-
     # Inject data to filemaker
     with CloudServerWrapper(url=FMP_URL,
                             user=FMP_USERNAME,
