@@ -113,7 +113,7 @@ def inject(sg, logger, event, args):
         else:
             report_img = False
 
-        logger.info(f'Completed event processing {event}')
+        logger.info(f'Completed event processing {event.get("id")}')
 
         do_not_report_msg = 'There was an error injecting this data. Please see error emails for details.'
         version_report = fmp_version if report_version else do_not_report_msg
