@@ -12,10 +12,10 @@ def _request_with_retry(func):
     """
     @wraps(func)
     def wrapper(self, *args, **kwargs):
-        result = None
         for i in range(self._tries):
             try:
                 result = func(self, *args, **kwargs)
+                return result
             except BadJSON:
                 if i <= self._tries - 1:
                     sleep(0.5)
@@ -24,9 +24,7 @@ def _request_with_retry(func):
                     raise
             except Exception:
                 raise
-            else:
-                break
-        return result
+        return None
     return wrapper
 
 
