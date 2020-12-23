@@ -15,13 +15,13 @@ def main():
         nargs='+',
         type=str,
         required=True,
-        help='<required> Specify one or more scan order edl file paths.'
+        help='<required> Specify one or more reel edl file paths.'
     )
 
     parser.add_argument(
         '--csv',
         action='store_true',
-        help='Specifying --csv will output scan order data to csv files instead of injecting to FileMaker.'
+        help='Specifying --csv will output reel data to csv files instead of injecting to FileMaker.'
     )
 
     args = parser.parse_args()
