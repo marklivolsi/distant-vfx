@@ -1,13 +1,13 @@
 import datetime
 import os
 import time
-import yagmail
 from pprint import pformat
 
-from distant_vfx.filemaker import CloudServerWrapper
-from distant_vfx.video import VideoProcessor
-from distant_vfx.utilities import dict_items_to_str
+import yagmail
 from distant_vfx.constants import *
+from distant_vfx.filemaker import CloudServerWrapper
+from distant_vfx.utilities import dict_items_to_str
+from distant_vfx.video import VideoProcessor
 
 
 def registerCallbacks(reg):
@@ -22,7 +22,6 @@ def registerCallbacks(reg):
 
 
 def inject(sg, logger, event, args):
-
     # Check if the version status has just been changed to 'ihapp', exit if not
     is_inject_candidate = _validate_event(event)
     if not is_inject_candidate:
@@ -244,7 +243,6 @@ def _build_thumb_dict(thumb_name, thumb_path):
 
 
 def _get_thumbnail(mov_path):
-
     # Get the thumbnail output path
     mov_filename = os.path.basename(mov_path)
     mov_split = os.path.splitext(mov_filename)
