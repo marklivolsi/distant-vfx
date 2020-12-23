@@ -1,6 +1,6 @@
 from os import environ
 
-LEGAL_THUMB_SRC_EXTENSIONS = ['.mov', '.mp4', '.jpg']
+LEGAL_THUMB_SRC_EXTENSIONS = ['.mov', '.mp4']
 FRAME_RANGE_EXTS_NO_DOT = ['exr', 'png', 'jpg', 'jpeg']
 
 # Environment variables
