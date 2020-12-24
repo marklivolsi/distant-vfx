@@ -36,7 +36,9 @@ def main(root_path):
         latest_alpha = latest_pkg.split('_')[-1]
 
         # Generator to iterate a -> zz, generates each value on demand with next()
-        alpha = (''.join(letters) for length in range(1, 3) for letters in itertools.product(string.ascii_lowercase, repeat=length))
+        alpha = (''.join(letters)
+                 for length in range(1, 3)
+                 for letters in itertools.product(string.ascii_lowercase, repeat=length))
         while True:
             next_alpha = next(alpha)
             if latest_alpha in next_alpha:
