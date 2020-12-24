@@ -4,7 +4,7 @@ import traceback
 
 from ..filemaker import CloudServerWrapper
 from ..constants import FMP_URL, FMP_USERNAME, FMP_PASSWORD, FMP_EDIT_DB, FMP_ADMIN_DB, \
-    FMP_SCANS_LAYOUT, FMP_IMAGES_LAYOUT, FMP_PROCESS_IMAGE_SCRIPT
+    FMP_SCANS_LAYOUT, FMP_IMAGES_LAYOUT, FMP_PROCESS_IMAGE_SCRIPT, LEGAL_THUMB_EXTENSIONS
 from . import edl_lowercase_loc
 
 
@@ -165,7 +165,7 @@ def _find_stills(root_path):
     for root, dirs, files in os.walk(root_path):
         for filename in files:
             ext = os.path.splitext(filename)[1]
-            if ext in ['.jpg', '.jpeg', '.png']:
+            if ext in LEGAL_THUMB_EXTENSIONS:
                 filepath = os.path.join(root, filename)
                 yield filename, filepath
 
