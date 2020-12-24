@@ -1,7 +1,9 @@
-from datetime import datetime
 import itertools
 import os
 import string
+from datetime import datetime
+
+from ..constants import SHOW_CODE
 
 
 # Create a new package by scanning a directory for existing packages and iterating up as appropriate
@@ -9,7 +11,7 @@ def main(root_path):
 
     # Format the base package name
     vendor = root_path.rsplit('_', 1)[1]
-    show = 'dst'
+    show = SHOW_CODE
     date = datetime.now().strftime('%Y%m%d')
     base_pkg_name = vendor + '_' + show + '_' + date + '_'
 
