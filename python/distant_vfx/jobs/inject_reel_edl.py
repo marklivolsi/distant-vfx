@@ -3,10 +3,11 @@ import datetime
 from logging import captureWarnings
 import os
 import re
-import time
-from fmrest import CloudServer
-from fmrest.exceptions import BadJSON
-from ..constants import FMP_URL, FMP_USERNAME, FMP_PASSWORD, FMP_EDIT_DB, FMP_CUTHISTORY_LAYOUT, FMP_CUTHISTORYSHOTS_LAYOUT
+import traceback
+
+from ..filemaker import CloudServerWrapper
+from ..constants import FMP_URL, FMP_USERNAME, FMP_PASSWORD, FMP_EDIT_DB, FMP_CUTHISTORY_LAYOUT, \
+    FMP_CUTHISTORYSHOTS_LAYOUT, FMP_ADMIN_DB, FMP_IMAGES_LAYOUT, FMP_PROCESS_IMAGE_SCRIPT
 
 
 class smpteTC:  # Class for dealing SMPTE Timecode
@@ -165,51 +166,70 @@ def _versionImport(reel_version):
     return reelInfo
 
 
-def _inject_reel(edl_dict, reel_dict, tries=3):
-    with CloudServer(
-        url=FMP_URL,
-        user=FMP_USERNAME,
-        password=FMP_PASSWORD,
-        database=FMP_EDIT_DB,
-        layout=FMP_CUTHISTORYSHOTS_LAYOUT
-    ) as fmp:
+def _inject_reel(edl_dict, reel_dict):
+    with CloudServerWrapper(url=FMP_URL,
+                            user=FMP_USERNAME,
+                            password=FMP_PASSWORD,
+                            database=FMP_EDIT_DB,
+                            layout=FMP_CUTHISTORYSHOTS_LAYOUT
+                            ) as fmp:
         fmp.login()
 
         # Import event records
         for line in edl_dict:
-            for i in range(tries):
-                try:
-                    record_id = fmp.create_record(line)
-                except BadJSON as e:
-                    if i <= tries - 1:
-                        time.sleep(0.5)
-                        continue
-                    else:
-                        print(f'Error: {e} \n Response: {e._response}')
-                        break
-                except Exception as e:
-                    print(e)
-                    break
-                else:
-                    break
+            try:
+                record_id = fmp.create_record(line)
+            except:
+                traceback.print_exc()
 
         # Import reel record
         fmp.layout = FMP_CUTHISTORY_LAYOUT
-        for i in range(tries):
+        try:
+            record_id = fmp.create_record(reel_dict)
+        except:
+            traceback.print_exc()
+
+
+def _find_stills(root_path):
+    for root, dirs, files in os.walk(root_path):
+        for filename in files:
+            ext = os.path.splitext(filename)[1]
+            if ext in ['.jpg', '.jpeg', '.png']:
+                filepath = os.path.join(root, filename)
+                yield filename, filepath
+
+
+def _inject_stills(root_path):
+    stills = _find_stills(root_path)
+    if not stills:
+        return
+
+    with CloudServerWrapper(url=FMP_URL,
+                            user=FMP_USERNAME,
+                            password=FMP_PASSWORD,
+                            database=FMP_ADMIN_DB,
+                            layout=FMP_IMAGES_LAYOUT
+                            ) as fmp:
+        fmp.login()
+        for still in stills:
+            image_did_upload = False
             try:
-                record_id = fmp.create_record(reel_dict)
-            except BadJSON as e:
-                if i <= tries - 1:
-                    time.sleep(0.5)
-                    continue
-                else:
-                    print(f'Error: {e} \n Response: {e._response}')
-                    break
-            except Exception as e:
-                print(e)
-                break
-            else:
-                break
+                filename, filepath = still[0], still[1]
+                record_data = {'Filename': filename}
+                record_id = fmp.create_record(record_data)
+                file = open(filepath, 'rb')
+                image_did_upload = fmp.upload_container(record_id, field_name='Image', file_=file)
+                file.close()
+            except:
+                traceback.print_exc()
+
+            if image_did_upload:
+                try:
+                    image_record = fmp.get_record(record_id)
+                    primary_key = image_record.PrimaryKey
+                    script_result = fmp.perform_script(FMP_PROCESS_IMAGE_SCRIPT, param=primary_key)
+                except:
+                    traceback.print_exc()
 
 
 def main(edl_path, csv_out=False):
@@ -218,6 +238,8 @@ def main(edl_path, csv_out=False):
     reel_dict = _versionImport(edl_dict[1]["ReelVersion"])
     if not csv_out:
         _inject_reel(edl_dict, reel_dict)
+        root_path = os.path.dirname(edl_path)
+        _inject_stills(root_path)
     else:
         csv_path = edl_path.rsplit('.', 1)[0] + '.csv'
         _dict2csv(edl_dict, csv_path)
