@@ -51,7 +51,7 @@ SG_EVENTS_NAME = environ.get('SG_EVENTS_NAME')
 SG_EVENTS_KEY = environ.get('SG_EVENTS_KEY')
 
 # Aspera credentials
-FASPEX_BASE_URL = environ.get('FASPEX_URL')
+FASPEX_BASE_URL = environ.get('FASPEX_BASE_URL')
 FASPEX_USERNAME = environ.get('FASPEX_USERNAME')
 FASPEX_PASSWORD = environ.get('FASPEX_PASSWORD')
 
