@@ -50,10 +50,16 @@ SG_INJECT_EXT_KEY = environ.get('SG_INJECT_EXT_KEY')
 SG_EVENTS_NAME = environ.get('SG_EVENTS_NAME')
 SG_EVENTS_KEY = environ.get('SG_EVENTS_KEY')
 
-# Aspera credentials
+# Faspex credentials
 FASPEX_BASE_URL = environ.get('FASPEX_BASE_URL')
 FASPEX_USERNAME = environ.get('FASPEX_USERNAME')
 FASPEX_PASSWORD = environ.get('FASPEX_PASSWORD')
+
+# Faspex API pathways
+FASPEX_API_PATHS = {
+    'auth': '/auth/oauth2/token'
+}
+
 
 # Logging configuration.
 LOG_SETTINGS = {
