@@ -5,10 +5,11 @@ from distant_vfx.constants import FASPEX_API_PATHS
 
 class AsperaSession:
 
-    def __init__(self, url, user, password):
+    def __init__(self, url, user, password, admin=False):
         self.url = url
         self.user = user
         self.password = password
+        self.admin = admin
         self._token = None
         self._refresh_token = None
         self._headers = {}
@@ -28,6 +29,14 @@ class AsperaSession:
         self._token = response.get('access_token')
         self._refresh_token = response.get('refresh_token')
 
+    def get_all_packages(self):
+        api_path = self._format_api_path(FASPEX_API_PATHS['packages'])
+        response = self._call_faspex(
+            request_type='GET',
+            api_path=api_path,
+        )
+        return response
+
     def _call_faspex(self, request_type, api_path, data=None, params=None, **kwargs):
         url = self.url + api_path
         request_data = json.dumps(data) if data else None
@@ -41,6 +50,13 @@ class AsperaSession:
             **kwargs
         )
         return response.json()
+
+    def _format_api_path(self, api_path, **kwargs):
+        if self.admin:
+            user_id = self.user
+        else:
+            user_id = 'me'
+        return api_path.format(user_id=user_id, **kwargs)
 
     def _update_token_header(self):
         if self._token:
