@@ -10,6 +10,8 @@ class AsperaSession:
         self.user = user
         self.password = password
         self.admin = admin
+        self.last_processed_package_id = None
+        self.latest_package_id = None
         self._token = None
         self._refresh_token = None
         self._headers = {}
@@ -21,7 +23,7 @@ class AsperaSession:
             'grant_type': 'password'
         }
         response = self._call_faspex(
-            request_type='POST',
+            method='POST',
             api_path=auth_path,
             data=data,
             auth=(self.user, self.password)
@@ -29,20 +31,54 @@ class AsperaSession:
         self._token = response.get('access_token')
         self._refresh_token = response.get('refresh_token')
 
-    def get_all_packages(self):
+    def fetch_packages(self):
         api_path = self._format_api_path(FASPEX_API_PATHS['packages'])
-        response = self._call_faspex(
-            request_type='GET',
+        packages = self._call_faspex(
+            method='GET',
             api_path=api_path,
         )
-        return response
+        return packages
 
-    def _call_faspex(self, request_type, api_path, data=None, params=None, **kwargs):
+    def get_latest_package_id(self, packages_list):
+        package_ids = [self._get_package_id(package) for package in packages_list]
+        self.latest_package_id = max(package_ids)
+        return self.latest_package_id
+
+    def get_packages_to_process(self, packages_list):
+        packages_to_process = [package for package in packages_list if
+                               self._get_package_id(package) > self.last_processed_package_id]
+        return packages_to_process
+
+    def get_last_processed_package_id_from_file(self, json_file):
+        try:
+            with open(json_file, 'r') as file:
+                data = json.load(file)
+                self.last_processed_package_id = self._get_package_id(data)
+        except FileNotFoundError:
+            self.last_processed_package_id = None
+        finally:
+            return self.last_processed_package_id
+
+    def write_last_processed_package_id_file(self, json_file):
+        json_dict = {
+            'id': self.last_processed_package_id
+        }
+        if self.last_processed_package_id is None:
+            raise ValueError('Last processed package id cannot be None')
+        else:
+            with open(json_file, 'w') as file:
+                json.dump(json_dict, file)
+
+    @staticmethod
+    def _get_package_id(package_json):
+        return package_json.get('id')
+
+    def _call_faspex(self, method, api_path, data=None, params=None, **kwargs):
         url = self.url + api_path
         request_data = json.dumps(data) if data else None
         self._update_token_header()
         response = requests.request(
-            method=request_type,
+            method=method,
             headers=self._headers,
             url=url,
             data=request_data,
