@@ -1,0 +1,74 @@
+Read {
+ inputs 0
+ file_type png
+ file "\[argv 10]"
+ format "1920 1080 0 0 1920 1080 1 HD_1080"
+ origset true
+ name Read2
+ selected true
+ xpos -405
+ ypos -394
+}
+Text {
+ message "\[if \{ \[catch \{expr \[argv 11]\} ]\} \{set output \[argv 11]\} \{set output \[expr \[argv 11]]\}]"
+ font /usr/share/fonts/open-sans/OpenSans-Regular.ttf
+ size 30
+ yjustify center
+ Transform 1
+ box {{"(width * 0.0198)+5"} {"height - (height * 0.6018) +5"} {"(width * 0.3818)-5"} {"(height * 0.5352)-5"}}
+ center {2048 1080}
+ name SlateLeft
+ selected true
+ xpos -405
+ ypos -96
+}
+Text {
+ message "\[if \{ \[catch \{expr \[argv 12]\} ]\} \{set output \[argv 12]\} \{set output \[expr \[argv 12]]\}]"
+ font /usr/share/fonts/open-sans/OpenSans-Regular.ttf
+ size 30
+ xjustify right
+ yjustify center
+ Transform 1
+ box {{"(width * 0.6228)+5"} {"height - (height * 0.6018) +5"} {"(width * 0.9802)-5"} {"(height * 0.5352)-5"}}
+ center {2048 1080}
+ name SlateRight
+ selected true
+ xpos -405
+ ypos -70
+}
+Text {
+ message "\[if \{ \[catch \{expr \[argv 13]\} ]\} \{set output \[argv 13]\} \{set output \[expr \[argv 13]]\}]"
+ font /usr/share/fonts/open-sans/OpenSans-Regular.ttf
+ size 18
+ yjustify center
+ Transform 1
+ box {{"(width * 0.6228)+5"} {"height - (height * 0.93) -2"} {"(width * 0.9802)-5"} {"(height * 0.02)+2"}}
+ center {2048 1080}
+ name SlateBottom
+ selected true
+ xpos -405
+ ypos -44
+}
+FrameHold {
+ first_frame 1000
+ name FrameHold1
+ selected true
+ xpos -405
+ ypos 44
+}
+Write {
+ file "\[argv 1]"
+ colorspace sRGB
+ file_type exr
+ first_part rgba
+ create_directories true
+ first {{"\[argv 2]"}}
+ last {{"\[argv 2]"}}
+ use_limit true
+ checkHashOnRead false
+ name Write
+ selected true
+ xpos -405
+ ypos 117
+}
+
