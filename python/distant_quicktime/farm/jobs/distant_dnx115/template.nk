@@ -205,6 +205,7 @@ Dot {
 Write {
  file "\[argv 1]"
  colorspace sRGB
+ file_type mov
  mov64_codec AVdn
  mov64_dnxhd_codec_profile "DNxHD 422 8-bit 145Mbit"
  mov_h264_codec_profile "High 4:2:0 8-bit"

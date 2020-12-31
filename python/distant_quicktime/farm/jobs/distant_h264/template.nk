@@ -205,12 +205,11 @@ Dot {
 Write {
  file "\[argv 1]"
  colorspace sRGB
- mov64_format "mov (QuickTime / MOV)"
+ file_type mov
  mov64_codec h264
  mov_h264_codec_profile "High 4:2:0 8-bit"
  mov64_pixel_format {{0} "yuv420p\tYCbCr 4:2:0 8-bit"}
  mov64_quality High
- mov64_advanced 1
  mov64_fast_start true
  mov64_write_timecode true
  mov64_gop_size 12
@@ -223,6 +222,6 @@ Write {
  checkHashOnRead false
  name Write
  selected true
- xpos -215
- ypos 348
+ xpos -40
+ ypos 260
 }
