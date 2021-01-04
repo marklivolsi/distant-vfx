@@ -28,7 +28,8 @@ def main():
         '--stills',
         action='store_true',
         help='Specifying --stills will additionally inject stills located within the same directory as the EDL '
-             'to FileMaker.'
+             'to FileMaker. Please note that this will recursively search the EDL directory for stills, so please do '
+             'not use this option if the EDL is not contained within its own directory.'
     )
 
     args = parser.parse_args()
