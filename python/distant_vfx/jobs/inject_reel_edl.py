@@ -5,6 +5,7 @@ import os
 import re
 import traceback
 
+from . import edl_lowercase_loc
 from ..filemaker import CloudServerWrapper
 from ..constants import FMP_URL, FMP_USERNAME, FMP_PASSWORD, FMP_EDIT_DB, FMP_CUTHISTORY_LAYOUT, \
     FMP_CUTHISTORYSHOTS_LAYOUT, FMP_ADMIN_DB, FMP_IMAGES_LAYOUT, FMP_PROCESS_IMAGE_SCRIPT, LEGAL_THUMB_EXTENSIONS
@@ -234,6 +235,7 @@ def _inject_stills(root_path):
 
 def main(edl_path, csv_out=False, inject_stills=False):
     captureWarnings(True)
+    edl_lowercase_loc.main(edl_path)
     edl_dict = _edl2dict(edl_path)
     reel_dict = _versionImport(edl_dict[1]["ReelVersion"])
     if not csv_out:
