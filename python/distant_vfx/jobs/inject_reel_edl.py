@@ -232,14 +232,15 @@ def _inject_stills(root_path):
                     traceback.print_exc()
 
 
-def main(edl_path, csv_out=False):
+def main(edl_path, csv_out=False, inject_stills=False):
     captureWarnings(True)
     edl_dict = _edl2dict(edl_path)
     reel_dict = _versionImport(edl_dict[1]["ReelVersion"])
     if not csv_out:
         _inject_reel(edl_dict, reel_dict)
-        root_path = os.path.dirname(edl_path)
-        _inject_stills(root_path)
+        if inject_stills:
+            root_path = os.path.dirname(edl_path)
+            _inject_stills(root_path)
     else:
         csv_path = edl_path.rsplit('.', 1)[0] + '.csv'
         _dict2csv(edl_dict, csv_path)
