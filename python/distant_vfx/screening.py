@@ -61,7 +61,7 @@ class Screening:
 
             records = None
             try:
-                records = fmp.find(self.query, limit=500)
+                records = fmp.find([self.query], limit=500)
             except:
                 if fmp.last_error == 401:
                     pass
