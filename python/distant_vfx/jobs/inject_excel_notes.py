@@ -1,5 +1,6 @@
 from ..filemaker import CloudServerWrapper
 from ..parsers import ExcelNotesParser
+from ..utilities import dict_items_to_str
 from ..constants import FMP_URL, FMP_USERNAME, FMP_PASSWORD, FMP_VFX_DB, FMP_NOTES_LAYOUT
 
 
@@ -10,25 +11,29 @@ def main(xlsx_path):
 
     fmp_records = []
     for row in xlsx_rows:
-        note_record = {
-            'Versions_Notes::Vendor': row['vendor'],
-            'VFXID': row['shot or asset id'],
-            'Filename': row['filename'],
-        }
+        note_record = _create_base_note_record_dict(row)
 
         # create prod note dict
-        prod_note = row['prodNote']
+        prod_note = row.get('prodNote')
         if prod_note:
             note_record['Note'] = prod_note
             fmp_records.append(note_record)
 
         # create edit note dict
-        edit_note = row['send to editorial?']
+        edit_note = row.get('to editorial?')
         if edit_note:
             edit_note = f'send to editorial: {edit_note}'
             note_record['Note'] = edit_note
             fmp_records.append(note_record)
 
+        # create comp note dict
+        comp_note = row.get('to comp?')
+        if comp_note:
+            comp_note = f'cut into comp: {comp_note}'
+            note_record['Note'] = comp_note
+            fmp_records.append(note_record)
+
+    # Inject notes to filemaker
     with CloudServerWrapper(url=FMP_URL,
                             user=FMP_USERNAME,
                             password=FMP_PASSWORD,
@@ -42,3 +47,13 @@ def main(xlsx_path):
                 print(f'Note record created (data: {record})')
             except Exception as e:
                 print(e)
+
+
+@dict_items_to_str
+def _create_base_note_record_dict(xlsx_row):
+    note_record = {
+        'Versions_Notes::Vendor': xlsx_row.get('vendor'),
+        'VFXID': xlsx_row.get('shot or asset id'),
+        'Filename': xlsx_row.get('filename'),
+    }
+    return note_record
