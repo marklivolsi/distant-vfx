@@ -1,5 +1,21 @@
 import os
 import pandas as pd
+import numpy as np
+
+
+class ExcelNotesParser:
+
+    def __init__(self):
+        self.xlsx_path = None
+        self.data = None
+
+    def get_rows_as_dicts(self):
+        return self.data.to_dict(orient='records')
+
+    def read_xlsx(self, xlsx_path):
+        self.xlsx_path = xlsx_path
+        self.data = pd.read_excel(self.xlsx_path, engine='openpyxl', index_col=0)
+        self.data = self.data.replace({np.nan: None})
 
 
 class ALEParser:
