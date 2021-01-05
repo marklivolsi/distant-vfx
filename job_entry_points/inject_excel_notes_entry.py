@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 from distant_vfx.jobs import inject_excel_notes
 
