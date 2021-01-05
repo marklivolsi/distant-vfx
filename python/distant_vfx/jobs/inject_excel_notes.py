@@ -1,3 +1,4 @@
+from copy import deepcopy
 from ..filemaker import CloudServerWrapper
 from ..parsers import ExcelNotesParser
 from ..utilities import dict_items_to_str
@@ -23,15 +24,17 @@ def main(xlsx_path):
         edit_note = row.get('to editorial?')
         if edit_note:
             edit_note = f'send to editorial: {edit_note}'
-            note_record['Note'] = edit_note
-            fmp_records.append(note_record)
+            edit_note_record = deepcopy(note_record)
+            edit_note_record['Note'] = edit_note
+            fmp_records.append(edit_note_record)
 
         # create comp note dict
         comp_note = row.get('to comp?')
         if comp_note:
+            comp_note_record = deepcopy(note_record)
             comp_note = f'cut into comp: {comp_note}'
-            note_record['Note'] = comp_note
-            fmp_records.append(note_record)
+            comp_note_record['Note'] = comp_note
+            fmp_records.append(comp_note_record)
 
     # Inject notes to filemaker
     with CloudServerWrapper(url=FMP_URL,
