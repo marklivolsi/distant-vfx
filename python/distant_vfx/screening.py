@@ -39,6 +39,7 @@ class Screening:
                     continue
 
             # If we get here, we have a path to the version
+            print(f'Found file: {path}')
             cut_order = self._get_cut_order_from_record(version_record)
             self.cut_order_map[path] = cut_order
             self.file_paths.append(path)
