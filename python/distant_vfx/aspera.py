@@ -3,7 +3,7 @@ import requests
 from distant_vfx.constants import FASPEX_API_PATHS
 
 
-class AsperaSession:
+class FaspexSession:
 
     def __init__(self, url, user, password, admin=False):
         self.url = url
