@@ -1,3 +1,4 @@
+import traceback
 from copy import deepcopy
 from ..filemaker import CloudServerWrapper
 from ..parsers import ExcelNotesParser
@@ -46,16 +47,15 @@ def main(xlsx_path):
         fmp.login()
         for record in fmp_records:
             try:
-                fmp.create_record(record)
+                record_id = fmp.create_record(record)
                 print(f'Note record created (data: {record})')
-            except Exception as e:
-                print(e)
+            except:
+                traceback.print_exc()
 
 
 @dict_items_to_str
 def _create_base_note_record_dict(xlsx_row):
     note_record = {
-        'Versions_Notes::Vendor': xlsx_row.get('vendor'),
         'VFXID': xlsx_row.get('shot or asset id'),
         'Filename': xlsx_row.get('filename'),
     }
