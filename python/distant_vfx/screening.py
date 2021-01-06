@@ -75,7 +75,7 @@ class Screening:
         try:
             cut_order = int(record['VFXEditorialShots::CutOrder'])
         except:
-            cut_order = 0  # default to 0 if can't read cut order
+            cut_order = 999999999  # put shots without cut order at the back of the list
         return cut_order
 
     @staticmethod
