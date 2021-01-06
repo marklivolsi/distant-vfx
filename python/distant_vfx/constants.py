@@ -59,8 +59,9 @@ FASPEX_PASSWORD = environ.get('FASPEX_PASSWORD')
 # Faspex API pathways
 FASPEX_API_PATHS = {
     'auth': '/auth/oauth2/token',
-    'packages': '/api/users/{user_id}/packages/',
-    'workgroups': '/api/workgroups'
+    'packages': '/api/users/{user_id}/packages',
+    'workgroups': '/api/workgroups',
+    'transfer_specs': '/api/users/{user_id}/packages/{package_id}/transfer_specs'
 }
 
 

@@ -3,6 +3,12 @@ import requests
 from distant_vfx.constants import FASPEX_API_PATHS
 
 
+class AscpTransfer:
+
+    def __init__(self):
+        pass
+
+
 class FaspexSession:
 
     def __init__(self, url, user, password, admin=False):
@@ -31,6 +37,18 @@ class FaspexSession:
         self._token = response.get('access_token')
         self._refresh_token = response.get('refresh_token')
 
+    def fetch_transfer_specs(self, package_id, transfer_direction):
+        if transfer_direction not in ['send', 'receive']:
+            raise ValueError('Transfer direction must be either "send" or "receive"')
+        api_path = self._format_api_path(FASPEX_API_PATHS['transfer_specs'],
+                                         package_id=package_id)
+        transfer_specs = self._call_faspex(
+            method='GET',
+            api_path=api_path,
+            data={'direction': transfer_direction}
+        )
+        return transfer_specs
+
     def fetch_packages(self):
         api_path = self._format_api_path(FASPEX_API_PATHS['packages'])
         packages = self._call_faspex(
@@ -45,9 +63,12 @@ class FaspexSession:
         return self.latest_package_id
 
     def get_packages_to_process(self, packages_list):
-        packages_to_process = [package for package in packages_list if
-                               self._get_package_id(package) > self.last_processed_package_id]
-        return packages_to_process
+        if self.last_processed_package_id:
+            packages_to_process = [package for package in packages_list if
+                                   self._get_package_id(package) > self.last_processed_package_id]
+            return packages_to_process
+        else:
+            return None
 
     def get_last_processed_package_id_from_file(self, json_file):
         try:
@@ -59,7 +80,8 @@ class FaspexSession:
         finally:
             return self.last_processed_package_id
 
-    def write_last_processed_package_id_file(self, json_file):
+    def write_last_processed_package_id_file(self, package_id, json_file):
+        self.last_processed_package_id = package_id
         json_dict = {
             'id': self.last_processed_package_id
         }
