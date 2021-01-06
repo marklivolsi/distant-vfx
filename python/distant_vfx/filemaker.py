@@ -24,6 +24,10 @@ def _request_with_retry(func):
                     raise
             except Exception:
                 raise
+            finally:
+                # make sure Content-Type is set to avoid KeyError when popping Content-Type from header, which can
+                # happen after a failed container upload attempt
+                self._server._set_content_type()
         return None
     return wrapper
 
