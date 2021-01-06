@@ -34,9 +34,9 @@ FMP_PROCESS_IMAGE_SCRIPT = environ.get('FMP_PROCESS_IMAGE_SCRIPT')
 SHOT_TREE_BASE_PATH = environ.get('SHOT_TREE_BASE_PATH')
 THUMBS_BASE_PATH = environ.get('THUMBS_BASE_PATH')
 RV_PATH = environ.get('RV_PATH')
-CONFIG_PATH = './config.yml'
-SG_EVENTS_CONFIG_PATH = '/mnt/Plugins/python3.6/config/shotgun_events_config.yml'
-TO_EDT_MAILBOX_PATH = '/mnt/Projects/dst/mailbox/edt/to_edt'
+# SG_EVENTS_CONFIG_PATH = '/mnt/Plugins/python3.6/config/shotgun_events_config.yml'
+TO_EDT_MAILBOX_PATH = environ.get('TO_EDT_MAILBOX_PATH')
+MAILBOX_BASE_PATH = environ.get('MAILBOX_BASE_PATH')
 
 # Email credentials
 EMAIL_USERNAME = environ.get('EMAIL_USERNAME')
@@ -59,6 +59,7 @@ FASPEX_PASSWORD = environ.get('FASPEX_PASSWORD')
 # Faspex API pathways
 FASPEX_API_PATHS = {
     'auth': '/auth/oauth2/token',
+    'users': '/api/users/{user_id}',
     'packages': '/api/users/{user_id}/packages',
     'workgroups': '/api/workgroups',
     'transfer_specs': '/api/users/{user_id}/packages/{package_id}/transfer_specs'
