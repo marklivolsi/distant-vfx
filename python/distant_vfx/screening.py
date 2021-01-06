@@ -44,8 +44,8 @@ class Screening:
             self.cut_order_map[path] = cut_order
             self.file_paths.append(path)
 
-        # Sort files by cut order
-        self.file_paths.sort(key=lambda x: self.cut_order_map[x])
+        # Sort files by cut order, then alphabetically
+        self.file_paths = sorted(self.file_paths, key=lambda x: (self.cut_order_map[x], x))
 
         # Launch files in RV
         print('Launching files in RV...')
