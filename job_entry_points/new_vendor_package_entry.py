@@ -18,9 +18,11 @@ def main():
                         help='Specify the number of new packages to be created per provided vendor code.')
 
     args = parser.parse_args()
-
-    new_vendor_package.main(vendor_codes=args.vendor_codes,
-                            num_packages=args.multi)
+    if args.multi:
+        new_vendor_package.main(vendor_codes=args.vendor_codes,
+                                num_packages=args.multi)
+    else:
+        new_vendor_package.main(vendor_codes=args.vendor_codes)
 
 
 if __name__ == '__main__':
