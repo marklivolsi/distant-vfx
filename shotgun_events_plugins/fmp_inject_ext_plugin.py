@@ -274,7 +274,9 @@ def _build_transfer_data_dict(published_file, version_name_fmt):
         'Filename': published_file.get('code'),
         'PublishedFileID': published_file.get('id'),
         'Path': _get_published_file_path(published_file),
-        'VersionLink': version_name_fmt
+        'VersionLink': version_name_fmt,
+        'Frame Start': published_file.get('sg_start_frame'),
+        'Frame End': published_file.get('sg_end_frame'),
     }
     return transfer_data
 
@@ -341,7 +343,9 @@ def _get_published_file(sg, event):
             'entity',  # provides access to shot / asset entity
             'sg_delivery_package_name',  # delivery package
             'sg_delivery_package_path',  # package path
-            'sg_intended_status'
+            'sg_intended_status',
+            'sg_start_frame',
+            'sg_end_frame'
         ]
     )
     return published_file

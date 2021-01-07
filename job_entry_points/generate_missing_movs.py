@@ -24,6 +24,8 @@ def main(root_path):
 
         if exr_path is None:
             continue  # skip it if we don't have exr
+        elif 'plate' not in exr_path:
+            continue
         else:
             exr_container_path = os.path.dirname(exr_path)
 
@@ -68,11 +70,11 @@ def main(root_path):
 
 
 def _get_qt_dimensions(exr_container_dir_path):
-    basename = os.path.basename(exr_container_dir_path)
-    split = basename.split('_')
-    split2 = split[0].split('x')
-    width, height = split2[0], split2[1]
-    return int(width), int(height)
+    #basename = os.path.basename(exr_container_dir_path)
+    #split = basename.split('_')
+    #split2 = split[0].split('x')
+    #width, height = split2[0], split2[1]
+    return 1920, 1080
 
 
 def _render_dnx115(image_path, output_path, nukescript_template_path, first_frame, last_frame, scene_name, username,
@@ -92,6 +94,8 @@ def _render_dnx115(image_path, output_path, nukescript_template_path, first_fram
         slate_left_text=os.path.basename(output_path).split('.')[0],
         slate_right_text=username,
         slate_bottom_text=notes,
+        priority=1,
+        pool="quicktime"
     )
     job_id = dnxhd_job.submit()
 
@@ -109,10 +113,12 @@ def _render_h264(image_path, output_path, nukescript_template_path, first_frame,
         text_br='[value frame]',
         first_frame=first_frame,
         last_frame=last_frame,
-        name=scene_name + ' - DNxHD 115 Render',
+        name=scene_name + ' - h264 Render',
         slate_left_text=os.path.basename(output_path).split('.')[0],
         slate_right_text=username,
         slate_bottom_text=notes,
+        priority=1,
+        pool="quicktime"
     )
     job_id = h264_job.submit()
 
