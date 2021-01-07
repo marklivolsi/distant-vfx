@@ -1,14 +1,20 @@
+import os
 
 
 class ImageSequence:
 
-    def __init__(self, frames):
+    def __init__(self, frames, parent_path):
+        self.parent_path = parent_path
         self.frames = frames
         self._split = frames[0].split('.')
         self._sorted = False
 
     def __repr__(self):
         return self.name
+
+    @property
+    def path(self):
+        return os.path.join(self.parent_path, self.name)
 
     @property
     def name(self):
