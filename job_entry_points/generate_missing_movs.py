@@ -94,7 +94,8 @@ def _render_dnx115(image_path, output_path, nukescript_template_path, first_fram
         slate_left_text=os.path.basename(output_path).split('.')[0],
         slate_right_text=username,
         slate_bottom_text=notes,
-        priority=10
+        priority=1,
+        pool="quicktime"
     )
     job_id = dnxhd_job.submit()
 
@@ -116,7 +117,8 @@ def _render_h264(image_path, output_path, nukescript_template_path, first_frame,
         slate_left_text=os.path.basename(output_path).split('.')[0],
         slate_right_text=username,
         slate_bottom_text=notes,
-        priority=10
+        priority=1,
+        pool="quicktime"
     )
     job_id = h264_job.submit()
 
