@@ -1,5 +1,4 @@
 import os
-import re
 from collections import defaultdict
 from functools import wraps
 
@@ -36,7 +35,7 @@ def parse_files_from_basename_map(basename_map):
                 frame_filenames = [os.path.basename(path) for path in file_list]
                 parent_dir = os.path.dirname(file_list[0])
                 seq = ImageSequence(frame_filenames, parent_dir)
-                # path = os.path.join(parent_dir, seq.name)
+                # path = os.path.join(parent_dir, seq.name)  # TODO: DELETE ME
                 # paths.append(seq.path)
                 paths.append(seq)
             else:

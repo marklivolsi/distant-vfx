@@ -9,10 +9,9 @@ def main():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-i', '--input',
+    parser.add_argument('input',
                         action='store',
                         type=str,
-                        required=True,
                         nargs='+',
                         help='<required> Specify one or more packages to inject into FileMaker.')
 

@@ -14,7 +14,7 @@ class Screening:
         self.file_paths = []
 
     def _set_query(self):
-        return {'Screenings::screeningID': self.screening_id}
+        return {'ScreeningID': self.screening_id}
 
     def run(self):
         print('Searching for review files, please wait...')

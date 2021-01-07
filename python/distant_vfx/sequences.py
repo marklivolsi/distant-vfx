@@ -18,7 +18,7 @@ class ImageSequence:
 
     @property
     def name(self):
-        # frame_len = len(self._split[-2])
+        # frame_len = len(self._split[-2]) TODO: DELETE ME
         return self.basename + '.[' + str(self.start) + '-' + str(self.end) + '].' + self.extension
 
     @property
