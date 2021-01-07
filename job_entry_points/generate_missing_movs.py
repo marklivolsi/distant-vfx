@@ -78,6 +78,7 @@ def _get_qt_dimensions(exr_container_dir_path):
 def _render_dnx115(image_path, output_path, nukescript_template_path, first_frame, last_frame, scene_name, username,
                    notes, width=1920, height=1080):
     dnxhd_job = DistantDNxHDFarmJob(
+        nuke_executable="/usr/local/Nuke12.2v2/Nuke12.2",
         image_sequence=image_path,
         output_path=output_path,
         nukescript_path=nukescript_template_path,
@@ -98,6 +99,7 @@ def _render_dnx115(image_path, output_path, nukescript_template_path, first_fram
 def _render_h264(image_path, output_path, nukescript_template_path, first_frame, last_frame, scene_name, username,
                  notes, width=1920, height=1080):
     h264_job = DistantH264FarmJob(
+        nuke_executable="/usr/local/Nuke12.2v2/Nuke12.2",
         image_sequence=image_path,
         output_path=output_path,
         nukescript_path=nukescript_template_path,
