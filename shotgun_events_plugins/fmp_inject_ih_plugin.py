@@ -284,7 +284,9 @@ def _build_one_transfer_data_dict(published_file, version_name_fmt):
         'Filename': published_file.get('code'),
         'PublishedFileID': published_file.get('id'),
         'Path': _get_published_file_path(published_file),
-        'VersionLink': version_name_fmt
+        'VersionLink': version_name_fmt,
+        'Frame Start': published_file.get('sg_start_frame'),
+        'Frame End': published_file.get('sg_end_frame'),
     }
     return transfer_data
 
@@ -306,6 +308,8 @@ def _get_published_files(sg, version_data):
         fields=[
             'code',
             'path',
+            'sg_start_frame',
+            'sg_end_frame'
         ]
     )
     return published_files
