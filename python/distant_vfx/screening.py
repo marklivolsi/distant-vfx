@@ -2,7 +2,8 @@ import os
 import subprocess
 import sys
 from .filemaker import CloudServerWrapper
-from .constants import RV_PATH, FMP_URL, FMP_USERNAME, FMP_PASSWORD, FMP_VFX_DB, FMP_VERSIONS_LAYOUT, FMP_NOTES_LAYOUT, SHOT_TREE_BASE_PATH
+from .constants import RV_PATH, FMP_URL, FMP_USERNAME, FMP_PASSWORD, FMP_VFX_DB, FMP_VERSIONS_LAYOUT, FMP_NOTES_LAYOUT, \
+    SHOT_TREE_BASE_PATH
 
 
 class Screening:
