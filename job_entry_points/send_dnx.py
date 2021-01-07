@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/bin/env python3
 
 import argparse
 from distant_vfx.jobs import send_dnx
@@ -9,11 +9,10 @@ def main():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-i', '--input',
+    parser.add_argument('input',
                         action='store',
                         type=str,
                         nargs='+',
-                        required=True,
                         help='<required> Specify one or more root paths from which to find and copy dnx files.')
 
     parser.add_argument('-o', '--output',
