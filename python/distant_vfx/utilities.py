@@ -3,6 +3,7 @@ from collections import defaultdict
 from functools import wraps
 
 from .sequences import ImageSequence
+from .constants import LEGAL_FRAME_EXTENSIONS
 
 
 def dict_items_to_str(func):
@@ -29,7 +30,8 @@ def parse_files_from_basename_map(basename_map):
     for basename, ext_map in basename_map.items():
         for ext, file_list in ext_map.items():
             num_files = len(file_list)
-            if num_files > 1 and ext in ['exr', 'png', 'jpg', 'jpeg']:
+            ext_with_dot = ext + '.'
+            if num_files > 1 and ext_with_dot in LEGAL_FRAME_EXTENSIONS:
                 frame_filenames = [os.path.basename(path) for path in file_list]
                 seq = ImageSequence(frame_filenames)
                 parent_dir = os.path.dirname(file_list[0])

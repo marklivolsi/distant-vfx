@@ -1,5 +1,6 @@
 from os import environ
 
+LEGAL_FRAME_EXTENSIONS = ['.exr', '.png', '.jpg', '.jpeg']
 LEGAL_THUMB_EXTENSIONS = ['.jpg', '.jpeg', '.png']
 LEGAL_THUMB_SRC_EXTENSIONS = ['.mov', '.mp4']
 SHOW_CODE = 'dst'
