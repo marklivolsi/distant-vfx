@@ -24,8 +24,6 @@ def main(root_path):
 
         if exr_path is None:
             continue  # skip it if we don't have exr
-        elif 'plate' not in exr_path:
-            continue
         else:
             exr_container_path = os.path.dirname(exr_path)
 
@@ -128,6 +126,9 @@ def _make_basename_map(filepath_list):
     frame_map = defaultdict(list)
 
     for path in filepath_list:
+        if 'plate' not in path:  # ignore anything that isn't a plate
+            continue
+
         filename = os.path.basename(path)
         split = filename.split('.')
         basename, ext = split[0], split[-1]
