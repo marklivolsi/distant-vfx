@@ -2,7 +2,7 @@ import os
 import subprocess
 import sys
 from .filemaker import CloudServerWrapper
-from .constants import RV_PATH, FMP_URL, FMP_USERNAME, FMP_PASSWORD, FMP_VFX_DB, FMP_VERSIONS_LAYOUT, SHOT_TREE_BASE_PATH
+from .constants import RV_PATH, FMP_URL, FMP_USERNAME, FMP_PASSWORD, FMP_VFX_DB, FMP_VERSIONS_LAYOUT, FMP_NOTES_LAYOUT, SHOT_TREE_BASE_PATH
 
 
 class Screening:
@@ -12,6 +12,9 @@ class Screening:
         self.query = self._set_query()
         self.cut_order_map = {}
         self.file_paths = []
+
+    def _get_query_layout(self):
+        return FMP_NOTES_LAYOUT
 
     def _set_query(self):
         return {'ScreeningID': self.screening_id}
@@ -56,7 +59,7 @@ class Screening:
                                 user=FMP_USERNAME,
                                 password=FMP_PASSWORD,
                                 database=FMP_VFX_DB,
-                                layout=FMP_VERSIONS_LAYOUT
+                                layout=self._get_query_layout()
                                 ) as fmp:
             fmp.login()
 
@@ -158,6 +161,9 @@ class SupervisorScreening(Screening):
 
     def __init__(self):
         super().__init__(screening_id=0)
+
+    def _get_query_layout(self):
+        return FMP_VERSIONS_LAYOUT
 
     def _set_query(self):
         return {'SupReviewFlag': 1}
