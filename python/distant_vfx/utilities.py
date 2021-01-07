@@ -1,4 +1,5 @@
 import os
+import re
 from collections import defaultdict
 from functools import wraps
 
@@ -33,10 +34,11 @@ def parse_files_from_basename_map(basename_map):
             ext_with_dot = ext + '.'
             if num_files > 1 and ext_with_dot in LEGAL_FRAME_EXTENSIONS:
                 frame_filenames = [os.path.basename(path) for path in file_list]
-                seq = ImageSequence(frame_filenames)
                 parent_dir = os.path.dirname(file_list[0])
-                path = os.path.join(parent_dir, seq.name)
-                paths.append(path)
+                seq = ImageSequence(frame_filenames, parent_dir)
+                # path = os.path.join(parent_dir, seq.name)
+                # paths.append(seq.path)
+                paths.append(seq)
             else:
                 paths += file_list
     return paths

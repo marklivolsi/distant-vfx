@@ -3,6 +3,7 @@ import sys
 import traceback
 
 from ..filemaker import CloudServerWrapper
+from ..sequences import ImageSequence
 from ..utilities import make_basename_map_from_file_path_list, parse_files_from_basename_map, dict_items_to_str
 from ..constants import FMP_URL, FMP_USERNAME, FMP_PASSWORD, FMP_ADMIN_DB, FMP_VERSIONS_LAYOUT, \
     FMP_TRANSFER_LOG_LAYOUT, FMP_TRANSFER_DATA_LAYOUT
@@ -62,7 +63,7 @@ def main(package_path):
             except:
                 traceback.print_exc()
 
-        print('Data injection complete.')
+        print(f'Data injection complete for package: {package_path}')
 
 
 def _scan_package_files(package_path):
@@ -77,28 +78,34 @@ def _scan_package_files(package_path):
                 yield path
 
 
-def _build_version_dicts(unique_paths, package_name):
+def _build_version_dicts(unique_files, package_name):
     versions = []
-    for path in unique_paths:
+    for path in unique_files:
         version_dict = _build_one_version_dict(path, package_name)
         versions.append(version_dict)
     return versions
 
 
 @dict_items_to_str
-def _build_one_version_dict(path, package_name):
-    version_name = _get_version_name_from_path(path)
-    print(path)
+def _build_one_version_dict(filepath, package_name):
+    version_name = _get_version_name_from_path(filepath)
     version_dict = {
         'VFXID': version_name[:7],
         'DeliveryPackage': package_name,
         'Filename': version_name,
     }
-    print(version_dict)
     return version_dict
 
 
+def _get_start_and_end_frame(file):
+    if isinstance(file, ImageSequence):
+        return file.start, file.end
+    return None, None
+
+
 def _get_version_name_from_path(path):
+    if isinstance(path, ImageSequence):
+        return path.basename
     basename = os.path.basename(path)
     split = basename.split('.')
     version_name = split[0]
@@ -127,11 +134,18 @@ def _build_transfer_data(unique_paths):
 
 
 @dict_items_to_str
-def _build_one_transfer_data_dict(path):
-    filename = os.path.basename(path)
+def _build_one_transfer_data_dict(filepath):
+    if isinstance(filepath, ImageSequence):
+        filename = filepath.name
+        filepath = filepath.path
+    else:
+        filename = os.path.basename(filepath)
+    start_frame, end_frame = _get_start_and_end_frame(filepath)
     transfer_data = {
         'Filename': filename,
-        'Path': path,
-        'VersionLink': _get_version_name_from_path(path)
+        'Path': filepath,
+        'VersionLink': _get_version_name_from_path(filepath),
+        'Frame Start': start_frame,
+        'Frame End': end_frame
     }
     return transfer_data
