@@ -160,7 +160,11 @@ def _versionImport(reel_version):
     breakOut = reel_version.split("_")  # breakout components of the name
     for chunk in breakOut:  # Walk through parts of the breakout
         if chunk.lower().count('r'):  # Look for R in chunk of filename
-            reelInfo.update({'Reel': int(re.sub('[^0-9]', '', chunk))})  # Create Reel in dictionary
+            try:
+                val = int(re.sub('[^0-9]', '', chunk))
+            except:
+                val = 0
+            reelInfo.update({'Reel': val})  # Create Reel in dictionary
         elif chunk.isdigit() and len(chunk) == 8:  # Look for 8 digits, hope they are a date!
             reelInfo.update({'Date': datetime.date(int(chunk[0:4]), int(chunk[4:6]), int(chunk[-2:])).strftime(
                 "%m/%d/%y")})  # Create the Date in a filemaker friendly format
