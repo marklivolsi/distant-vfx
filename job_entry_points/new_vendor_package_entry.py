@@ -1,5 +1,5 @@
 import argparse
-from distant_vfx.jobs import new_vendor_package
+from python.distant_vfx.jobs import new_vendor_package
 
 
 def main():

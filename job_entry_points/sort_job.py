@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from distant_vfx.jobs import prod_asset_sort
+from python.distant_vfx.jobs import prod_asset_sort
 
 
 def main():

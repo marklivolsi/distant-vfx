@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from distant_vfx.screening import SupervisorScreening
+from python.distant_vfx.screening import SupervisorScreening
 
 
 # An entry point for the launch_ldq_review job

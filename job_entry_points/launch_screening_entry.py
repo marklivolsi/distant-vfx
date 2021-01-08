@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from distant_vfx.screening import Screening
+from python.distant_vfx.screening import Screening
 
 
 # An entry point for the launch_screening job

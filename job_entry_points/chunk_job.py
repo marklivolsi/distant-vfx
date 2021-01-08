@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from distant_vfx.jobs import chunk_to_new_packages
+from python.distant_vfx.jobs import chunk_to_new_packages
 
 
 # A quick entry point for the chunk_to_new_packages job.

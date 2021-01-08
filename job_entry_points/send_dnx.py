@@ -1,7 +1,7 @@
 #!/bin/env python3
 
 import argparse
-from distant_vfx.jobs import send_dnx
+from python.distant_vfx.jobs import send_dnx
 
 
 # A quick entry point for the send_dnx job.

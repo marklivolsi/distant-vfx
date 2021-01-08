@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from distant_vfx.jobs import inject_reel_edl
+from python.distant_vfx.jobs import inject_reel_edl
 
 
 # An entry point for the inject_reel_edl job

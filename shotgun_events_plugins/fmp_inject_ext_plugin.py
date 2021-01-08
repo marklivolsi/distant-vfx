@@ -4,10 +4,10 @@ import time
 from pprint import pformat
 
 import yagmail
-from distant_vfx.constants import *
-from distant_vfx.filemaker import CloudServerWrapper
-from distant_vfx.utilities import dict_items_to_str
-from distant_vfx.video import VideoProcessor
+from python.distant_vfx.constants import *
+from python.distant_vfx.filemaker import CloudServerWrapper
+from python.distant_vfx.utilities import dict_items_to_str
+from python.distant_vfx.video import VideoProcessor
 
 
 def registerCallbacks(reg):

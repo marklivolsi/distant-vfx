@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from distant_vfx.jobs import fmp_manual_inject
+from python.distant_vfx.jobs import fmp_manual_inject
 
 
 # A quick entry point for the fmp_manual_inject job
