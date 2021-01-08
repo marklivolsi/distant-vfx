@@ -30,12 +30,12 @@ FMP_NOTES_LAYOUT = environ.get('FMP_NOTES_LAYOUT')
 
 # FMP scripts
 FMP_PROCESS_IMAGE_SCRIPT = environ.get('FMP_PROCESS_IMAGE_SCRIPT')
+FMP_PROCESS_TRANSFER_DATA_SCRIPT = environ.get('FMP_PROCESS_TRANSFER_DATA_SCRIPT')
 
 # Filesystem path constants
 SHOT_TREE_BASE_PATH = environ.get('SHOT_TREE_BASE_PATH')
 THUMBS_BASE_PATH = environ.get('THUMBS_BASE_PATH')
 RV_PATH = environ.get('RV_PATH')
-# SG_EVENTS_CONFIG_PATH = '/mnt/Plugins/python3.6/config/shotgun_events_config.yml' # TODO: DELETE ME
 TO_EDT_MAILBOX_PATH = environ.get('TO_EDT_MAILBOX_PATH')
 MAILBOX_BASE_PATH = environ.get('MAILBOX_BASE_PATH')
 
