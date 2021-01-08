@@ -4,13 +4,14 @@ import time
 from pprint import pformat
 
 import yagmail
+
+from python.distant_vfx.filemaker import CloudServerWrapper
+from python.distant_vfx.utilities import dict_items_to_str
+from python.distant_vfx.video import VideoProcessor
 from python.distant_vfx.constants import SG_INJECT_EXT_NAME, SG_INJECT_EXT_KEY, FMP_URL, FMP_USERNAME, FMP_PASSWORD, \
     FMP_ADMIN_DB, FMP_VERSIONS_LAYOUT, FMP_TRANSFER_LOG_LAYOUT, FMP_TRANSFER_DATA_LAYOUT, FMP_IMAGES_LAYOUT, \
     EMAIL_USERNAME, EMAIL_PASSWORD, EMAIL_RECIPIENTS, FMP_PROCESS_IMAGE_SCRIPT, THUMBS_BASE_PATH, \
     LEGAL_THUMB_SRC_EXTENSIONS
-from python.distant_vfx.filemaker import CloudServerWrapper
-from python.distant_vfx.utilities import dict_items_to_str
-from python.distant_vfx.video import VideoProcessor
 
 
 def registerCallbacks(reg):
