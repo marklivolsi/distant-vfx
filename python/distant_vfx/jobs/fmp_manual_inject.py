@@ -6,7 +6,7 @@ from ..filemaker import CloudServerWrapper
 from ..sequences import ImageSequence
 from ..utilities import make_basename_map_from_file_path_list, parse_files_from_basename_map, dict_items_to_str
 from ..constants import FMP_URL, FMP_USERNAME, FMP_PASSWORD, FMP_ADMIN_DB, FMP_VERSIONS_LAYOUT, \
-    FMP_TRANSFER_LOG_LAYOUT, FMP_TRANSFER_DATA_LAYOUT
+    FMP_TRANSFER_LOG_LAYOUT, FMP_TRANSFER_DATA_LAYOUT, FMP_PROCESS_TRANSFER_DATA_SCRIPT
 
 
 def main(package_path):
@@ -62,6 +62,15 @@ def main(package_path):
                 transfer_data_id = fmp.create_record(transfer_data)
             except:
                 traceback.print_exc()
+
+            if transfer_data_id:
+                try:
+                    transfer_primary_key = fmp.get_record(transfer_data_id).PrimaryKey
+                    script_result = fmp.perform_script(FMP_PROCESS_TRANSFER_DATA_SCRIPT,
+                                                       param=transfer_primary_key)
+                except:
+                    traceback.print_exc()
+
 
         print(f'Data injection complete for package: {package_path}')
 
