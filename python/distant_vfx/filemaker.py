@@ -89,5 +89,5 @@ class CloudServerWrapper:
         return self._server.upload_container(record_id, field_name, file_)
 
     @_request_with_retry
-    def perform_script(self, name, param):
+    def perform_script(self, name, param=None):
         return self._server.perform_script(name, param=param)

@@ -154,7 +154,8 @@ def _run_unflag_omits_script(fmp, logger):
     script_res = None
     try:
         script_res = fmp.perform_script(
-            name=FMP_UNFLAG_OMITS_SCRIPT
+            name=FMP_UNFLAG_OMITS_SCRIPT,
+            param=None
         )
     except:
         logger.error(f'Error running unflag omits script', exc_info=True)
