@@ -247,7 +247,7 @@ def main(edl_path, csv_out=False, inject_stills=False):
         if inject_stills:
             root_path = os.path.dirname(edl_path)
             _inject_stills(root_path)
+        print("Reel imported into database successfully.")
     else:
         csv_path = edl_path.rsplit('.', 1)[0] + '.csv'
         _dict2csv(edl_dict, csv_path)
-    print("Reel imported into database successfully.")
