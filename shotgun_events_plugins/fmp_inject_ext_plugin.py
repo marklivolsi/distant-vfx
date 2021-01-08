@@ -53,9 +53,9 @@ def inject(sg, logger, event, args):
     try:
         # Generate a thumbnail if applicable
         mov_path = _get_mov_path(published_file)
-        # if mov_path:
-        thumb_name, thumb_path = _get_thumbnail(mov_path)
-        fmp_thumb_data = _build_thumb_dict(thumb_name, thumb_path)
+        if mov_path:
+            thumb_name, thumb_path = _get_thumbnail(mov_path)
+            fmp_thumb_data = _build_thumb_dict(thumb_name, thumb_path)
     except Exception:
         logger.error(f'Error generating thumbnail for version: {version_name}', exc_info=True)
 
