@@ -4,7 +4,6 @@ import time
 from pprint import pformat
 
 import yagmail
-
 from python.distant_vfx.filemaker import CloudServerWrapper
 from python.distant_vfx.utilities import dict_items_to_str
 from python.distant_vfx.video import VideoProcessor
