@@ -9,7 +9,8 @@ from python.distant_vfx.utilities import dict_items_to_str
 from python.distant_vfx.video import VideoProcessor
 from python.distant_vfx.constants import SG_INJECT_IH_NAME, SG_INJECT_IH_KEY, FMP_URL, FMP_USERNAME, FMP_PASSWORD, \
     FMP_ADMIN_DB, FMP_VERSIONS_LAYOUT, FMP_TRANSFER_LOG_LAYOUT, FMP_TRANSFER_DATA_LAYOUT, FMP_IMAGES_LAYOUT, \
-    EMAIL_USERNAME, EMAIL_PASSWORD, EMAIL_RECIPIENTS, FMP_PROCESS_IMAGE_SCRIPT, THUMBS_BASE_PATH
+    EMAIL_USERNAME, EMAIL_PASSWORD, EMAIL_RECIPIENTS, FMP_PROCESS_IMAGE_SCRIPT, THUMBS_BASE_PATH, \
+    FMP_UNFLAG_OMITS_SCRIPT
 
 
 def registerCallbacks(reg):
@@ -115,6 +116,9 @@ def inject(sg, logger, event, args):
         else:
             report_img = False
 
+        # Run unflag omits script
+        unflag_omits_script_res = _run_unflag_omits_script(fmp, logger)
+
         logger.info(f'Completed event processing {event.get("id")}')
 
         do_not_report_msg = 'There was an error injecting this data. Please see error emails for details.'
@@ -144,6 +148,17 @@ def _send_success_email(version_data, fmp_transfer_log, fmp_transfer_data_dicts,
         subject=subject,
         contents=content
     )
+
+
+def _run_unflag_omits_script(fmp, logger):
+    script_res = None
+    try:
+        script_res = fmp.perform_script(
+            name=FMP_UNFLAG_OMITS_SCRIPT
+        )
+    except:
+        logger.error(f'Error running unflag omits script', exc_info=True)
+    return script_res
 
 
 def _run_process_image_script(fmp, img_primary_key, logger):
