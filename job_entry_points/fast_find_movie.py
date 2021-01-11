@@ -17,7 +17,7 @@ def main():
                         help='The number of versions to retrieve (starting with the most recent and working backward.')
 
     args = parser.parse_args()
-    if args.num_versions:
+    if args.num:
         ffm = FastFindMovie(vfxid=args.vfxid,
                             num_versions=args.num)
     else:

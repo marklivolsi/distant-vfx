@@ -73,8 +73,8 @@ class CloudServerWrapper:
         self._server.login()
 
     @_request_with_retry
-    def find(self, query, limit=100):
-        return self._server.find(query, limit=limit)
+    def find(self, query, sort=None, limit=100):
+        return self._server.find(query, sort=sort, limit=limit)
 
     @_request_with_retry
     def get_record(self, record_id):

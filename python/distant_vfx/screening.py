@@ -25,8 +25,7 @@ class Screening:
         records = self._get_records_from_filemaker()
 
         if not records:
-            print('No records found.')
-            sys.exit()
+            self._handle_no_records(records)
 
         for version_record in records:
             version_name = self._get_version_name_from_record(version_record)
@@ -57,6 +56,10 @@ class Screening:
         # Launch files in RV
         print('Launching files in RV...')
         self.launch_rv(self.file_paths)
+
+    def _handle_no_records(self, records):
+        print('No records found.')
+        sys.exit()
 
     def _filter_file_paths(self):
         pass
@@ -182,9 +185,9 @@ class SupervisorScreening(Screening):
 class FastFindMovie(Screening):
 
     def __init__(self, vfxid, num_versions=1):
-        super().__init__(screening_id=0)
         self.vfxid = vfxid
         self.num_versions = num_versions
+        super().__init__(screening_id=0)
 
     def _get_query_layout(self):
         return FMP_VERSIONS_LAYOUT
@@ -201,7 +204,40 @@ class FastFindMovie(Screening):
             cut_order = 0  # put shots without cut order at the front of the list, these are prob early versions
         return cut_order
 
+    def _handle_no_records(self, records):
+        cmd = ['rvPlate', self.vfxid]
+        process = subprocess.Popen(cmd,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   universal_newlines=True,
+                                   shell=False)
+        stdout, stderr = process.communicate()
+        sys.exit()
+
     def _filter_file_paths(self):
-        # Grab the last self.num_versions from the list
-        if len(self.file_paths) > self.num_versions:
-            self.file_paths = self.file_paths[-self.num_versions:]
+        # Reverse the sort order of the paths
+        self.file_paths.reverse()
+
+    def _get_records_from_filemaker(self):
+        with CloudServerWrapper(url=FMP_URL,
+                                user=FMP_USERNAME,
+                                password=FMP_PASSWORD,
+                                database=FMP_VFX_DB,
+                                layout=self._get_query_layout()
+                                ) as fmp:
+            fmp.login()
+
+            records = None
+            try:
+                records = fmp.find([self.query],
+                                   limit=self.num_versions,
+                                   sort=[
+                                       {'fieldName': 'DeliveryDateAsNumber', 'sortOrder': 'descend'},
+                                       {'fieldName': 'CreationTimestampAsNumber', 'sortOrder': 'descend'}
+                                   ])
+            except:
+                if fmp.last_error == 401:
+                    pass
+                else:
+                    raise
+            return records
