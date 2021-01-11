@@ -21,11 +21,11 @@ class Screening:
         return {'ScreeningID': self.screening_id}
 
     def run(self):
-        print('Searching for review files, please wait...')
+        print('Searching for files, please wait...')
         records = self._get_records_from_filemaker()
 
         if not records:
-            print('No review records found.')
+            print('No records found.')
             sys.exit()
 
         for version_record in records:
@@ -49,11 +49,20 @@ class Screening:
             self.file_paths.append(path)
 
         # Sort files by cut order, then alphabetically
-        self.file_paths = sorted(self.file_paths, key=lambda x: (self.cut_order_map[x], x))
+        self._sort_file_paths()
+
+        # Filter any file paths, if applicable
+        self._filter_file_paths()
 
         # Launch files in RV
         print('Launching files in RV...')
         self.launch_rv(self.file_paths)
+
+    def _filter_file_paths(self):
+        pass
+
+    def _sort_file_paths(self):
+        self.file_paths = sorted(self.file_paths, key=lambda x: (self.cut_order_map[x], x))
 
     def _get_records_from_filemaker(self):
         with CloudServerWrapper(url=FMP_URL,
@@ -168,3 +177,31 @@ class SupervisorScreening(Screening):
 
     def _set_query(self):
         return {'SupReviewFlag': 1}
+
+
+class FastFindMovie(Screening):
+
+    def __init__(self, vfxid, num_versions=1):
+        super().__init__(screening_id=0)
+        self.vfxid = vfxid
+        self.num_versions = num_versions
+
+    def _get_query_layout(self):
+        return FMP_VERSIONS_LAYOUT
+
+    def _set_query(self):
+        return {'VFXID': self.vfxid}
+
+    @staticmethod
+    def _get_cut_order_from_record(record):
+        # Override to use the delivery date instead of cut order
+        try:
+            cut_order = int(record['DeliveryDateAsNumber'])
+        except:
+            cut_order = 999999999  # put shots without cut order at the back of the list
+        return cut_order
+
+    def _filter_file_paths(self):
+        # Grab the last self.num_versions from the list
+        if len(self.file_paths) > self.num_versions:
+            self.file_paths = self.file_paths[-self.num_versions:]
