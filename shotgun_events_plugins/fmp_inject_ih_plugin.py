@@ -10,7 +10,7 @@ from python.distant_vfx.video import VideoProcessor
 from python.distant_vfx.constants import SG_INJECT_IH_NAME, SG_INJECT_IH_KEY, FMP_URL, FMP_USERNAME, FMP_PASSWORD, \
     FMP_ADMIN_DB, FMP_VERSIONS_LAYOUT, FMP_TRANSFER_LOG_LAYOUT, FMP_TRANSFER_DATA_LAYOUT, FMP_IMAGES_LAYOUT, \
     EMAIL_USERNAME, EMAIL_PASSWORD, EMAIL_RECIPIENTS, FMP_PROCESS_IMAGE_SCRIPT, THUMBS_BASE_PATH, \
-    FMP_UNFLAG_OMITS_SCRIPT
+    FMP_UNFLAG_OMITS_SCRIPT, FMP_PROCESS_TRANSFER_DATA_SCRIPT
 
 
 def registerCallbacks(reg):
@@ -102,6 +102,9 @@ def inject(sg, logger, event, args):
             if not filename_record_ids:
                 report_transfer_data = False
 
+            # Run script to process transfer data
+            res = _run_process_transfer_data_records_script(fmp, transfer_primary_key, logger)
+
         # Inject thumb if available
         img_record_id = None
         if thumb_path is not None:
@@ -148,6 +151,18 @@ def _send_success_email(version_data, fmp_transfer_log, fmp_transfer_data_dicts,
         subject=subject,
         contents=content
     )
+
+
+def _run_process_transfer_data_records_script(fmp, transfer_log_key, logger):
+    script_res = None
+    try:
+        script_res = fmp.perform_script(
+            name=FMP_PROCESS_TRANSFER_DATA_SCRIPT,
+            param=transfer_log_key
+        )
+    except:
+        logger.error(f'Error running process transfer data script for log: {transfer_log_key}', exc_info=True)
+    return script_res
 
 
 def _run_unflag_omits_script(fmp, logger):
