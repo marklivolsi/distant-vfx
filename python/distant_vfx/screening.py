@@ -198,7 +198,7 @@ class FastFindMovie(Screening):
         try:
             cut_order = int(record['DeliveryDateAsNumber'])
         except:
-            cut_order = 999999999  # put shots without cut order at the back of the list
+            cut_order = 0  # put shots without cut order at the front of the list, these are prob early versions
         return cut_order
 
     def _filter_file_paths(self):
