@@ -63,16 +63,22 @@ def main(package_path):
             except:
                 traceback.print_exc()
 
-            if transfer_data_id:
-                try:
-                    transfer_primary_key = fmp.get_record(transfer_data_id).PrimaryKey
-                    script_result = fmp.perform_script(FMP_PROCESS_TRANSFER_DATA_SCRIPT,
-                                                       param=transfer_primary_key)
-                except:
-                    traceback.print_exc()
-
+        # Run script to process transfer data
+        res = _run_process_transfer_data_records_script(fmp, transfer_log_primary_key)
 
         print(f'Data injection complete for package: {package_path}')
+
+
+def _run_process_transfer_data_records_script(fmp, transfer_log_key):
+    script_res = None
+    try:
+        script_res = fmp.perform_script(
+            name=FMP_PROCESS_TRANSFER_DATA_SCRIPT,
+            param=transfer_log_key
+        )
+    except:
+        traceback.print_exc()
+    return script_res
 
 
 def _scan_package_files(package_path):
