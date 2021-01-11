@@ -47,7 +47,7 @@ class CloudServerWrapper:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._server.logout()
+        self.logout()
 
     def _set_server(self):
         return CloudServer(url=self.url,
@@ -71,6 +71,10 @@ class CloudServerWrapper:
 
     def login(self):
         self._server.login()
+
+    @_request_with_retry
+    def logout(self):
+        return self._server.logout()
 
     @_request_with_retry
     def find(self, query, sort=None, limit=100):
