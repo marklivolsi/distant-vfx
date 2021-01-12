@@ -182,6 +182,12 @@ class SupervisorScreening(Screening):
         return {'SupReviewFlag': 1}
 
 
+class DirectorScreening(SupervisorScreening):
+
+    def _set_query(self):
+        return {'directorReviewFlag': 1}
+
+
 class FastFindMovie(Screening):
 
     def __init__(self, vfxid, num_versions=1):
