@@ -1,6 +1,6 @@
 import json
 import requests
-from distant_vfx.constants import FASPEX_API_PATHS
+from .constants import FASPEX_API_PATHS
 
 
 class AscpTransfer:
