@@ -10,11 +10,10 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        '-i', '--input',
+        'input',
         action='store',
         nargs='+',
         type=str,
-        required=True,
         help='<required> Specify one or more scan order edl file paths.'
     )
 
