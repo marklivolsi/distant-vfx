@@ -15,6 +15,33 @@ class AsperaCLI:
         self.url = url
         self.url_prefix = url_prefix
 
+    def send_package(self, filepath, recipients, title,
+                     note=None, password=None, cc_on_download=None, cc_on_upload=None):
+        flags = ['--file', filepath, '--title', title]
+
+        for recipient in recipients:
+            recipient_flag = ['--recipient', recipient]
+            flags += recipient_flag
+
+        if note:
+            flags += ['--note', note]
+        if cc_on_download:
+            flags += ['--cc-on-download', cc_on_download]
+        if cc_on_upload:
+            flags += ['--cc-on-upload', cc_on_upload]
+
+        if password:
+            self._set_file_pass(password)
+            flags.append('--file-encrypt')
+
+        cmd = self._construct_cmd('send', flags=flags)
+        self._call_aspera_cli(cmd)
+
+    @staticmethod
+    def _set_file_pass(password):
+        from os import environ
+        environ['ASPERA_SCP_FILEPASS'] = str(password)
+
     def download_package_by_name(self, package_name, output_path, content_protect_password=None, inbox_packages=None):
         if not inbox_packages:
             inbox_packages = self._fetch_inbox_packages()
