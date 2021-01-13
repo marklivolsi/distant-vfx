@@ -2,6 +2,7 @@ import json
 import subprocess
 import traceback
 from html import unescape
+from operator import itemgetter
 from bs4 import BeautifulSoup
 from .constants import LAST_PROCESSED_PACKAGE_JSON_FILE  # FASPEX_API_PATHS
 
@@ -13,8 +14,8 @@ class AsperaCLI:
         self.password = password
         self.url = url
         self.url_prefix = url_prefix
-        self.last_processed_package_id = None
-        self.packages = None
+        # self.last_processed_package_id = None
+        # self.packages = None
 
     def download_package_by_name(self, package_name, output_path, content_protect_password=None, inbox_packages=None):
         if not inbox_packages:
@@ -28,24 +29,35 @@ class AsperaCLI:
         if link:
             self._download_package(link, output_path, content_protect_password=content_protect_password)
         else:
-            print(f'No package found with name {package_name}')
+            raise FileNotFoundError(f'No package found with name {package_name}')
 
-    def download_new_packages(self):
-        self._get_last_processed_package_id_from_file(LAST_PROCESSED_PACKAGE_JSON_FILE)
+    def download_new_packages(self, output_path, content_protect_password=None):
+        last_processed_package_id = self._get_last_processed_package_id_from_file(LAST_PROCESSED_PACKAGE_JSON_FILE)
         inbox_packages = self._fetch_inbox_packages()
         if not inbox_packages:
             return
-        if not self.last_processed_package_id:
-            self._get_latest_package_id(inbox_packages)
-            self._write_last_processed_package_id_file(LAST_PROCESSED_PACKAGE_JSON_FILE)
+        if not last_processed_package_id:
+            max_package_id = self._get_max_package_id_from_list(inbox_packages)
+            self._write_last_processed_package_id_file(max_package_id, LAST_PROCESSED_PACKAGE_JSON_FILE)
             return
-        # otherwise proceed
-        new_packages = self._filter_new_packages(inbox_packages)
 
-        # Download new packages here
+        new_packages = self._filter_new_packages(inbox_packages, last_processed_package_id)
 
-        # If download successful...
-        self._get_latest_package_id(inbox_packages)
+        # sort by package id smallest -> greatest
+        new_packages.sort(key=itemgetter(0))
+
+        # download packages
+        for package in new_packages:
+            package_id, title, link = package
+            try:
+                self._download_package(
+                    link=link,
+                    output_path=output_path,
+                    content_protect_password=content_protect_password
+                )
+                self._write_last_processed_package_id_file(package_id, LAST_PROCESSED_PACKAGE_JSON_FILE)
+            except:
+                traceback.print_exc()
 
     def _download_package(self, link, output_path, content_protect_password=None):
         flags = ['--file', output_path, '--url', link]
@@ -54,33 +66,38 @@ class AsperaCLI:
         cmd = self._construct_cmd(sub_cmd='get', flags=flags)
         return self._call_aspera_cli(cmd)
 
-    def _filter_new_packages(self, inbox_packages):
-        new_packages = [package for package in inbox_packages if package[0] > self.last_processed_package_id]
+    @staticmethod
+    def _filter_new_packages(inbox_packages, last_processed_package_id):
+        new_packages = [package for package in inbox_packages if package[0] > last_processed_package_id]
         return new_packages
 
-    def _get_latest_package_id(self, inbox_packages):
+    @staticmethod
+    def _get_max_package_id_from_list(inbox_packages):
         packages_ids = [package[0] for package in inbox_packages]
-        self.last_processed_package_id = max(packages_ids)
-        return self.last_processed_package_id
+        max_package_id = max(packages_ids)
+        return max_package_id
 
-    def _write_last_processed_package_id_file(self, json_file):
+    @staticmethod
+    def _write_last_processed_package_id_file(last_processed_package_id, json_file):
         json_dict = {
-            'id': self.last_processed_package_id
+            'id': last_processed_package_id
         }
-        if self.last_processed_package_id is None:
+        if last_processed_package_id is None:
             raise ValueError('Last processed package id cannot be None')
         with open(json_file, 'w') as file:
             json.dump(json_dict, file)
 
-    def _get_last_processed_package_id_from_file(self, json_file):
+    @staticmethod
+    def _get_last_processed_package_id_from_file(json_file):
+        last_processed_package_id = None
         try:
             with open(json_file, 'r') as file:
                 data = json.load(file)
-                self.last_processed_package_id = data.get('id')
+                last_processed_package_id = data.get('id')
         except FileNotFoundError:
-            self.last_processed_package_id = None
+            traceback.print_exc()
         finally:
-            return self.last_processed_package_id
+            return last_processed_package_id
 
     def _fetch_inbox_packages(self):
         return self._fetch_packages(mailbox='inbox')
