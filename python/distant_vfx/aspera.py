@@ -23,11 +23,11 @@ class AsperaCLI:
     def fetch_inbox_package_list(self):
         pass
 
-    def _fetch_package_list(self, package_type):
-        if package_type not in ['inbox', 'sent', 'archived']:
+    def _fetch_package_list(self, mailbox):
+        if mailbox not in ['inbox', 'sent', 'archived']:
             raise ValueError('package_type must be either inbox, sent, or archived')
-        package_type_flag = '--' + package_type
-        opt_flags = ['--xml', package_type_flag]
+        mailbox_flag = '--' + mailbox
+        opt_flags = ['--xml', mailbox_flag]
         cmd = self._construct_cmd(sub_cmd='list', opt_flags=opt_flags)
         response, errors = self._call_aspera_cli(cmd)
         return self._parse_xml_response(response)
