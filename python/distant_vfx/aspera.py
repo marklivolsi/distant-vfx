@@ -101,7 +101,7 @@ class AsperaCLI:
         soup = BeautifulSoup(xml, 'xml')
         entries = soup.find_all('entry')
         for entry in entries:
-            delivery_id = entry.findChild('package:delivery_id').get_text()
+            delivery_id = int(entry.findChild('package:delivery_id').get_text())
             title = entry.findChild('title').get_text()
             link = unescape(entry.findChild('link', {'rel': 'package'})['href'])
             package = (delivery_id, title, link)
