@@ -8,7 +8,7 @@ from .constants import LAST_PROCESSED_PACKAGE_JSON_FILE  # FASPEX_API_PATHS
 
 class AsperaCLI:
 
-    def __init__(self, user, password, url, url_prefix='aspera/faspex/'):
+    def __init__(self, user, password, url, url_prefix='aspera/faspex'):
         self.user = user
         self.password = password
         self.url = url
@@ -16,11 +16,19 @@ class AsperaCLI:
         self.last_processed_package_id = None
         self.packages = None
 
-    def download_one_package(self, package_name, inbox_packages=None):
+    def download_package_by_name(self, package_name, output_path, content_protect_password=None, inbox_packages=None):
         if not inbox_packages:
             inbox_packages = self._fetch_inbox_packages()
-
-        pass  # filter by title
+        link = None
+        for package in inbox_packages:
+            title = package[1]
+            if package_name in title:
+                link = package[2]
+                break
+        if link:
+            self._download_package(link, output_path, content_protect_password=content_protect_password)
+        else:
+            print(f'No package found with name {package_name}')
 
     def download_new_packages(self):
         self._get_last_processed_package_id_from_file(LAST_PROCESSED_PACKAGE_JSON_FILE)
@@ -38,6 +46,13 @@ class AsperaCLI:
 
         # If download successful...
         self._get_latest_package_id(inbox_packages)
+
+    def _download_package(self, link, output_path, content_protect_password=None):
+        flags = ['--file', output_path, '--url', link]
+        if content_protect_password:
+            flags += ['--content-protect-password', content_protect_password]
+        cmd = self._construct_cmd(sub_cmd='get', flags=flags)
+        return self._call_aspera_cli(cmd)
 
     def _filter_new_packages(self, inbox_packages):
         new_packages = [package for package in inbox_packages if package[0] > self.last_processed_package_id]
@@ -74,8 +89,8 @@ class AsperaCLI:
         if mailbox not in ['inbox', 'sent', 'archived']:
             raise ValueError('mailbox must be either inbox, sent, or archived')
         mailbox_flag = '--' + mailbox
-        opt_flags = ['--xml', mailbox_flag]
-        cmd = self._construct_cmd(sub_cmd='list', opt_flags=opt_flags)
+        flags = ['--xml', mailbox_flag]
+        cmd = self._construct_cmd(sub_cmd='list', flags=flags)
         response, errors = self._call_aspera_cli(cmd)
         return self._parse_xml_response(response)
 
@@ -93,12 +108,12 @@ class AsperaCLI:
             packages.append(package)
         return packages
 
-    def _construct_cmd(self, sub_cmd, opt_flags=None):
+    def _construct_cmd(self, sub_cmd, flags=None):
         cmd = ['aspera', 'faspex', sub_cmd]
         std_flags = ['--host', self.url, '--user', self.user, '--password', self.password, '-U', self.url_prefix]
         cmd += std_flags
-        if opt_flags:
-            cmd += opt_flags
+        if flags:
+            cmd += flags
         cmd = [str(i) for i in cmd]
         return cmd
 
