@@ -1,7 +1,10 @@
 import json
 import subprocess
-import xml.etree.ElementTree as elemtree
+import traceback
+import xml.etree.ElementTree as ET
+from lxml import etree
 from html import unescape
+from bs4 import BeautifulSoup
 import requests
 from .constants import FASPEX_API_PATHS
 
@@ -20,23 +23,29 @@ class AsperaCLI:
     def fetch_inbox_package_list(self):
         pass
 
-    def _fetch_package_list(self, package_type=None):
-        opt_flags = None
-        if package_type:
-            if package_type in ['inbox', 'sent', 'archived']:
-                flag = '--' + package_type
-                opt_flags = [flag]
-            else:
-                raise ValueError('package_type must be either inbox, sent, or archived')
+    def _fetch_package_list(self, package_type):
+        if package_type not in ['inbox', 'sent', 'archived']:
+            raise ValueError('package_type must be either inbox, sent, or archived')
+        package_type_flag = '--' + package_type
+        opt_flags = ['--xml', package_type_flag]
         cmd = self._construct_cmd(sub_cmd='list', opt_flags=opt_flags)
-        response = self._call_aspera_cli(cmd)
-        print(response)
+        response, errors = self._call_aspera_cli(cmd)
+        return self._parse_xml_response(response)
 
-    def _parse_xml_response(self):
-        pass
+    @staticmethod
+    def _parse_xml_response(xml):
+        packages = {}
+        xml = xml[xml.index('<'):]
+        soup = BeautifulSoup(xml, 'xml')
+        entries = soup.find_all('entry')
+        for entry in entries:
+            delivery_id = entry.findChild('package:delivery_id').get_text()
+            link = entry.findChild('link', {'rel': 'package'})['href']
+            packages[delivery_id] = link
+        return packages
 
     def _construct_cmd(self, sub_cmd, opt_flags=None):
-        cmd = ['aspera', sub_cmd]
+        cmd = ['aspera', 'faspex', sub_cmd]
         std_flags = ['--host', self.url, '--user', self.user, '--password', self.password, '-U', self.url_prefix]
         cmd += std_flags
         if opt_flags:
@@ -53,8 +62,11 @@ class AsperaCLI:
             universal_newlines=True,
             shell=False
         )
-        stdout, stderr = process.communicate()
-        return stdout, stderr
+        try:
+            stdout, stderr = process.communicate()
+            return stdout, stderr
+        except:
+            traceback.print_exc()
 
 
 class FaspexSession:
