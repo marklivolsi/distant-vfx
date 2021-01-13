@@ -4,7 +4,7 @@ import traceback
 from html import unescape
 from operator import itemgetter
 from bs4 import BeautifulSoup
-from .constants import LAST_PROCESSED_PACKAGE_JSON_FILE  # FASPEX_API_PATHS
+from .constants import LAST_PROCESSED_PACKAGE_JSON_FILE
 
 
 class AsperaCLI:
@@ -14,8 +14,6 @@ class AsperaCLI:
         self.password = password
         self.url = url
         self.url_prefix = url_prefix
-        # self.last_processed_package_id = None
-        # self.packages = None
 
     def download_package_by_name(self, package_name, output_path, content_protect_password=None, inbox_packages=None):
         if not inbox_packages:
