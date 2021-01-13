@@ -7,14 +7,32 @@ from .constants import FASPEX_API_PATHS
 
 class AsperaCLI:
 
-    def __init__(self, url, user, password):
-        self.url = url
+    def __init__(self, user, password, url, url_prefix='aspera/faspex/'):
         self.user = user
         self.password = password
+        self.url = url
+        self.url_prefix = url_prefix
+
+    def fetch_sent_package_list(self):
+        pass
+
+    def fetch_inbox_package_list(self):
+        pass
+
+    def _fetch_package_list(self, ):
+        pass
+
+    def _parse_xml_response(self):
+        pass
+
+    def _construct_cmd(self, cmd):
+        base = ['--host', self.url, '--user', self.user, '--password', self.password, '-U', self.url_prefix]
+        cmd = base + cmd
+        cmd = [str(i) for i in cmd]
+        return cmd
 
     @staticmethod
     def _call_aspera_cli(cmd):
-        cmd = [str(i) for i in cmd]
         process = subprocess.Popen(
             cmd,
             stdout=subprocess.PIPE,
