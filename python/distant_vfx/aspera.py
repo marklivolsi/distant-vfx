@@ -1,6 +1,7 @@
 import json
 import subprocess
 import xml.etree.ElementTree as elemtree
+from html import unescape
 import requests
 from .constants import FASPEX_API_PATHS
 
@@ -19,15 +20,27 @@ class AsperaCLI:
     def fetch_inbox_package_list(self):
         pass
 
-    def _fetch_package_list(self, ):
-        pass
+    def _fetch_package_list(self, package_type=None):
+        opt_flags = None
+        if package_type:
+            if package_type in ['inbox', 'sent', 'archived']:
+                flag = '--' + package_type
+                opt_flags = [flag]
+            else:
+                raise ValueError('package_type must be either inbox, sent, or archived')
+        cmd = self._construct_cmd(sub_cmd='list', opt_flags=opt_flags)
+        response = self._call_aspera_cli(cmd)
+        print(response)
 
     def _parse_xml_response(self):
         pass
 
-    def _construct_cmd(self, cmd):
-        base = ['--host', self.url, '--user', self.user, '--password', self.password, '-U', self.url_prefix]
-        cmd = base + cmd
+    def _construct_cmd(self, sub_cmd, opt_flags=None):
+        cmd = ['aspera', sub_cmd]
+        std_flags = ['--host', self.url, '--user', self.user, '--password', self.password, '-U', self.url_prefix]
+        cmd += std_flags
+        if opt_flags:
+            cmd += opt_flags
         cmd = [str(i) for i in cmd]
         return cmd
 
