@@ -1,12 +1,29 @@
 import json
+import subprocess
+import xml.etree.ElementTree as elemtree
 import requests
 from .constants import FASPEX_API_PATHS
 
 
-class AscpTransfer:
+class AsperaCLI:
 
-    def __init__(self):
-        pass
+    def __init__(self, url, user, password):
+        self.url = url
+        self.user = user
+        self.password = password
+
+    @staticmethod
+    def _call_aspera_cli(cmd):
+        cmd = [str(i) for i in cmd]
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            shell=False
+        )
+        stdout, stderr = process.communicate()
+        return stdout, stderr
 
 
 class FaspexSession:
@@ -119,7 +136,6 @@ class FaspexSession:
         url = self.url + api_path
         request_data = json.dumps(data) if data else None
         self._update_token_header()
-        print(url, self._token, self._headers, request_data)
         response = requests.request(
             method=method,
             headers=self._headers,
