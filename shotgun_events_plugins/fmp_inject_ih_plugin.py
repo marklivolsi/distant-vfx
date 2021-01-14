@@ -112,10 +112,12 @@ def inject(sg, logger, event, args):
             img_record_id = _inject_image(fmp, fmp_thumb_data, logger)
 
         # Run process img script
-        if img_record_id is not None:
+        if img_record_id is not None and img_record_id != -1:
             img_primary_key = _get_image_primary_key(fmp, img_record_id, logger)
             if img_primary_key is not None:
                 script_res = _run_process_image_script(fmp, img_primary_key, logger)
+        elif img_record_id == -1:
+            pass
         else:
             report_img = False
 
@@ -200,6 +202,9 @@ def _get_image_primary_key(fmp, img_record_id, logger):
 
 
 def _inject_image(fmp, fmp_thumb_data, logger):
+    image_exists = _check_image_record_exists(fmp, fmp_thumb_data)
+    if image_exists:
+        return -1
     img_record_id = None
     try:
         thumb_file = open(fmp_thumb_data.get('Path'), 'rb')
@@ -209,6 +214,16 @@ def _inject_image(fmp, fmp_thumb_data, logger):
     except:
         logger.error(f'Error injecting thumbnail record: {fmp_thumb_data}', exc_info=True)
     return img_record_id
+
+
+def _check_image_record_exists(fmp, fmp_thumb_data):
+    try:
+        image_records = fmp.find([fmp_thumb_data])
+        if image_records:
+            return True
+        return False
+    except:
+        return False
 
 
 def _inject_transfer_data(fmp, fmp_transfer_data_dicts, transfer_primary_key, logger):
