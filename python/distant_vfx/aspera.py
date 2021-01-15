@@ -4,15 +4,15 @@ import traceback
 from html import unescape
 from operator import itemgetter
 from bs4 import BeautifulSoup
-from .constants import LAST_PROCESSED_PACKAGE_JSON_FILE
 
 
 class AsperaCLI:
 
-    def __init__(self, user, password, url, url_prefix='aspera/faspex'):
+    def __init__(self, user, password, url, package_id_json_file, url_prefix='aspera/faspex'):
         self.user = user
         self.password = password
         self.url = url
+        self.package_id_json_file = package_id_json_file
         self.url_prefix = url_prefix
 
     def send_package(self, filepath, recipients, title,
@@ -57,13 +57,13 @@ class AsperaCLI:
             raise FileNotFoundError(f'No package found with name {package_name}')
 
     def download_new_packages(self, output_path, content_protect_password=None):
-        last_processed_package_id = self._get_last_processed_package_id_from_file(LAST_PROCESSED_PACKAGE_JSON_FILE)
+        last_processed_package_id = self._get_last_processed_package_id_from_file(self.package_id_json_file)
         inbox_packages = self._fetch_inbox_packages()
         if not inbox_packages:
             return
         if not last_processed_package_id:
             max_package_id = self._get_max_package_id_from_list(inbox_packages)
-            self._write_last_processed_package_id_file(max_package_id, LAST_PROCESSED_PACKAGE_JSON_FILE)
+            self._write_last_processed_package_id_file(max_package_id, self.package_id_json_file)
             return
 
         new_packages = self._filter_new_packages(inbox_packages, last_processed_package_id)
@@ -80,9 +80,10 @@ class AsperaCLI:
                     output_path=output_path,
                     content_protect_password=content_protect_password
                 )
-                self._write_last_processed_package_id_file(package_id, LAST_PROCESSED_PACKAGE_JSON_FILE)
+                self._write_last_processed_package_id_file(package_id, self.package_id_json_file)
             except:
                 traceback.print_exc()
+                # todo: send email
 
     def _download_package(self, link, output_path, content_protect_password=None):
         flags = ['--file', output_path, '--url', link]
