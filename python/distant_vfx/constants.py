@@ -4,6 +4,7 @@ LEGAL_FRAME_EXTENSIONS = ['.exr', '.png', '.jpg', '.jpeg']
 LEGAL_THUMB_EXTENSIONS = ['.jpg', '.jpeg', '.png']
 LEGAL_THUMB_SRC_EXTENSIONS = ['.mov', '.mp4']
 SHOW_CODE = 'dst'
+PACKAGE_REGEX = r'[A-Za-z]{2,3}_[A-Za-z]{2,3}_\d{6,8}(_[A-Za-z]{1,2})?'
 
 # Environment variables
 

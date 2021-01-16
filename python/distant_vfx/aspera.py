@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import traceback
 from html import unescape
@@ -60,11 +61,11 @@ class AsperaCLI:
         last_processed_package_id = self._get_last_processed_package_id_from_file(self.package_id_json_file)
         inbox_packages = self._fetch_inbox_packages()
         if not inbox_packages:
-            return
+            return None
         if not last_processed_package_id:
             max_package_id = self._get_max_package_id_from_list(inbox_packages)
             self._write_last_processed_package_id_file(max_package_id, self.package_id_json_file)
-            return
+            return None
 
         new_packages = self._filter_new_packages(inbox_packages, last_processed_package_id)
 
@@ -72,6 +73,7 @@ class AsperaCLI:
         new_packages.sort(key=itemgetter(0))
 
         # download packages
+        output_packages = []
         for package in new_packages:
             package_id, title, link = package
             try:
@@ -81,9 +83,13 @@ class AsperaCLI:
                     content_protect_password=content_protect_password
                 )
                 self._write_last_processed_package_id_file(package_id, self.package_id_json_file)
+                package_name = f'PKG - {title}'
+                package_path = os.path.join(output_path, package_name)
+                output_packages.append(package_path)
             except:
                 traceback.print_exc()
                 # todo: send email
+        return output_packages
 
     def _download_package(self, link, output_path, content_protect_password=None):
         flags = ['--file', output_path, '--url', link]
