@@ -7,6 +7,13 @@ from operator import itemgetter
 from bs4 import BeautifulSoup
 
 
+class AsperaError(Exception):
+
+    def __init__(self, message, package_title):
+        self.message = message
+        self.package_title = package_title
+
+
 class AsperaCLI:
 
     def __init__(self, user, password, url, package_id_json_file, url_prefix='aspera/faspex'):
@@ -17,7 +24,15 @@ class AsperaCLI:
         self.url_prefix = url_prefix
 
     def send_package(self, filepath, recipients, title,
-                     note=None, password=None, cc_on_download=None, cc_on_upload=None):
+                     note=None, content_protect_password=None, cc_on_download=None, cc_on_upload=None):
+
+        if not os.path.exists(filepath):
+            raise FileNotFoundError(f'Path does not exist: {filepath}')
+        elif not recipients:
+            raise ValueError(f'You must provide a valid list of recipients')
+        elif not title:
+            raise ValueError(f'You must provide a title')
+
         flags = ['--file', filepath, '--title', title]
 
         for recipient in recipients:
@@ -31,8 +46,8 @@ class AsperaCLI:
         if cc_on_upload:
             flags += ['--cc-on-upload', cc_on_upload]
 
-        if password:
-            self._set_file_pass(password)
+        if content_protect_password:
+            self._set_file_pass(content_protect_password)
             flags.append('--file-encrypt')
 
         cmd = self._construct_cmd('send', flags=flags)
@@ -53,9 +68,13 @@ class AsperaCLI:
                 link = package[2]
                 break
         if link:
-            self._download_package(link, output_path, content_protect_password=content_protect_password)
+            try:
+                self._download_package(link, output_path, content_protect_password=content_protect_password)
+                return package_name
+            except:
+                raise AsperaError(f'Error downloading package (title: {package_name})', package_name)
         else:
-            raise FileNotFoundError(f'No package found with name {package_name}')
+            raise AsperaError(f'No package found with name {package_name}', package_name)
 
     def download_new_packages(self, output_path, content_protect_password=None):
         last_processed_package_id = self._get_last_processed_package_id_from_file(self.package_id_json_file)
@@ -88,7 +107,7 @@ class AsperaCLI:
                 output_packages.append(package_path)
             except:
                 traceback.print_exc()
-                # todo: send email
+                raise AsperaError(f'Error downloading package (title: {title})', title)
         return output_packages
 
     def _download_package(self, link, output_path, content_protect_password=None):
