@@ -23,6 +23,14 @@ class AsperaCLI:
         self.package_id_json_file = package_id_json_file
         self.url_prefix = url_prefix
 
+    def set_latest_package_id(self):
+        inbox_packages = self._fetch_inbox_packages()
+        if inbox_packages:
+            max_package_id = self._get_max_package_id_from_list(inbox_packages)
+            self._write_last_processed_package_id_file(max_package_id, self.package_id_json_file)
+            return max_package_id
+        return None
+
     def send_package(self, filepath, recipients, title,
                      note=None, content_protect_password=None, cc_on_download=None, cc_on_upload=None):
 
@@ -168,6 +176,8 @@ class AsperaCLI:
         xml = xml[xml.index('<'):]
         soup = BeautifulSoup(xml, 'xml')
         entries = soup.find_all('entry')
+        if not entries:
+            return None
         for entry in entries:
             delivery_id = int(entry.findChild('package:delivery_id').get_text())
             title = entry.findChild('title').get_text()
