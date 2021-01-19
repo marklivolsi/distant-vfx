@@ -188,7 +188,7 @@ class AsperaCLI:
 
     def _construct_cmd(self, sub_cmd, flags=None):
         cmd = ['aspera', 'faspex', sub_cmd]
-        std_flags = ['--host', self.url, '--user', self.user, '--password', self.password, '-U', self.url_prefix]
+        std_flags = ['--host', self.url, '--username', self.user, '--password', self.password, '-U', self.url_prefix]
         cmd += std_flags
         if flags:
             cmd += flags
