@@ -7,8 +7,15 @@ from ..constants import PACKAGE_REGEX, MAILBOX_BASE_PATH
 from . import new_vendor_package
 
 
-def main(user, password, url, package_id_json_file, url_prefix, output_path,
-         content_protect_password, package_name, vendor):
+def main(user,
+         password,
+         url,
+         package_id_json_file,
+         url_prefix,
+         output_path,
+         content_protect_password,
+         package_name,
+         vendor):
 
     aspera = AsperaCLI(
         user=user,
