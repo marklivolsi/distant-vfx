@@ -62,7 +62,7 @@ def main(user, password, url, package_id_json_file, url_prefix, output_path, con
         else:
             # Otherwise, we have a package inside a 'PKG - {package name}' container
             if vendor in 'edt':
-                sort_path = new_vendor_package.main('edt', incoming=True)[0]
+                sort_path = new_vendor_package.main(['edt'], incoming=True)[0]
             else:
                 # split = sub_package_path.split('_')
                 from_vendor = vendor
