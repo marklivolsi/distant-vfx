@@ -10,7 +10,15 @@ from . import new_vendor_package
 EMAIL_RECIPIENTS = 'mark.c.livolsi@gmail.com'  # todo: replace with real recipients from constants
 
 
-def main(user, password, url, package_id_json_file, url_prefix, output_path, content_protect_password, vendor):
+def main(user,
+         password,
+         url,
+         package_id_json_file,
+         url_prefix,
+         output_path,
+         content_protect_password,
+         vendor,
+         catch_up_mode=False):
 
     aspera = AsperaCLI(
         user=user,
@@ -20,80 +28,97 @@ def main(user, password, url, package_id_json_file, url_prefix, output_path, con
         url_prefix=url_prefix
     )
 
-    downloaded_packages = None
+    # Catch up mode allows for updating to latest package id without downloading any packages.
+    if catch_up_mode:
+        latest_package_id = aspera.set_latest_package_id()
+        subject = f'[DISTANT_API] Latest package ID updated for vendor {vendor}'
+        content = f'Latest package ID has been updated to {latest_package_id}. Packages prior to this will not be' \
+                  f'auto downloaded.'
+        _send_email(subject, content)
+        return
+
+    # Download new packages, updating package json file after each download
+    packages = None
     try:
-        downloaded_packages = aspera.download_new_packages(
-            output_path=output_path,
-            content_protect_password=content_protect_password
-        )
+        packages = aspera.download_new_packages(
+                output_path=output_path,
+                content_protect_password=content_protect_password
+            )
     except AsperaError as e:
         subject = f'[DISTANT_API] Error downloading package {e.package_title}'
         content = f'There was an error downloading package {e.package_title}. Please see below for details.\n\n' \
                   f'{traceback.format_exc()}'
-        yag = yagmail.SMTP(
-            user=EMAIL_USERNAME,
-            password=EMAIL_PASSWORD
-        )
-        yag.send(
-            to=EMAIL_RECIPIENTS.split(','),
-            subject=subject,
-            contents=content
-        )
+        _send_email(subject, content)
 
-    if not downloaded_packages:
+    # Exit if there are no packages downloaded
+    if not packages:
         return
 
-    for package in downloaded_packages:
-        package_root_contents = os.listdir(package)
-        package_root_contents = [p for p in package_root_contents if not p.startswith('.')]
-        package_name = os.path.basename(package)
+    # Get the base mailbox directory where the package should be sorted
+    mailbox_dir = os.path.join(MAILBOX_BASE_PATH, vendor, f'fr_{vendor}')
 
-        sub_package_name = package_root_contents[0]
-        sub_package_path = os.path.join(package, sub_package_name)
+    # Move downloaded packages to mailbox
+    for package in packages:
 
-        # if (len(package_root_contents) != 1) or \
-        #         (sub_package_name not in package_name) or \
-        #         (not _is_valid_package_name(sub_package_name, vendor)) or \
-        #         (not os.path.isdir(sub_package_path)):
-        if not _is_valid_package_name(sub_package_name, vendor):
-            # Then contents are not a sub package and can't be sorted. Leave it in default download location.
-            message = f'Package {package_name} cannot be sorted, leaving in default download location.'
-
-        else:
-            # Otherwise, we have a package inside a 'PKG - {package name}' container
-            if vendor in 'edt':
-                sort_path = new_vendor_package.main(['edt'], incoming=True)[0]
-            else:
-                # split = sub_package_path.split('_')
-                from_vendor = vendor
-                sort_path = os.path.join(MAILBOX_BASE_PATH, from_vendor, f'fr_{from_vendor}')
-
-            # Move package to mailbox
-            moved = _move_package(sub_package_path, sort_path)
-
-            if moved:
-                message = f'Downloaded package {package_name} to path: {sort_path}.'
-                # Remove empty 'PKG' dir, ONLY if empty
-                _remove_empty_container_dir(package)
-            else:
-                message = f'Downloaded package {package_name} to path: {package}.'
-
-        # Send an email notification
+        package_name = _get_package_name_strip(package)
         subject = f'[DISTANT_API] Downloaded package {package_name}'
-        yag = yagmail.SMTP(
-            user=EMAIL_USERNAME,
-            password=EMAIL_PASSWORD
-        )
-        yag.send(
-            to=EMAIL_RECIPIENTS.split(','),
-            subject=subject,
-            contents=message
-        )
+        content = None
+
+        # Check if the package has a valid package name
+        sub_package_path = _get_sub_package_path(package)
+
+        # If so, move the package to the proper mailbox folder if it does not exist already
+        if sub_package_path:
+            download_path = os.path.join(mailbox_dir, package_name)
+            try:
+                _move_package(sub_package_path, mailbox_dir)
+            except FileExistsError:
+                content = f'Error: Package {package_name} already exists at destination {download_path}. Package ' \
+                          f'{package_name} will remain at manual sort path {output_path}.'
+
+        # If not, create a new vendor package and move the contents there
+        else:
+            sort_path = new_vendor_package.main([vendor], incoming=True)[0]
+            download_path = sort_path
+            for item in os.listdir(package):
+                item_path = os.path.join(package, item)
+                _move_package(item_path, sort_path)
+
+        # Remove the empty container folder 'PKG - {package_name}' from default download location
+        if len(os.listdir(package)) == 0:
+            os.rmdir(package)
+
+        # Set the content message if not already set.
+        if not content:
+            content = f'Package {package_name} has been downloaded and moved to path: {download_path}.'
+
+        # Send an email notification.
+        _send_email(subject, content)
 
 
-def _remove_empty_container_dir(path):
-    if len(os.listdir(path)) == 0:
-        os.rmdir(path)
+def _get_sub_package_path(package):
+    package_name_strip = _get_package_name_strip(package)
+    sub_package_path = None
+    if _is_valid_package_name(package_name_strip):
+        sub_package_path = os.path.join(package, package_name_strip)
+    return sub_package_path
+
+
+def _get_package_name_strip(package):
+    package_name = os.path.basename(package)
+    return package_name.replace('PKG - ', '')
+
+
+def _send_email(subject, content):
+    yag = yagmail.SMTP(
+        user=EMAIL_USERNAME,
+        password=EMAIL_PASSWORD
+    )
+    yag.send(
+        to=EMAIL_RECIPIENTS.split(','),
+        subject=subject,
+        contents=content
+    )
 
 
 def _move_package(source, dest):
@@ -101,8 +126,7 @@ def _move_package(source, dest):
     dest_folder = os.path.basename(source)
     dest_path = os.path.join(dest, dest_folder)
     if os.path.exists(dest_path):
-        print(f'File already exists: {dest_path}')
-        return False
+        raise FileExistsError
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
@@ -110,17 +134,11 @@ def _move_package(source, dest):
         universal_newlines=True,
         shell=False
     )
-    try:
-        stdout, stderr = process.communicate()
-        return True
-    except:
-        pass
-        # send email
+    stdout, stderr = process.communicate()
+    return stdout, stderr
 
 
-def _is_valid_package_name(package_name, vendor):
-    if vendor in 'edt':
-        return True
+def _is_valid_package_name(package_name):
     pattern = re.compile(PACKAGE_REGEX)
     match = re.match(pattern, package_name)
     if match:
