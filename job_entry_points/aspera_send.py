@@ -1,3 +1,5 @@
+#!/bin/env python3
+
 import argparse
 from python.distant_vfx.jobs import aspera_send
 from python.distant_vfx.constants import INTERNAL_FASPEX_BASE_URL, INTERNAL_FASPEX_USERNAME, INTERNAL_FASPEX_PASSWORD, \
@@ -12,6 +14,7 @@ VENDOR_MAP = {
         'password': FASPEX_PASSWORD,
         'url': FASPEX_BASE_URL,
         'package_id_json_file': LAST_PROCESSED_PACKAGE_JSON_FILE_EXTERNAL_ASPERA,
+        'url_prefix': 'aspera/faspex',
         'recipients': FASPEX_RECIPIENTS.split(','),
     },
     'edt': {
@@ -71,3 +74,7 @@ def main():
                 title=args.title
                 # TODO : Add CC on upload / download
             )
+
+
+if __name__ == '__main__':
+    main()
