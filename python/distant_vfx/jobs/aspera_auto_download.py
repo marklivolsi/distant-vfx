@@ -64,12 +64,15 @@ def main(user, password, url, package_id_json_file, url_prefix, output_path, con
             sort_path = os.path.join(MAILBOX_BASE_PATH, from_vendor, f'fr_{from_vendor}')
 
             # Move package to mailbox
-            _move_package(sub_package_path, sort_path)
+            moved = _move_package(sub_package_path, sort_path)
 
-            # Remove empty 'PKG' dir, ONLY if empty
-            _remove_empty_container_dir(package)
 
-            message = f'Downloaded package {package_name} to path: {sort_path}.'
+            if moved:
+                message = f'Downloaded package {package_name} to path: {sort_path}.'
+                # Remove empty 'PKG' dir, ONLY if empty
+                _remove_empty_container_dir(package)
+            else:
+                message = f'Downloaded package {package_name} to path: {package}.'
 
         # Send an email notification
         subject = f'[DISTANT_API] Downloaded package {package_name}'
@@ -91,6 +94,11 @@ def _remove_empty_container_dir(path):
 
 def _move_package(source, dest):
     cmd = ['mv', source, dest]
+    dest_folder = os.path.basename(source)
+    dest_path = os.path.join(dest, dest_folder)
+    if os.path.exists(dest_path):
+        print(f'File already exists: {dest_path}')
+        return False
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
@@ -100,7 +108,7 @@ def _move_package(source, dest):
     )
     try:
         stdout, stderr = process.communicate()
-        return stdout, stderr
+        return True
     except:
         pass
         # send email

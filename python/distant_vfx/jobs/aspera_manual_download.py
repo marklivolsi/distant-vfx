@@ -2,6 +2,7 @@ import os
 import re
 import subprocess
 import traceback
+import sys
 import yagmail
 from ..aspera import AsperaCLI
 from ..constants import PACKAGE_REGEX, MAILBOX_BASE_PATH, EMAIL_USERNAME, EMAIL_PASSWORD, EMAIL_RECIPIENTS
@@ -28,6 +29,7 @@ def main(user, password, url, package_id_json_file, url_prefix, output_path, con
         traceback.print_exc()
 
     if not package:
+        print(f'No package found with title {package_name}')
         return
 
     package_root_contents = os.listdir(package)
@@ -42,7 +44,7 @@ def main(user, password, url, package_id_json_file, url_prefix, output_path, con
             (not _is_valid_package_name(sub_package_name)) or \
             (not os.path.isdir(sub_package_path)):
         # Then contents are not a sub package and can't be sorted. Leave it in default download location.
-        message = f'Package {package_name} cannot be sorted, leaving in default download location.'
+        print(f'Package {package_name} cannot be sorted, leaving in default download location.')
 
     else:
         # Otherwise, we have a package inside a 'PKG - {package name}' container
@@ -56,19 +58,19 @@ def main(user, password, url, package_id_json_file, url_prefix, output_path, con
         # Remove empty 'PKG' dir, ONLY if empty
         _remove_empty_container_dir(package)
 
-        message = f'Downloaded package {package_name} to path: {sort_path}.'
+        print(f'Downloaded package {package_name} to path: {sort_path}.')
 
-    # Send an email notification
-    subject = f'[DISTANT_API] Downloaded package {package_name}'
-    yag = yagmail.SMTP(
-        user=EMAIL_USERNAME,
-        password=EMAIL_PASSWORD
-    )
-    yag.send(
-        to=EMAIL_RECIPIENTS.split(','),
-        subject=subject,
-        contents=message
-    )
+    # # Send an email notification
+    # subject = f'[DISTANT_API] Downloaded package {package_name}'
+    # yag = yagmail.SMTP(
+    #     user=EMAIL_USERNAME,
+    #     password=EMAIL_PASSWORD
+    # )
+    # yag.send(
+    #     to=EMAIL_RECIPIENTS.split(','),
+    #     subject=subject,
+    #     contents=message
+    # )
 
 
 def _is_valid_package_name(package_name):
@@ -86,6 +88,11 @@ def _remove_empty_container_dir(path):
 
 def _move_package(source, dest):
     cmd = ['mv', source, dest]
+    dest_folder = os.path.basename(source)
+    dest_path = os.path.join(dest, dest_folder)
+    if os.path.exists(dest_path):
+        print(f'File already exists: {dest_path}')
+        sys.exit()
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,

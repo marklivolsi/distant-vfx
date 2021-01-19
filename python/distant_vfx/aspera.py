@@ -78,7 +78,7 @@ class AsperaCLI:
         if link:
             try:
                 self._download_package(link, output_path, content_protect_password=content_protect_password)
-                return package_name
+                return os.path.join(output_path, f'PKG - {package_name}')
             except:
                 raise AsperaError(f'Error downloading package (title: {package_name})', package_name)
         else:

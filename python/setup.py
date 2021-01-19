@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name='distant_vfx',
-    version='0.3.2',
+    version='0.3.3',
     author='Mark Livolsi',
     author_email='mark.c.livolsi@gmail.com',
     description='A toolkit for the Distant VFX team.',
