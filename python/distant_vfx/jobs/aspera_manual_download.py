@@ -52,8 +52,8 @@ def main(user, password, url, package_id_json_file, url_prefix, output_path, con
         if vendor in 'edt':
             sort_path = new_vendor_package.main('edt', incoming=True)[0]
         else:
-            split = sub_package_path.split('_')
-            from_vendor = split[1]
+            # split = sub_package_path.split('_')
+            from_vendor = vendor
             sort_path = os.path.join(MAILBOX_BASE_PATH, from_vendor, f'fr_{from_vendor}')
 
         # Move package to mailbox
