@@ -38,7 +38,8 @@ def main():
         url_prefix=ASPERA_VENDOR_MAP[vendor].get('url_prefix'),
         content_protect_password=ASPERA_VENDOR_MAP[vendor].get('content_protect_password'),
         package_name=args.title,
-        output_path=DEFAULT_DOWNLOAD_PATH
+        output_path=DEFAULT_DOWNLOAD_PATH,
+        vendor=vendor
     )
 
 

@@ -7,13 +7,16 @@ from ..constants import SHOW_CODE
 
 
 # Create a new package by scanning a directory for existing packages and iterating up as appropriate
-def main(root_path):
+def main(root_path, incoming=False):
 
     # Format the base package name
     vendor = root_path.rsplit('_', 1)[1]
     show = SHOW_CODE
     date = datetime.now().strftime('%Y%m%d')
-    base_pkg_name = vendor + '_' + show + '_' + date + '_'
+    if incoming:
+        base_pkg_name = show + '_' + vendor + '_' + date + '_'
+    else:
+        base_pkg_name = vendor + '_' + show + '_' + date + '_'
 
     # Check the root path for packages matching the base name (packages from today)
     packages_from_today = [pkg for pkg in os.listdir(root_path) if base_pkg_name in pkg]
