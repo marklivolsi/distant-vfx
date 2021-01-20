@@ -69,6 +69,10 @@ DEFAULT_DOWNLOAD_PATH = environ.get('DEFAULT_DOWNLOAD_PATH')
 LAST_PROCESSED_PACKAGE_JSON_FILE_INTERNAL_ASPERA = environ.get('LAST_PROCESSED_PACKAGE_JSON_FILE_INTERNAL_ASPERA')
 LAST_PROCESSED_PACKAGE_JSON_FILE_EXTERNAL_ASPERA = environ.get('LAST_PROCESSED_PACKAGE_JSON_FILE_EXTERNAL_ASPERA')
 
+# Faspex email recipients
+MRX_EMAIL_RECIPIENTS = environ.get('MRX_EMAIL_RECIPIENTS')
+EDT_EMAIL_RECIPIENTS = environ.get('EDT_EMAIL_RECIPIENTS')
+SUP_EMAIL_RECIPIENTS = environ.get('SUP_EMAIL_RECIPIENTS')
 
 ASPERA_VENDOR_MAP = {
     'mrx': {
@@ -78,6 +82,7 @@ ASPERA_VENDOR_MAP = {
         'package_id_json_file': LAST_PROCESSED_PACKAGE_JSON_FILE_EXTERNAL_ASPERA,
         'url_prefix': 'aspera/faspex',
         'recipients': FASPEX_RECIPIENTS,
+        'email_recipients': MRX_EMAIL_RECIPIENTS
     },
     'edt': {
         'user': INTERNAL_FASPEX_USERNAME,
@@ -86,7 +91,8 @@ ASPERA_VENDOR_MAP = {
         'package_id_json_file': LAST_PROCESSED_PACKAGE_JSON_FILE_INTERNAL_ASPERA,
         'url_prefix': 'faspex',
         'recipients': INTERNAL_FASPEX_RECIPIENTS,
-        'content_protect_password': INTERNAL_FASPEX_CONTENT_PROTECT_PASSWORD
+        'content_protect_password': INTERNAL_FASPEX_CONTENT_PROTECT_PASSWORD,
+        'email_recipients': EDT_EMAIL_RECIPIENTS
     },
     'ldq': {
         'user': INTERNAL_FASPEX_USERNAME,
@@ -95,7 +101,8 @@ ASPERA_VENDOR_MAP = {
         'package_id_json_file': LAST_PROCESSED_PACKAGE_JSON_FILE_INTERNAL_ASPERA,
         'url_prefix': 'faspex',
         'recipients': INTERNAL_FASPEX_SUPE_USERNAME,
-        'content_protect_password': INTERNAL_FASPEX_CONTENT_PROTECT_PASSWORD
+        'content_protect_password': INTERNAL_FASPEX_CONTENT_PROTECT_PASSWORD,
+        'email_recipients': SUP_EMAIL_RECIPIENTS
     }
 }
 

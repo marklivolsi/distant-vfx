@@ -31,6 +31,19 @@ def main():
         help='Specify one or more vendors to send a package to.'
     )
 
+    parser.add_argument(
+        '--email',
+        action='store_true',
+        help='Optionally specify to automatically send a delivery email for this package.'
+    )
+
+    parser.add_argument(
+        '--note',
+        type=str,
+        action='store',
+        help='Optionally specify a note to accompany your delivery email.'
+    )
+
     args = parser.parse_args()
 
     for vendor in args.vendors:
@@ -47,8 +60,10 @@ def main():
                 url_prefix=ASPERA_VENDOR_MAP[vendor].get('url_prefix'),
                 content_protect_password=ASPERA_VENDOR_MAP[vendor].get('content_protect_password'),
                 filepath=args.path,
-                title=args.title
-                # TODO : Add CC on upload / download
+                title=args.title,
+                vendor=vendor,
+                email=ASPERA_VENDOR_MAP[vendor].get('email_recipients'),
+                note=args.note
             )
 
 
