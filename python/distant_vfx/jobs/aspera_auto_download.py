@@ -30,7 +30,7 @@ def main(user,
     if catch_up_mode:
         latest_package_id = aspera.set_latest_package_id()
         subject = f'[DISTANT_API] Latest package ID updated for vendor {vendor}'
-        content = f'Latest package ID has been updated to {latest_package_id}. Packages prior to this will not be' \
+        content = f'Latest package ID has been updated to {latest_package_id}. Packages prior to this will not be ' \
                   f'auto downloaded.'
         _send_email(subject, content)
         return
