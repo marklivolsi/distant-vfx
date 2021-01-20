@@ -47,12 +47,16 @@ class AsperaCLI:
             recipient_flag = ['--recipient', recipient]
             flags += recipient_flag
 
+        if cc_on_download:
+            for cc in cc_on_download:
+                flags += ['--cc-on-download', cc]
+
+        if cc_on_upload:
+            for cc in cc_on_upload:
+                flags += ['--cc-on-upload', cc]
+
         if note:
             flags += ['--note', note]
-        if cc_on_download:
-            flags += ['--cc-on-download', cc_on_download]
-        if cc_on_upload:
-            flags += ['--cc-on-upload', cc_on_upload]
 
         if content_protect_password:
             self._set_file_pass(content_protect_password)

@@ -110,6 +110,18 @@ ASPERA_VENDOR_MAP = {
         'email_recipients': SUP_EMAIL_RECIPIENTS,
         'cc_on_upload': FASPEX_USERNAME,
         'cc_on_download': FASPEX_USERNAME
+    },
+    'tst': {
+        'user': INTERNAL_FASPEX_USERNAME,
+        'password': INTERNAL_FASPEX_PASSWORD,
+        'url': INTERNAL_FASPEX_BASE_URL,
+        'package_id_json_file': LAST_PROCESSED_PACKAGE_JSON_FILE_INTERNAL_ASPERA,
+        'url_prefix': 'faspex',
+        'recipients': 'mlivolsi',
+        'content_protect_password': INTERNAL_FASPEX_CONTENT_PROTECT_PASSWORD,
+        'email_recipients': 'mark.c.livolsi@gmail.com',
+        'cc_on_upload': INTERNAL_FASPEX_USERNAME,
+        'cc_on_download': INTERNAL_FASPEX_USERNAME
     }
 }
 
