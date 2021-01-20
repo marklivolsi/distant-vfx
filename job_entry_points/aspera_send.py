@@ -62,8 +62,10 @@ def main():
                 filepath=args.path,
                 title=args.title,
                 vendor=vendor,
-                email=ASPERA_VENDOR_MAP[vendor].get('email_recipients'),
-                note=args.note
+                email=ASPERA_VENDOR_MAP[vendor].get('email_recipients').split(','),
+                note=args.note,
+                cc_on_upload=ASPERA_VENDOR_MAP[vendor].get('cc_on_upload').split(','),
+                cc_on_download=ASPERA_VENDOR_MAP[vendor].get('cc_on_download').split(',')
             )
 
 
