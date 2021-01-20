@@ -74,7 +74,7 @@ def _send_email(recipients, subject, content):
         password=EMAIL_PASSWORD
     )
     yag.send(
-        to=recipients.split(','),
+        to=recipients,
         subject=subject,
         contents=content
     )
