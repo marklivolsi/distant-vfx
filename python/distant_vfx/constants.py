@@ -59,6 +59,7 @@ FASPEX_BASE_URL = environ.get('FASPEX_BASE_URL')
 FASPEX_USERNAME = environ.get('FASPEX_USERNAME')
 FASPEX_PASSWORD = environ.get('FASPEX_PASSWORD')
 FASPEX_RECIPIENTS = environ.get('FASPEX_RECIPIENTS')  # todo: add this
+FASPEX_SUPE_USERNAME = environ.get('FASPEX_SUPE_USERNAME')
 INTERNAL_FASPEX_BASE_URL = environ.get('INTERNAL_FASPEX_BASE_URL')
 INTERNAL_FASPEX_USERNAME = environ.get('INTERNAL_FASPEX_USERNAME')
 INTERNAL_FASPEX_PASSWORD = environ.get('INTERNAL_FASPEX_PASSWORD')
@@ -74,6 +75,7 @@ MRX_EMAIL_RECIPIENTS = environ.get('MRX_EMAIL_RECIPIENTS')
 EDT_EMAIL_RECIPIENTS = environ.get('EDT_EMAIL_RECIPIENTS')
 SUP_EMAIL_RECIPIENTS = environ.get('SUP_EMAIL_RECIPIENTS')
 
+
 ASPERA_VENDOR_MAP = {
     'mrx': {
         'user': FASPEX_USERNAME,
@@ -82,7 +84,9 @@ ASPERA_VENDOR_MAP = {
         'package_id_json_file': LAST_PROCESSED_PACKAGE_JSON_FILE_EXTERNAL_ASPERA,
         'url_prefix': 'aspera/faspex',
         'recipients': FASPEX_RECIPIENTS,
-        'email_recipients': MRX_EMAIL_RECIPIENTS
+        'email_recipients': MRX_EMAIL_RECIPIENTS,
+        'cc_on_upload': FASPEX_USERNAME,
+        'cc_on_download': FASPEX_USERNAME
     },
     'edt': {
         'user': INTERNAL_FASPEX_USERNAME,
@@ -92,17 +96,20 @@ ASPERA_VENDOR_MAP = {
         'url_prefix': 'faspex',
         'recipients': INTERNAL_FASPEX_RECIPIENTS,
         'content_protect_password': INTERNAL_FASPEX_CONTENT_PROTECT_PASSWORD,
-        'email_recipients': EDT_EMAIL_RECIPIENTS
+        'email_recipients': EDT_EMAIL_RECIPIENTS,
+        'cc_on_upload': INTERNAL_FASPEX_USERNAME,
+        'cc_on_download': INTERNAL_FASPEX_USERNAME
     },
     'ldq': {
-        'user': INTERNAL_FASPEX_USERNAME,
-        'password': INTERNAL_FASPEX_PASSWORD,
-        'url': INTERNAL_FASPEX_BASE_URL,
-        'package_id_json_file': LAST_PROCESSED_PACKAGE_JSON_FILE_INTERNAL_ASPERA,
-        'url_prefix': 'faspex',
-        'recipients': INTERNAL_FASPEX_SUPE_USERNAME,
-        'content_protect_password': INTERNAL_FASPEX_CONTENT_PROTECT_PASSWORD,
-        'email_recipients': SUP_EMAIL_RECIPIENTS
+        'user': FASPEX_USERNAME,
+        'password': FASPEX_PASSWORD,
+        'url': FASPEX_BASE_URL,
+        'package_id_json_file': LAST_PROCESSED_PACKAGE_JSON_FILE_EXTERNAL_ASPERA,
+        'url_prefix': 'aspera/faspex',
+        'recipients': FASPEX_SUPE_USERNAME,
+        'email_recipients': SUP_EMAIL_RECIPIENTS,
+        'cc_on_upload': FASPEX_USERNAME,
+        'cc_on_download': FASPEX_USERNAME
     }
 }
 
