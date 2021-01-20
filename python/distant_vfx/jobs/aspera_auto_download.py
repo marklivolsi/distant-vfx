@@ -7,8 +7,6 @@ from ..aspera import AsperaCLI, AsperaError
 from ..constants import PACKAGE_REGEX, MAILBOX_BASE_PATH, EMAIL_USERNAME, EMAIL_PASSWORD, EMAIL_RECIPIENTS
 from . import new_vendor_package
 
-EMAIL_RECIPIENTS = 'mark.c.livolsi@gmail.com'  # todo: replace with real recipients from constants
-
 
 def main(user,
          password,
