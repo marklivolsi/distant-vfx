@@ -52,7 +52,7 @@ def main(user,
             tree=tree,
             note=note
         )
-        _send_email(recipients, subject, content)
+        _send_email(email, subject, content)
 
 
 def _build_email_body(vendor, package_name, tree, note):
