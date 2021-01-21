@@ -93,6 +93,6 @@ def _get_package_tree(filepath):
     basename = os.path.basename(filepath)
     split_newline = stdout.split('\n')
     remove_first_line = '\n'.join(split_newline[1:])
-    return basename + '\n' + remove_first_line
+    return (basename + '\n' + remove_first_line).replace('\\ ', ' ')
 
 
