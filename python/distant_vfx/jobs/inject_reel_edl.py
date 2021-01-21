@@ -198,6 +198,8 @@ def _inject_reel(edl_dict, reel_dict):
 def _find_stills(root_path):
     for root, dirs, files in os.walk(root_path):
         for filename in files:
+            if filename.startswith('.'):
+                continue
             ext = os.path.splitext(filename)[1]
             if ext in LEGAL_THUMB_EXTENSIONS:
                 filepath = os.path.join(root, filename)
