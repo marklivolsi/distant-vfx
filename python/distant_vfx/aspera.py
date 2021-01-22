@@ -109,7 +109,7 @@ class AsperaCLI:
         # download packages
         output_packages = []
         for package in new_packages:
-            package_id, title, link = package
+            package_id, title, link, author = package
             try:
                 print(f'Downloading package {title}...')
                 self._download_package(
@@ -122,7 +122,7 @@ class AsperaCLI:
                 self._write_last_processed_package_id_file(package_id, self.package_id_json_file)
                 package_name = f'PKG - {title}'
                 package_path = os.path.join(output_path, package_name)
-                output_packages.append(package_path)
+                output_packages.append((package_path, author))
             except:
                 traceback.print_exc()
                 raise AsperaError(f'Error downloading package (title: {title})', title)
@@ -192,7 +192,8 @@ class AsperaCLI:
             delivery_id = int(entry.findChild('package:delivery_id').get_text())
             title = entry.findChild('title').get_text()
             link = unescape(entry.findChild('link', {'rel': 'package'})['href'])
-            package = (delivery_id, title, link)
+            author = entry.findChild('author').findChild('name').get_text()
+            package = (delivery_id, title, link, author)
             packages.append(package)
         return packages
 

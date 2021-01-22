@@ -4,7 +4,8 @@ import subprocess
 import traceback
 import yagmail
 from ..aspera import AsperaCLI, AsperaError
-from ..constants import PACKAGE_REGEX, MAILBOX_BASE_PATH, EMAIL_USERNAME, EMAIL_PASSWORD, EMAIL_RECIPIENTS
+from ..constants import PACKAGE_REGEX, MAILBOX_BASE_PATH, EMAIL_USERNAME, EMAIL_PASSWORD, EMAIL_RECIPIENTS, \
+    FASPEX_SUPE_USERNAME, HHM_INTERNAL_FASPEX_USERNAME, EG_INTERNAL_FASPEX_USERNAME
 from . import new_vendor_package
 
 
@@ -54,11 +55,21 @@ def main(user,
         print(f'No new packages found for vendor {vendor}.')
         return
 
-    # Get the base mailbox directory where the package should be sorted
-    mailbox_dir = os.path.join(MAILBOX_BASE_PATH, vendor, f'fr_{vendor}')
-
     # Move downloaded packages to mailbox
-    for package in packages:
+    for (package, author) in packages:
+
+        if author in FASPEX_SUPE_USERNAME:
+            vendor_fmt = 'ldq'
+        elif author in HHM_INTERNAL_FASPEX_USERNAME:
+            vendor_fmt = 'hhm'
+        elif author in EG_INTERNAL_FASPEX_USERNAME:
+            vendor_fmt = 'eg'
+        else:
+            vendor_fmt = vendor
+
+        # Get the base mailbox directory where the package should be sorted
+        mailbox_dir = os.path.join(MAILBOX_BASE_PATH, vendor_fmt, f'fr_{vendor_fmt}')
+
         package_name = _get_package_name_strip(package)
 
         subject = f'[DISTANT_API] Downloaded package {package_name}'
@@ -80,7 +91,7 @@ def main(user,
 
         # If not, create a new vendor package and move the contents there
         else:
-            sort_path = new_vendor_package.main([vendor], incoming=True)[0]
+            sort_path = new_vendor_package.main([vendor_fmt], incoming=True)[0]
             download_path = sort_path
             for item in os.listdir(package):
                 item_path = os.path.join(package, item)
