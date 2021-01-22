@@ -90,7 +90,10 @@ class AsperaCLI:
 
     def download_new_packages(self, output_path, content_protect_password=None):
         last_processed_package_id = self._get_last_processed_package_id_from_file(self.package_id_json_file)
-        inbox_packages = self._fetch_inbox_packages()
+        try:
+            inbox_packages = self._fetch_inbox_packages()
+        except:
+            return None
         if not inbox_packages:
             return None
         if not last_processed_package_id:
@@ -108,11 +111,14 @@ class AsperaCLI:
         for package in new_packages:
             package_id, title, link = package
             try:
+                print(f'Downloading package {title}...')
                 self._download_package(
                     link=link,
                     output_path=output_path,
                     content_protect_password=content_protect_password
                 )
+                print(f'Finished downloading package {title}.')
+                print(f'Updating package ID to {package_id}...')
                 self._write_last_processed_package_id_file(package_id, self.package_id_json_file)
                 package_name = f'PKG - {title}'
                 package_path = os.path.join(output_path, package_name)

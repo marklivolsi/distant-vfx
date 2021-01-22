@@ -38,6 +38,7 @@ def main(user,
     # Download new packages, updating package json file after each download
     packages = None
     try:
+        print(f'Checking for new {vendor} packages...')
         packages = aspera.download_new_packages(
                 output_path=output_path,
                 content_protect_password=content_protect_password
@@ -50,6 +51,7 @@ def main(user,
 
     # Exit if there are no packages downloaded
     if not packages:
+        print(f'No new packages found for vendor {vendor}.')
         return
 
     # Get the base mailbox directory where the package should be sorted
@@ -57,8 +59,8 @@ def main(user,
 
     # Move downloaded packages to mailbox
     for package in packages:
-
         package_name = _get_package_name_strip(package)
+
         subject = f'[DISTANT_API] Downloaded package {package_name}'
         content = None
 
@@ -69,7 +71,9 @@ def main(user,
         if sub_package_path:
             download_path = os.path.join(mailbox_dir, package_name)
             try:
+                print(f'Moving package {package_name} to {mailbox_dir}...')
                 _move_package(sub_package_path, mailbox_dir)
+                print(f'Package {package_name} moved to {mailbox_dir}.')
             except FileExistsError:
                 content = f'Error: Package {package_name} already exists at destination {download_path}. Package ' \
                           f'{package_name} will remain at manual sort path {output_path}.'
@@ -80,10 +84,13 @@ def main(user,
             download_path = sort_path
             for item in os.listdir(package):
                 item_path = os.path.join(package, item)
+                print(f'Moving package {package_name} to {sort_path}...')
                 _move_package(item_path, sort_path)
+                print(f'Package {package_name} moved to {sort_path}.')
 
         # Remove the empty container folder 'PKG - {package_name}' from default download location
         if len(os.listdir(package)) == 0:
+            print(f'Cleaning up empty package folder: {package}')
             os.rmdir(package)
 
         # Set the content message if not already set.

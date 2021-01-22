@@ -69,11 +69,15 @@ INTERNAL_FASPEX_CONTENT_PROTECT_PASSWORD = environ.get('INTERNAL_FASPEX_CONTENT_
 DEFAULT_DOWNLOAD_PATH = environ.get('DEFAULT_DOWNLOAD_PATH')
 LAST_PROCESSED_PACKAGE_JSON_FILE_INTERNAL_ASPERA = environ.get('LAST_PROCESSED_PACKAGE_JSON_FILE_INTERNAL_ASPERA')
 LAST_PROCESSED_PACKAGE_JSON_FILE_EXTERNAL_ASPERA = environ.get('LAST_PROCESSED_PACKAGE_JSON_FILE_EXTERNAL_ASPERA')
+HHM_INTERNAL_FASPEX_USERNAME = environ.get('HHM_INTERNAL_FASPEX_USERNAME')
+EG_INTERNAL_FASPEX_USERNAME = environ.get('EG_INTERNAL_FASPEX_USERNAME')
+
 
 # Faspex email recipients
 MRX_EMAIL_RECIPIENTS = environ.get('MRX_EMAIL_RECIPIENTS')
 EDT_EMAIL_RECIPIENTS = environ.get('EDT_EMAIL_RECIPIENTS')
 SUP_EMAIL_RECIPIENTS = environ.get('SUP_EMAIL_RECIPIENTS')
+HHM_EMAIL_RECIPIENTS = environ.get('HHM_EMAIL_RECIPIENTS')
 
 
 ASPERA_VENDOR_MAP = {
@@ -111,6 +115,28 @@ ASPERA_VENDOR_MAP = {
         'cc_on_upload': FASPEX_USERNAME,
         'cc_on_download': FASPEX_USERNAME
     },
+    'hhm': {
+        'user': INTERNAL_FASPEX_USERNAME,
+        'password': INTERNAL_FASPEX_PASSWORD,
+        'url': INTERNAL_FASPEX_BASE_URL,
+        'package_id_json_file': LAST_PROCESSED_PACKAGE_JSON_FILE_INTERNAL_ASPERA,
+        'url_prefix': 'faspex',
+        'recipients': HHM_INTERNAL_FASPEX_USERNAME,  # TODO: Set this
+        'email_recipients': HHM_EMAIL_RECIPIENTS,
+        'cc_on_upload': HHM_INTERNAL_FASPEX_USERNAME,
+        'cc_on_download': HHM_INTERNAL_FASPEX_USERNAME
+    },
+    'eg': {
+        'user': INTERNAL_FASPEX_USERNAME,
+        'password': INTERNAL_FASPEX_PASSWORD,
+        'url': INTERNAL_FASPEX_BASE_URL,
+        'package_id_json_file': LAST_PROCESSED_PACKAGE_JSON_FILE_INTERNAL_ASPERA,
+        'url_prefix': 'faspex',
+        'recipients': EG_INTERNAL_FASPEX_USERNAME,  # TODO: Set this
+        'email_recipients': '',
+        'cc_on_upload': EG_INTERNAL_FASPEX_USERNAME,
+        'cc_on_download': EG_INTERNAL_FASPEX_USERNAME
+    }
     # For testing only
     # 'tst': {
     #     'user': INTERNAL_FASPEX_USERNAME,
