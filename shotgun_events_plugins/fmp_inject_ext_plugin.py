@@ -105,21 +105,31 @@ def inject(sg, logger, event, args):
         # Run script to process transfer data
         res = _run_process_transfer_data_records_script(fmp, transfer_primary_key, logger)
 
-        # Inject thumb if available  # TODO: Alert via email no thumbs if frame range
-        img_record_id = None
-        if thumb_path is not None:
-            fmp.layout = FMP_IMAGES_LAYOUT
-            img_record_id = _inject_image(fmp, fmp_thumb_data, logger)
+        # Check if image exists
+        image_record = _check_image_record_exists(fmp, fmp_thumb_data)
+        if not image_record or image_record.Width == '?':
 
-        # Run process img script
-        if img_record_id is not None and img_record_id != -1:
-            img_primary_key = _get_image_primary_key(fmp, img_record_id, logger)
-            if img_primary_key is not None:
-                script_res = _run_process_image_script(fmp, img_primary_key, logger)
-        elif img_record_id == -1:
-            pass
-        else:
-            report_img = False
+            # Inject thumb if available
+            img_record_id = None
+            if thumb_path is not None:
+                fmp.layout = FMP_IMAGES_LAYOUT
+                img_record_id = _inject_image(fmp, fmp_thumb_data, logger)
+
+            # Check to make sure it injected correctly, if not try again
+            if img_record_id is not None:
+                new_img = fmp.get_record(img_record_id)
+                if new_img.Width == '?':
+                    img_record_id = _inject_image(fmp, fmp_thumb_data, logger)
+
+            # Run process img script
+            if img_record_id is not None:
+                img_primary_key = _get_image_primary_key(fmp, img_record_id, logger)
+                if img_primary_key is not None:
+                    script_res = _run_process_image_script(fmp, img_primary_key, logger)
+            elif img_record_id == -1:
+                pass
+            else:
+                report_img = False
 
         logger.info(f'Completed event processing {event.get("id")}')
 
@@ -187,9 +197,9 @@ def _get_image_primary_key(fmp, img_record_id, logger):
 
 
 def _inject_image(fmp, fmp_thumb_data, logger):
-    image_exists = _check_image_record_exists(fmp, fmp_thumb_data)
-    if image_exists:
-        return -1
+    # image_exists = _check_image_record_exists(fmp, fmp_thumb_data)
+    # if image_exists:
+    #     return -1
     img_record_id = None
     try:
         thumb_file = open(fmp_thumb_data.get('Path'), 'rb')
@@ -205,10 +215,10 @@ def _check_image_record_exists(fmp, fmp_thumb_data):
     try:
         image_records = fmp.find([fmp_thumb_data])
         if image_records:
-            return True
-        return False
+            return image_records[0]
+        return None
     except:
-        return False
+        return None
 
 
 def _inject_transfer_data(fmp, fmp_transfer_data, transfer_primary_key, logger):
