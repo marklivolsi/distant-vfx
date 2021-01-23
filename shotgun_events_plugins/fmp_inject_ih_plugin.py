@@ -113,13 +113,13 @@ def inject(sg, logger, event, args):
             img_record_id = None
             if thumb_path is not None:
                 fmp.layout = FMP_IMAGES_LAYOUT
-                img_record_id = _inject_image(fmp, fmp_thumb_data, logger)
+                img_record_id = _inject_image(fmp, fmp_thumb_data, logger, _get_mov_path(version_data))
 
             # Check to make sure it injected correctly, if not try again
             if img_record_id is not None:
                 new_img = fmp.get_record(img_record_id)
                 if new_img.Width == '?':
-                    img_record_id = _inject_image(fmp, fmp_thumb_data, logger)
+                    img_record_id = _inject_image(fmp, fmp_thumb_data, logger, _get_mov_path(version_data))
 
             # Run process img script
             if img_record_id is not None and img_record_id != -1:
@@ -143,6 +143,19 @@ def inject(sg, logger, event, args):
         img_report = fmp_thumb_data if report_img else do_not_report_msg
 
         _send_success_email(version_report, transfer_log_report, transfer_data_report, img_report)
+
+
+def _update_thumbs_json(json_file, sg_path_to_movie):
+    import json
+    try:
+        with open(json_file, 'r') as file:
+            data = json.load(file)
+    except FileNotFoundError:
+        data = {'sg_path_to_movie': []}
+    if sg_path_to_movie and sg_path_to_movie not in data.values():
+        data['sg_path_to_movie'].append(sg_path_to_movie)
+    with open(json_file, 'w') as file:
+        json.dump(data, file)
 
 
 def _send_success_email(version_data, fmp_transfer_log, fmp_transfer_data_dicts, thumb_data):
@@ -211,16 +224,15 @@ def _get_image_primary_key(fmp, img_record_id, logger):
     return img_primary_key
 
 
-def _inject_image(fmp, fmp_thumb_data, logger):
-    # image_exists = _check_image_record_exists(fmp, fmp_thumb_data)
-    # if image_exists:
-    #     return -1
+def _inject_image(fmp, fmp_thumb_data, logger, sg_path_to_movie):
     img_record_id = None
     try:
         thumb_file = open(fmp_thumb_data.get('Path'), 'rb')
         img_record_id = fmp.create_record(fmp_thumb_data)
         img_did_upload = fmp.upload_container(img_record_id, field_name='Image', file_=thumb_file)
         thumb_file.close()
+    except FileNotFoundError:
+        _update_thumbs_json('/mnt/Plugins/python3.6/config/thumbs.json', sg_path_to_movie)
     except:
         logger.error(f'Error injecting thumbnail record: {fmp_thumb_data}', exc_info=True)
     return img_record_id
