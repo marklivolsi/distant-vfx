@@ -21,13 +21,6 @@ def main():
         print('No movies listed in thumbs.json file. Exiting.')
         return
 
-    for movie in movies:
-        try:
-            thumb_name, thumb_path = _get_thumbnail(movie)
-            fmp_thumb_data = _build_thumb_dict(thumb_name, thumb_path)
-        except:
-            traceback.print_exc()
-
     with CloudServerWrapper(url=FMP_URL,
                             user=FMP_USERNAME,
                             password=FMP_PASSWORD,
