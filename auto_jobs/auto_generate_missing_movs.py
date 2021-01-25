@@ -2,11 +2,16 @@
 
 # Note - this job MUST be run on python 2 for access to Arch module
 
+import sys
+sys.path.append('/mnt/Plugins/python3.6')
+sys.path.append('/mnt/Plugins/python3.6/lib')
+
 from collections import defaultdict
 import os
 
 from python.distant_quicktime.farm.jobs.distant_dnx115 import DistantDNxHDFarmJob
 from python.distant_quicktime.farm.jobs.distant_h264 import DistantH264FarmJob
+from python.distant_vfx.constants import SHOT_TREE_BASE_PATH
 
 
 # TODO: If mov exists but in wrong place, move it to the right place
@@ -29,7 +34,7 @@ def main(root_path):
             exr_container_path = os.path.dirname(exr_path)
 
         parent_path = os.path.dirname(exr_container_path)
-        width, height = _get_qt_dimensions(exr_container_path)
+        width, height = _get_qt_dimensions()
         resolution_folder_base = str(width) + 'x' + str(height)
         filename = basename + '.mov'
 
@@ -68,11 +73,7 @@ def main(root_path):
             )
 
 
-def _get_qt_dimensions(exr_container_dir_path):
-    #basename = os.path.basename(exr_container_dir_path)
-    #split = basename.split('_')
-    #split2 = split[0].split('x')
-    #width, height = split2[0], split2[1]
+def _get_qt_dimensions():
     return 1920, 1080
 
 
@@ -142,8 +143,6 @@ def _make_basename_map(filepath_list):
                 key = 'dnx'
             elif 'h264' in path_lower:
                 key = 'h264'
-        # elif (ext in 'cube') and ('cube' not in basename_map):
-        #     key = 'cube'
 
         if key is None:
             continue
@@ -170,5 +169,4 @@ def _scan_files(root_path):
 
 
 if __name__ == '__main__':
-    from python.distant_vfx.constants import SHOT_TREE_BASE_PATH
     main(SHOT_TREE_BASE_PATH)
