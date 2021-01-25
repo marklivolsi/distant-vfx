@@ -112,7 +112,7 @@ def _find_files(directory):
 
 def _build_rv_command(reel_qt_path, version_path_cut_order_tuple_list):
     first_version_cut = version_path_cut_order_tuple_list[0][1]
-    first_reel_arg = _construct_reel_qt_source_arg(reel_qt_path, cut_out=first_version_cut)
+    first_reel_arg = _construct_reel_qt_source_arg(reel_qt_path, cut_out=first_version_cut-1)
     cmd = [RV_PATH] + first_reel_arg
 
     list_len = len(version_path_cut_order_tuple_list)
