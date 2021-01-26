@@ -9,12 +9,6 @@ from python.distant_vfx.constants import FMP_URL, FMP_USERNAME, FMP_PASSWORD, FM
     SHOT_TREE_BASE_PATH
 
 
-# REEL_FRAME_OFFSET = {
-#     1: 86400,
-#
-# }
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('reel',
