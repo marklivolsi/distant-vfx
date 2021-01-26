@@ -1,3 +1,9 @@
+#!/bin/env python3
+
+import sys
+sys.path.append('/mnt/Plugins/python3.6')
+sys.path.append('/mnt/Plugins/python3.6/lib')
+
 import datetime as dt
 import time
 from python.distant_vfx.filemaker import CloudServerWrapper
