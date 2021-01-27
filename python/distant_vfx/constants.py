@@ -75,13 +75,16 @@ LAST_PROCESSED_PACKAGE_JSON_FILE_INTERNAL_ASPERA = environ.get('LAST_PROCESSED_P
 LAST_PROCESSED_PACKAGE_JSON_FILE_EXTERNAL_ASPERA = environ.get('LAST_PROCESSED_PACKAGE_JSON_FILE_EXTERNAL_ASPERA')
 HHM_INTERNAL_FASPEX_USERNAME = environ.get('HHM_INTERNAL_FASPEX_USERNAME')
 EG_INTERNAL_FASPEX_USERNAME = environ.get('EG_INTERNAL_FASPEX_USERNAME')
-
+TER_FASPEX_USERNAME = environ.get('TER_FASPEX_USERNAME')
+TER_CONTENT_PROTECT_PASSWORD = environ.get('TER_CONTENT_PROTECT_PASSWORD')
 
 # Faspex email recipients
 MRX_EMAIL_RECIPIENTS = environ.get('MRX_EMAIL_RECIPIENTS')
 EDT_EMAIL_RECIPIENTS = environ.get('EDT_EMAIL_RECIPIENTS')
 SUP_EMAIL_RECIPIENTS = environ.get('SUP_EMAIL_RECIPIENTS')
 HHM_EMAIL_RECIPIENTS = environ.get('HHM_EMAIL_RECIPIENTS')
+TER_EMAIL_RECIPIENTS = environ.get('TER_EMAIL_RECIPIENTS')
+EG_EMAIL_RECIPIENTS = environ.get('EG_EMAIL_RECIPIENTS')
 
 
 ASPERA_VENDOR_MAP = {
@@ -125,10 +128,11 @@ ASPERA_VENDOR_MAP = {
         'url': INTERNAL_FASPEX_BASE_URL,
         'package_id_json_file': LAST_PROCESSED_PACKAGE_JSON_FILE_INTERNAL_ASPERA,
         'url_prefix': 'faspex',
-        'recipients': HHM_INTERNAL_FASPEX_USERNAME,  # TODO: Set this
+        'recipients': HHM_INTERNAL_FASPEX_USERNAME,
         'email_recipients': HHM_EMAIL_RECIPIENTS,
-        'cc_on_upload': HHM_INTERNAL_FASPEX_USERNAME,
-        'cc_on_download': HHM_INTERNAL_FASPEX_USERNAME
+        'cc_on_upload': INTERNAL_FASPEX_USERNAME,
+        'cc_on_download': INTERNAL_FASPEX_USERNAME,
+        'content_protect_password': INTERNAL_FASPEX_CONTENT_PROTECT_PASSWORD,
     },
     'eg': {
         'user': INTERNAL_FASPEX_USERNAME,
@@ -136,24 +140,24 @@ ASPERA_VENDOR_MAP = {
         'url': INTERNAL_FASPEX_BASE_URL,
         'package_id_json_file': LAST_PROCESSED_PACKAGE_JSON_FILE_INTERNAL_ASPERA,
         'url_prefix': 'faspex',
-        'recipients': EG_INTERNAL_FASPEX_USERNAME,  # TODO: Set this
-        'email_recipients': '',
-        'cc_on_upload': EG_INTERNAL_FASPEX_USERNAME,
-        'cc_on_download': EG_INTERNAL_FASPEX_USERNAME
+        'recipients': EG_INTERNAL_FASPEX_USERNAME,
+        'email_recipients': EG_EMAIL_RECIPIENTS,
+        'cc_on_upload': INTERNAL_FASPEX_USERNAME,
+        'cc_on_download': INTERNAL_FASPEX_USERNAME,
+        'content_protect_password': INTERNAL_FASPEX_CONTENT_PROTECT_PASSWORD,
+    },
+    'ter': {
+        'user': INTERNAL_FASPEX_USERNAME,
+        'password': INTERNAL_FASPEX_PASSWORD,
+        'url': INTERNAL_FASPEX_BASE_URL,
+        'package_id_json_file': LAST_PROCESSED_PACKAGE_JSON_FILE_INTERNAL_ASPERA,
+        'url_prefix': 'faspex',
+        'recipients': TER_FASPEX_USERNAME,
+        'email_recipients': TER_EMAIL_RECIPIENTS,
+        'cc_on_upload': INTERNAL_FASPEX_USERNAME,
+        'cc_on_download': INTERNAL_FASPEX_USERNAME,
+        'content_protect_password': TER_CONTENT_PROTECT_PASSWORD,
     }
-    # For testing only
-    # 'tst': {
-    #     'user': INTERNAL_FASPEX_USERNAME,
-    #     'password': INTERNAL_FASPEX_PASSWORD,
-    #     'url': INTERNAL_FASPEX_BASE_URL,
-    #     'package_id_json_file': LAST_PROCESSED_PACKAGE_JSON_FILE_INTERNAL_ASPERA,
-    #     'url_prefix': 'faspex',
-    #     'recipients': 'mlivolsi',
-    #     'content_protect_password': INTERNAL_FASPEX_CONTENT_PROTECT_PASSWORD,
-    #     'email_recipients': 'mark.c.livolsi@gmail.com',
-    #     'cc_on_upload': INTERNAL_FASPEX_USERNAME,
-    #     'cc_on_download': INTERNAL_FASPEX_USERNAME
-    # }
 }
 
 

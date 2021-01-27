@@ -5,7 +5,7 @@ import traceback
 import yagmail
 from ..aspera import AsperaCLI, AsperaError
 from ..constants import PACKAGE_REGEX, MAILBOX_BASE_PATH, EMAIL_USERNAME, EMAIL_PASSWORD, EMAIL_RECIPIENTS, \
-    FASPEX_SUPE_USERNAME, HHM_INTERNAL_FASPEX_USERNAME, EG_INTERNAL_FASPEX_USERNAME
+    FASPEX_SUPE_USERNAME, HHM_INTERNAL_FASPEX_USERNAME, EG_INTERNAL_FASPEX_USERNAME, TER_FASPEX_USERNAME
 from . import new_vendor_package
 
 
@@ -64,6 +64,8 @@ def main(user,
             vendor_fmt = 'hhm'
         elif author in EG_INTERNAL_FASPEX_USERNAME:
             vendor_fmt = 'eg'
+        elif author in TER_FASPEX_USERNAME:
+            vendor_fmt = 'ter'
         else:
             vendor_fmt = vendor
 
