@@ -15,6 +15,7 @@ def main():
 
     while True:
         wait_for_target_hour(3)  # run at 3am
+        print('Performing midnight checkup...')
         with CloudServerWrapper(url=FMP_URL,
                                 user=FMP_USERNAME,
                                 password=FMP_PASSWORD,
@@ -23,6 +24,7 @@ def main():
                                 ) as fmp:
             fmp.login()
             script_res = fmp.perform_script(name=FMP_MIDNIGHT_CHECKUP_SCRIPT)
+        print('Midnight checkup complete.')
 
 
 def wait_for_target_hour(target_hour):
@@ -30,7 +32,9 @@ def wait_for_target_hour(target_hour):
     target = dt.datetime.combine(dt.date.today(), dt.time(hour=target_hour))
     if target < now:
         target += dt.timedelta(days=1)  # run once daily
-    time.sleep((target - now).total_seconds())
+    sleep_sec = (target - now).total_seconds()
+    print(f'Waiting for target time ({target.strftime("%m/%d/%Y, %H:%M:%S")}). Sleeping for {sleep_sec} sec.')
+    time.sleep(sleep_sec)
 
 
 if __name__ == '__main__':
