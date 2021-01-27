@@ -52,7 +52,7 @@ Vectorfield {
  ypos -229
 }
 Vectorfield {
- vfield_file /mnt/dst/mailbox/technicolor/fr_technicolor/20200910_a/dis_20767_jc_PHS_trim_scd60_rec709.cube
+ vfield_file /mnt/Projects/dst/post/admin/workflow/colour/dis_20767_jc_PHS_trim_scd60_rec709.cube
  version 10
  file_type cube
  colorspaceOut rec709
@@ -205,6 +205,7 @@ Dot {
 Write {
  file "\[argv 1]"
  colorspace sRGB
+ file_type mov
  mov64_codec AVdn
  mov64_dnxhd_codec_profile "DNxHD 422 8-bit 145Mbit"
  mov_h264_codec_profile "High 4:2:0 8-bit"

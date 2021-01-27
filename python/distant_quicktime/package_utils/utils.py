@@ -31,7 +31,9 @@ def _find_next_package_letter_name(directory, base_name, maxsize=None):
                     continue
                 # Directory has room
                 return finalized_package_name
+        return path
     return None
+
 
 def _build_mailbox_package_name(directory, vendor, source_vendor, date, maxsize=None):
     base_package_name = MAILBOX_PACKAGE_NAME_TEMPLATE_BASE.format(
