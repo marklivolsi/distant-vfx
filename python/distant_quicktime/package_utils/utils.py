@@ -60,19 +60,27 @@ def _build_mailbox_package_name(directory, vendor, source_vendor, date, maxsize=
     raise ValueError("Could not find suitable packagename in 2 alphanumeric bytes. Confirm that things aren't weird")
 
 
+def get_package_root(direction="to", vendor_name="dst"):
+    if direction not in ("to", "fr"):
+        raise ValueError("direction kwarg must be one of (\"to\", \"fr\")")
+    base_directory = os.path.join(
+        PREFIX,
+        EDIT_VENDOR_NAME,
+        _build_internal_mailbox_name(
+            direction=direction, vendor=vendor_name
+        ),
+    )
+    return base_directory
+
+
 def get_or_create_edit_package_directory(direction="to", source_vendor="dst", date=None):
     if direction not in ("to", "fr"):
         raise ValueError("direction kwarg must be one of (\"to\", \"fr\")")
     if date is None:
         date = datetime.date.today().strftime("%Y%m%d")
 
-    base_directory = os.path.join(
-        PREFIX,
-        EDIT_VENDOR_NAME,
-        _build_internal_mailbox_name(
-            direction=direction, vendor=EDIT_VENDOR_NAME
-        ),
-    )
+    base_directory = get_package_root(direction=direction, vendor_name=EDIT_VENDOR_NAME)
+
     package_directory = os.path.join(
         base_directory,
         _build_mailbox_package_name(
