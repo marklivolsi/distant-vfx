@@ -73,10 +73,14 @@ def inject(sg, logger, event, args):
 
         report_version, report_transfer_log, report_transfer_data, report_img = True, True, True, True
 
+        # Check if version record already exists
+        version_records = _find_fmp_version(fmp, version_name, logger)
+
         # Inject version
-        version_record_id = _inject_version(fmp, fmp_version, logger)
-        if version_record_id is None:  # record creation failed
-            report_version = False
+        if not version_records:
+            version_record_id = _inject_version(fmp, fmp_version, logger)
+            if not version_record_id:  # record creation failed
+                report_version = False
 
         # Switch to transfer log layout
         fmp.layout = FMP_TRANSFER_LOG_LAYOUT
@@ -310,6 +314,17 @@ def _build_thumb_dict(thumb_name, thumb_path):
         'Path': thumb_path,
     }
     return thumb_dict
+
+
+def _find_fmp_version(fmp, version_name, logger):
+    version_records = None
+    try:
+        version_query = {'Filename': version_name}
+        version_records = fmp.find([version_query])
+    except:
+        if not fmp.last_error == 401:  # no records were found
+            logger.error('Error finding version records.', exc_info=True)
+    return version_records
 
 
 def _get_thumbnail(mov_path):
