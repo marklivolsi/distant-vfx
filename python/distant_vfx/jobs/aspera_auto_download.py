@@ -78,7 +78,7 @@ def main(user,
         content = None
 
         # Check if the package has a valid package name
-        sub_package_path = _get_sub_package_path(package)
+        sub_package_path = _get_sub_package_path(package, vendor_fmt)
 
         # If so, move the package to the proper mailbox folder if it does not exist already
         if sub_package_path:
@@ -114,10 +114,10 @@ def main(user,
         _send_email(subject, content)
 
 
-def _get_sub_package_path(package):
+def _get_sub_package_path(package, vendor_code):
     package_name_strip = _get_package_name_strip(package)
     sub_package_path = None
-    if _is_valid_package_name(package_name_strip):
+    if _is_valid_package_name(package_name_strip, vendor_code):
         sub_package_path = os.path.join(package, package_name_strip)
     return sub_package_path
 
@@ -156,9 +156,14 @@ def _move_package(source, dest):
     return stdout, stderr
 
 
-def _is_valid_package_name(package_name):
+def _is_valid_package_name(package_name, vendor_code):
     pattern = re.compile(PACKAGE_REGEX)
     match = re.match(pattern, package_name)
     if match:
-        return True
+        split = match.group(0).split('_')
+        try:
+            vendor = split[1]
+            return vendor.lower() in vendor_code.lower()
+        except IndexError:
+            return False
     return False
