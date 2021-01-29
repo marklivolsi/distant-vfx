@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 import traceback
+import sys
 from html import unescape
 from operator import itemgetter
 from bs4 import BeautifulSoup
@@ -80,19 +81,24 @@ class AsperaCLI:
         # download a single package by its title
         if not inbox_packages:
             inbox_packages = self._fetch_inbox_packages()
-        link = None
+        link, author = None, None
         for package in inbox_packages:
-            title = package[1]
+            package_id, title, link_raw, author_raw, completed = package
+            if not completed:
+                print(f'Package {package_name} has not finished uploading.')
+                sys.exit()
             if package_name in title:
                 # grab the link if we have a title match
-                link = package[2]
+                link = link_raw
+                author = author_raw
                 break
 
         # if the package is found, try to download it
         if link:
             try:
                 self._download_package(link, output_path, content_protect_password=content_protect_password)
-                return os.path.join(output_path, f'PKG - {package_name}')
+                package_path = os.path.join(output_path, f'PKG - {package_name}')
+                return package_path, author
             except:
                 raise AsperaError(f'Error downloading package (title: {package_name})', package_name)
         else:
@@ -127,23 +133,27 @@ class AsperaCLI:
         # download packages
         output_packages = []
         for package in new_packages:
-            package_id, title, link, author = package
-            try:
-                print(f'Downloading package {title}...')
-                self._download_package(
-                    link=link,
-                    output_path=output_path,
-                    content_protect_password=content_protect_password
-                )
-                print(f'Finished downloading package {title}.')
-                print(f'Updating package ID to {package_id}...')
-                self._write_last_processed_package_id_file(package_id, self.package_id_json_file)
-                package_name = f'PKG - {title}'
-                package_path = os.path.join(output_path, package_name)
-                output_packages.append((package_path, author))
-            except:
-                traceback.print_exc()
-                raise AsperaError(f'Error downloading package (title: {title})', title)
+            package_id, title, link, author, completed = package
+            if not completed:
+                print(f'Package {title} has not finished uploading. Will resume at this package once upload is complete.')
+                break
+            else:
+                try:
+                    print(f'Downloading package {title}...')
+                    self._download_package(
+                        link=link,
+                        output_path=output_path,
+                        content_protect_password=content_protect_password
+                    )
+                    print(f'Finished downloading package {title}.')
+                    print(f'Updating package ID to {package_id}...')
+                    self._write_last_processed_package_id_file(package_id, self.package_id_json_file)
+                    package_name = f'PKG - {title}'
+                    package_path = os.path.join(output_path, package_name)
+                    output_packages.append((package_path, author))
+                except:
+                    traceback.print_exc()
+                    raise AsperaError(f'Error downloading package (title: {title})', title)
         return output_packages
 
     def _download_package(self, link, output_path, content_protect_password=None):
@@ -219,7 +229,8 @@ class AsperaCLI:
             title = entry.findChild('title').get_text()
             link = unescape(entry.findChild('link', {'rel': 'package'})['href'])
             author = entry.findChild('author').findChild('name').get_text()
-            package = (delivery_id, title, link, author)
+            completed = entry.findChild('completed').get_text()
+            package = (delivery_id, title, link, author, completed)
             packages.append(package)
         return packages
 

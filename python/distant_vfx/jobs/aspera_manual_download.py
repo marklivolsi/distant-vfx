@@ -3,7 +3,8 @@ import re
 import subprocess
 import traceback
 from ..aspera import AsperaCLI
-from ..constants import PACKAGE_REGEX, MAILBOX_BASE_PATH
+from ..constants import PACKAGE_REGEX, MAILBOX_BASE_PATH, FASPEX_SUPE_USERNAME, HHM_INTERNAL_FASPEX_USERNAME, \
+    EG_INTERNAL_FASPEX_USERNAME, TER_FASPEX_USERNAME
 from . import new_vendor_package
 
 
@@ -44,8 +45,21 @@ def main(user,
     # Get the base mailbox directory where the package should be sorted
     mailbox_dir = os.path.join(MAILBOX_BASE_PATH, vendor, f'fr_{vendor}')
 
+    package, author = package
+
+    if author in FASPEX_SUPE_USERNAME:
+        vendor_fmt = 'ldq'
+    elif author in HHM_INTERNAL_FASPEX_USERNAME:
+        vendor_fmt = 'hhm'
+    elif author in EG_INTERNAL_FASPEX_USERNAME:
+        vendor_fmt = 'eg'
+    elif author in TER_FASPEX_USERNAME:
+        vendor_fmt = 'ter'
+    else:
+        vendor_fmt = vendor
+
     # Check if the package has a valid package name
-    sub_package_path = _get_sub_package_path(package)
+    sub_package_path = _get_sub_package_path(package, vendor_fmt)
 
     # If so, move the package to the proper mailbox folder if it does not exist already
     if sub_package_path:
@@ -74,10 +88,10 @@ def main(user,
     print(f'Downloaded package {package_name} to path: {download_path}.')
 
 
-def _get_sub_package_path(package):
+def _get_sub_package_path(package, vendor):
     package_name_strip = _get_package_name_strip(package)
     sub_package_path = None
-    if _is_valid_package_name(package_name_strip):
+    if _is_valid_package_name(package_name_strip, vendor):
         sub_package_path = os.path.join(package, package_name_strip)
     return sub_package_path
 
@@ -87,11 +101,16 @@ def _get_package_name_strip(package):
     return package_name.replace('PKG - ', '')
 
 
-def _is_valid_package_name(package_name):
+def _is_valid_package_name(package_name, vendor_code):
     pattern = re.compile(PACKAGE_REGEX)
     match = re.match(pattern, package_name)
     if match:
-        return True
+        split = match.group(0).split('_')
+        try:
+            vendor = split[1]
+            return vendor.lower() in vendor_code.lower()
+        except IndexError:
+            return False
     return False
 
 
