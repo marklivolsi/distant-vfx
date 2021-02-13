@@ -110,13 +110,13 @@ def inject(sg, logger, event, args):
             res = _run_process_transfer_data_records_script(fmp, transfer_primary_key, logger)
 
         # Check if image exists
+        fmp.layout = FMP_IMAGES_LAYOUT
         image_record = _check_image_record_exists(fmp, fmp_thumb_data)
         if not image_record or image_record.Width == '?':
 
             # Inject thumb if available
             img_record_id = None
             if thumb_path is not None:
-                fmp.layout = FMP_IMAGES_LAYOUT
                 img_record_id = _inject_image(fmp, fmp_thumb_data, logger, _get_mov_path(version_data))
 
             # Check to make sure it injected correctly, if not try again
