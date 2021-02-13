@@ -29,6 +29,7 @@ def main(user,
     # Download the package
     package = None
     try:
+        print(f'Downloading package {package_name}...')
         package = aspera.download_package_by_name(
             package_name=package_name,
             output_path=output_path,
@@ -42,10 +43,8 @@ def main(user,
         print(f'No package found with title {package_name}')
         return
 
-    # Get the base mailbox directory where the package should be sorted
-    mailbox_dir = os.path.join(MAILBOX_BASE_PATH, vendor, f'fr_{vendor}')
-
     package, author = package
+    print(f'package is {package}')
 
     if author in FASPEX_SUPE_USERNAME:
         vendor_fmt = 'ldq'
@@ -58,6 +57,9 @@ def main(user,
     else:
         vendor_fmt = vendor
 
+    # Get the base mailbox directory where the package should be sorted
+    mailbox_dir = os.path.join(MAILBOX_BASE_PATH, vendor_fmt, f'fr_{vendor_fmt}')
+
     # Check if the package has a valid package name
     sub_package_path = _get_sub_package_path(package, vendor_fmt)
 
@@ -65,15 +67,24 @@ def main(user,
     if sub_package_path:
         download_path = os.path.join(mailbox_dir, _get_package_name_strip(package))
         print(f'Moving package to path: {download_path}')
-        try:
-            _move_package(sub_package_path, mailbox_dir)
-        except FileExistsError:
-            print(f'Package already exists at destination: {download_path}\n'
-                  f'File will remain at default download path: {output_path}')
+        if os.path.exists(sub_package_path):
+            try:
+                _move_package(sub_package_path, mailbox_dir)
+            except FileExistsError:
+                print(f'Package already exists at destination: {download_path}\n'
+                      f'File will remain at default download path: {output_path}')
+        else:
+            try:
+                os.makedirs(download_path, exist_ok=True)
+                for item in os.listdir(package):
+                    item_path = os.path.join(package, item)
+                    _move_package(item_path, download_path)
+            except:
+                traceback.print_exc()
 
     # If not, create a new vendor package and move the contents there
     else:
-        sort_path = new_vendor_package.main([vendor], incoming=True)[0]
+        sort_path = new_vendor_package.main([vendor_fmt], incoming=True)[0]
         download_path = sort_path
         print(f'Moving package contents to path: {sort_path}')
         for item in os.listdir(package):
