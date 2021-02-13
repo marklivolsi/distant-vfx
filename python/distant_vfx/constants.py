@@ -77,6 +77,7 @@ HHM_INTERNAL_FASPEX_USERNAME = environ.get('HHM_INTERNAL_FASPEX_USERNAME')
 EG_INTERNAL_FASPEX_USERNAME = environ.get('EG_INTERNAL_FASPEX_USERNAME')
 TER_FASPEX_USERNAME = environ.get('TER_FASPEX_USERNAME')
 TER_CONTENT_PROTECT_PASSWORD = environ.get('TER_CONTENT_PROTECT_PASSWORD')
+TER_FASPEX_RECIPIENTS = environ.get('TER_FASPEX_RECIPIENTS')
 
 # Faspex email recipients
 MRX_EMAIL_RECIPIENTS = environ.get('MRX_EMAIL_RECIPIENTS')
@@ -152,7 +153,7 @@ ASPERA_VENDOR_MAP = {
         'url': INTERNAL_FASPEX_BASE_URL,
         'package_id_json_file': LAST_PROCESSED_PACKAGE_JSON_FILE_INTERNAL_ASPERA,
         'url_prefix': 'faspex',
-        'recipients': TER_FASPEX_USERNAME,
+        'recipients': TER_FASPEX_RECIPIENTS,
         'email_recipients': TER_EMAIL_RECIPIENTS,
         'cc_on_upload': INTERNAL_FASPEX_USERNAME,
         'cc_on_download': INTERNAL_FASPEX_USERNAME,
