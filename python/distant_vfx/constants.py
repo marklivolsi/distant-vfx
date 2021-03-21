@@ -88,6 +88,9 @@ TER_EMAIL_RECIPIENTS = environ.get('TER_EMAIL_RECIPIENTS')
 EG_EMAIL_RECIPIENTS = environ.get('EG_EMAIL_RECIPIENTS')
 
 
+ASPERA_YML_PATH = environ.get('ASPERA_YML_PATH')
+
+
 ASPERA_VENDOR_MAP = {
     'mrx': {
         'user': FASPEX_USERNAME,
