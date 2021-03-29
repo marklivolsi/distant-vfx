@@ -59,6 +59,7 @@ def main(host, data, catch_up_mode=False):
             continue
 
         mailbox_dir = os.path.join(MAILBOX_BASE_PATH, vendor, f'fr_{vendor}')
+        os.makedirs(mailbox_dir, exist_ok=True)
         package_name = _get_package_name_strip(package)
         subject = f'[DISTANT_API] Downloaded package {package_name}'
         content = None
@@ -76,6 +77,16 @@ def main(host, data, catch_up_mode=False):
                 content = f'Error: Package {package_name} already exists at destination {download_path}. Package ' \
                           f'{package_name} will remain at manual sort path {default_download_path}.'
 
+        elif _is_valid_package_name(package_name, vendor):
+            download_path = os.path.join(mailbox_dir, package_name)
+            try:
+                print(f'Moving package {package_name} to {mailbox_dir}...')
+                _move_package(package, download_path)
+                print(f'Package {package_name} moved to {mailbox_dir}.')
+            except FileExistsError:
+                content = f'Error: Package {package_name} already exists at destination {download_path}. Package ' \
+                          f'{package_name} will remain at manual sort path {default_download_path}.'
+
         # If not, create a new vendor package and move the contents there
         else:
             sort_path = new_vendor_package.main([vendor], incoming=True)[0]
@@ -87,9 +98,12 @@ def main(host, data, catch_up_mode=False):
                 print(f'Package {package_name} moved to {sort_path}.')
 
         # Remove the empty container folder 'PKG - {package_name}' from default download location
-        if len(os.listdir(package)) == 0:
-            print(f'Cleaning up empty package folder: {package}')
-            os.rmdir(package)
+        try:
+            if len(os.listdir(package)) == 0:
+                print(f'Cleaning up empty package folder: {package}')
+                os.rmdir(package)
+        except FileNotFoundError:
+            pass
 
         # Set the content message if not already set.
         if not content:
@@ -118,10 +132,11 @@ def _move_package(source, dest):
 
 def _get_sub_package_path(package, vendor_code):
     package_name_strip = _get_package_name_strip(package)
-    sub_package_path = None
     if _is_valid_package_name(package_name_strip, vendor_code):
         sub_package_path = os.path.join(package, package_name_strip)
-    return sub_package_path
+        if os.path.exists(sub_package_path):
+            return sub_package_path
+    return None
 
 
 def _is_valid_package_name(package_name, vendor_code):
@@ -145,7 +160,7 @@ def _get_package_name_strip(package):
 def _get_vendor(author, aspera_data):
     vendors = aspera_data['vendors']
     for vendor, vendor_data in vendors.items():
-        authors = vendor['authors']
+        authors = vendor_data['authors']
         if author.lower() in [a.lower() for a in authors]:
             return vendor
     return None

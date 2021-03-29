@@ -4,6 +4,7 @@ import argparse
 import yaml
 
 from python.distant_vfx.jobs import aspera_send
+from python.distant_vfx.jobs import fmp_manual_inject
 from python.distant_vfx.constants import ASPERA_YML_PATH
 
 
@@ -46,15 +47,16 @@ def main():
         help='Optionally specify a note to accompany your delivery email.'
     )
 
+    parser.add_argument(
+        '--inject',
+        action='store_true',
+        help='Optionally specify whether to inject the delivery into FileMaker.'
+    )
+
     args = parser.parse_args()
 
     with open(ASPERA_YML_PATH, 'r') as file:
         faspex_data = yaml.safe_load(file)
-
-    # legal_vendors = []
-    # for host, data in faspex_data.items():
-    #     vendors = list(data['vendors'].keys())
-    #     legal_vendors += vendors
 
     for vendor in args.vendors:
         host = _get_host(vendor, faspex_data)
@@ -78,10 +80,13 @@ def main():
                 cc_on_download=faspex_data[host]['vendors'][vendor]['cc_on_download']
             )
 
+    if args.inject:
+        fmp_manual_inject.main(args.path)
+
 
 def _get_host(vendor, faspex_data):
     for host, host_data in faspex_data.items():
-        for vendor_, vendor_data in host_data['vendors']:
+        for vendor_, vendor_data in host_data['vendors'].items():
             if vendor in vendor_:
                 return host
     return None
