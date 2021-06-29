@@ -199,7 +199,7 @@ class FastFindMovie(Screening):
         return FMP_VERSIONS_LAYOUT
 
     def _set_query(self):
-        return {'VFXID': self.vfxid}
+        return {'VFXID': self.vfxid, "Filename": "{}_*_*".format(self.vfxid)}
 
     @staticmethod
     def _get_cut_order_from_record(record):
